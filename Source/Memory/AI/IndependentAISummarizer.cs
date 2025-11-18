@@ -64,49 +64,165 @@ namespace RimTalk.Memory.AI
             if (isInitialized) return;
             try
             {
-                Log.Message("[AI Summarizer] Initializing...");
-                var rimTalkAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "RimTalk");
-                if (rimTalkAssembly == null) { Log.Warning("[AI Summarizer] RimTalk assembly not found"); return; }
-                var settingsType = rimTalkAssembly.GetType("RimTalk.Settings");
-                if (settingsType == null) return;
-                var getMethod = settingsType.GetMethod("Get", BindingFlags.Public | BindingFlags.Static);
-                if (getMethod == null) return;
-                var settings = getMethod.Invoke(null, null);
-                if (settings == null) return;
-                var getActiveConfigMethod = settings.GetType().GetMethod("GetActiveConfig");
-                if (getActiveConfigMethod == null) return;
-                var config = getActiveConfigMethod.Invoke(settings, null);
-                if (config == null) return;
-                var configType = config.GetType();
-                apiKey = configType.GetField("ApiKey")?.GetValue(config) as string;
-                provider = configType.GetField("Provider")?.GetValue(config)?.ToString() ?? "";
-                apiUrl = configType.GetField("BaseUrl")?.GetValue(config) as string;
-                if (string.IsNullOrEmpty(apiUrl))
+                Log.Message("[Independent AI Summarizer] Initializing...");
+                
+                var settings = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings;
+                
+                // 优先使用独立配置
+                if (!settings.useRimTalkAIConfig || !TryLoadFromRimTalk())
                 {
-                    if (provider == "OpenAI")
+                    Log.Message("[Independent AI Summarizer] Using independent AI configuration");
+                    
+                    // 使用独立配置
+                    apiKey = settings.independentApiKey;
+                    apiUrl = settings.independentApiUrl;
+                    model = settings.independentModel;
+                    provider = settings.independentProvider;
+                    
+                    // 如果 URL 为空，根据提供商设置默认值
+                    if (string.IsNullOrEmpty(apiUrl))
                     {
-                        apiUrl = "https://api.openai.com/v1/chat/completions";
+                        if (provider == "OpenAI")
+                        {
+                            apiUrl = "https://api.openai.com/v1/chat/completions";
+                        }
+                        else if (provider == "Google")
+                        {
+                            apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/MODEL_PLACEHOLDER:generateContent?key=API_KEY_PLACEHOLDER";
+                        }
                     }
-                    else if (provider == "Google")
+                    
+                    // 验证配置
+                    if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiUrl))
                     {
-                        // For Google, we'll build the URL in CallAIAsync using the model name
-                        apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/MODEL_PLACEHOLDER:generateContent?key=API_KEY_PLACEHOLDER";
+                        Log.Warning("[Independent AI Summarizer] ❌ Configuration incomplete. Please configure API settings.");
+                        Log.Warning("[Independent AI Summarizer] AI summarization disabled, using rule-based summary");
+                        return;
                     }
-                }
-                model = configType.GetField("SelectedModel")?.GetValue(config) as string;
-                if (string.IsNullOrEmpty(model)) model = configType.GetField("CustomModelName")?.GetValue(config) as string;
-                if (string.IsNullOrEmpty(model)) model = "gpt-3.5-turbo";
-                if (!string.IsNullOrEmpty(apiKey) && !string.IsNullOrEmpty(apiUrl))
-                {
-                    Log.Message($"[AI Summarizer] ✅ Initialized (Provider: {provider}, Model: {model})");
+                    
+                    Log.Message($"[Independent AI Summarizer] ✅ Initialized (Provider: {provider}, Model: {model})");
                     isInitialized = true;
                 }
-                else { Log.Warning("[AI Summarizer] Configuration incomplete"); }
             }
             catch (Exception ex)
             {
-                Log.Error($"[AI Summarizer] Init failed: {ex.Message}");
+                Log.Error($"[Independent AI Summarizer] Initialization failed: {ex.Message}");
+                if (Prefs.DevMode)
+                {
+                    Log.Error($"[Independent AI Summarizer] Stack trace: {ex.StackTrace}");
+                }
                 isInitialized = false;
+            }
+            
+            if (!isInitialized)
+            {
+                Log.Message("[Independent AI Summarizer] AI summarization disabled, using rule-based summary");
+            }
+        }
+
+        /// <summary>
+        /// 尝试从 RimTalk 加载配置（兼容模式）
+        /// </summary>
+        private static bool TryLoadFromRimTalk()
+        {
+            try
+            {
+                Log.Message("[Independent AI Summarizer] Attempting to load RimTalk AI configuration...");
+                
+                Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly a) => a.GetName().Name == "RimTalk");
+                if (assembly == null)
+                {
+                    Log.Warning("[Independent AI Summarizer] ❌ RimTalk assembly not found");
+                    return false;
+                }
+                
+                Log.Message("[Independent AI Summarizer] ✓ Found RimTalk assembly");
+                
+                Type type = assembly.GetType("RimTalk.Settings");
+                if (type == null) return false;
+                
+                MethodInfo method = type.GetMethod("Get", BindingFlags.Static | BindingFlags.Public);
+                if (method == null) return false;
+                
+                object obj = method.Invoke(null, null);
+                if (obj == null) return false;
+                
+                Type type2 = obj.GetType();
+                MethodInfo method2 = type2.GetMethod("GetActiveConfig");
+                if (method2 == null) return false;
+                
+                object obj2 = method2.Invoke(obj, null);
+                if (obj2 == null)
+                {
+                    Log.Warning("[Independent AI Summarizer] ❌ RimTalk GetActiveConfig() returned null");
+                    return false;
+                }
+                
+                Type type3 = obj2.GetType();
+                
+                FieldInfo field = type3.GetField("ApiKey");
+                if (field != null)
+                {
+                    apiKey = (field.GetValue(obj2) as string);
+                }
+                
+                FieldInfo field2 = type3.GetField("BaseUrl");
+                if (field2 != null)
+                {
+                    apiUrl = (field2.GetValue(obj2) as string);
+                }
+                
+                if (string.IsNullOrEmpty(apiUrl))
+                {
+                    FieldInfo field3 = type3.GetField("Provider");
+                    if (field3 != null)
+                    {
+                        object value = field3.GetValue(obj2);
+                        provider = value.ToString();
+                        
+                        if (provider == "OpenAI")
+                        {
+                            apiUrl = "https://api.openai.com/v1/chat/completions";
+                        }
+                        else if (provider == "Google")
+                        {
+                            apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/MODEL_PLACEHOLDER:generateContent?key=API_KEY_PLACEHOLDER";
+                        }
+                    }
+                }
+                
+                FieldInfo field4 = type3.GetField("SelectedModel");
+                if (field4 != null)
+                {
+                    model = (field4.GetValue(obj2) as string);
+                }
+                else
+                {
+                    FieldInfo field5 = type3.GetField("CustomModelName");
+                    if (field5 != null)
+                    {
+                        model = (field5.GetValue(obj2) as string);
+                    }
+                }
+                
+                if (string.IsNullOrEmpty(model))
+                {
+                    model = "gpt-3.5-turbo";
+                }
+                
+                if (!string.IsNullOrEmpty(apiKey) && !string.IsNullOrEmpty(apiUrl))
+                {
+                    Log.Message($"[Independent AI Summarizer] ✅ Loaded from RimTalk (Provider: {provider}, Model: {model})");
+                    isInitialized = true;
+                    return true;
+                }
+                
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[Independent AI Summarizer] Failed to load RimTalk config: {ex.Message}");
+                return false;
             }
         }
 
@@ -184,15 +300,45 @@ namespace RimTalk.Memory.AI
         private static string BuildPrompt(Pawn pawn, List<MemoryEntry> memories, string template)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"请为殖民者 {pawn.LabelShort} 总结以下记忆。");
-            sb.AppendLine("\n记忆列表：");
-            int i = 1;
-            foreach (var m in memories.Take(20))
+            
+            // 根据模板类型生成不同的提示词
+            if (template == "deep_archive")
             {
-                sb.AppendLine($"{i}. {m.content}");
-                i++;
+                // 深度归档：更加精炼，关注核心特征和里程碑事件
+                sb.AppendLine($"请为殖民者 {pawn.LabelShort} 进行深度记忆归档。");
+                sb.AppendLine("\n以下是已总结的中期记忆（ELS）：");
+                int i = 1;
+                foreach (var m in memories.Take(15))
+                {
+                    sb.AppendLine($"{i}. {m.content}");
+                    i++;
+                }
+                sb.AppendLine("\n归档要求：");
+                sb.AppendLine("1. 提炼核心人设特征和性格特点");
+                sb.AppendLine("2. 总结重要里程碑事件和转折点");
+                sb.AppendLine("3. 合并相似经历，突出长期趋势");
+                sb.AppendLine("4. 极简表达，不超过60字");
+                sb.AppendLine("5. 只输出归档总结，不要JSON或其他格式");
+                sb.AppendLine("\n示例：擅长建造和研究，是殖民地技术核心。在第2年成功击退机械族大规模袭击。与医生建立深厚友谊。");
             }
-            sb.AppendLine("\n要求：\n1. 提炼地点、人物、事件\n2. 相似事件合并，标注频率（×N）\n3. 极简表达，不超过80字\n4. 只输出总结文字");
+            else // daily_summary 或其他
+            {
+                // 每日总结：常规总结，保留更多细节
+                sb.AppendLine($"请为殖民者 {pawn.LabelShort} 总结以下记忆。");
+                sb.AppendLine("\n记忆列表：");
+                int i = 1;
+                foreach (var m in memories.Take(20))
+                {
+                    sb.AppendLine($"{i}. {m.content}");
+                    i++;
+                }
+                sb.AppendLine("\n要求：");
+                sb.AppendLine("1. 提炼地点、人物、事件");
+                sb.AppendLine("2. 相似事件合并，标注频率（×N）");
+                sb.AppendLine("3. 极简表达，不超过80字");
+                sb.AppendLine("4. 只输出总结文字，不要JSON或其他格式");
+            }
+            
             return sb.ToString();
         }
 

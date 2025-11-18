@@ -23,12 +23,17 @@ namespace RimTalk.MemoryPatch
         public bool useAISummarization = true;        // 使用 AI 总结
         public int maxSummaryLength = 80;             // 最大总结长度
         
+        // === 独立 AI 配置 ===
+        public bool useRimTalkAIConfig = true;        // 优先使用 RimTalk 的 AI 配置（默认开启）
+        public string independentApiKey = "";         // 独立 API Key
+        public string independentApiUrl = "";         // 独立 API URL
+        public string independentModel = "gpt-3.5-turbo";  // 独立模型
+        public string independentProvider = "OpenAI"; // 独立提供商（OpenAI/Google）
+        
         // UI 设置
         public bool enableMemoryUI = true;
         
         // 记忆类型开关
-        // - 对话记忆（Conversation）：记录RimTalk生成的完整对话内容
-        // - 行动记忆（Action）：记录工作、战斗等行为
         public bool enableActionMemory = true;        // 行动记忆（工作、战斗）
         public bool enableConversationMemory = true;  // 对话记忆（RimTalk对话内容）
         
@@ -59,6 +64,13 @@ namespace RimTalk.MemoryPatch
             Scribe_Values.Look(ref summarizationHour, "fourLayer_summarizationHour", 0);
             Scribe_Values.Look(ref useAISummarization, "fourLayer_useAISummarization", true);
             Scribe_Values.Look(ref maxSummaryLength, "fourLayer_maxSummaryLength", 80);
+            
+            // 独立 AI 配置
+            Scribe_Values.Look(ref useRimTalkAIConfig, "ai_useRimTalkConfig", true);
+            Scribe_Values.Look(ref independentApiKey, "ai_independentApiKey", "");
+            Scribe_Values.Look(ref independentApiUrl, "ai_independentApiUrl", "");
+            Scribe_Values.Look(ref independentModel, "ai_independentModel", "gpt-3.5-turbo");
+            Scribe_Values.Look(ref independentProvider, "ai_independentProvider", "OpenAI");
             
             // UI 设置
             Scribe_Values.Look(ref enableMemoryUI, "memoryPatch_enableMemoryUI", true);
@@ -135,7 +147,7 @@ namespace RimTalk.MemoryPatch
             }
             
             listingStandard.Gap();
-            listingStandard.CheckboxLabeled("使用 AI 总结（需要 RimTalk）", ref useAISummarization);
+            listingStandard.CheckboxLabeled("使用 AI 总结", ref useAISummarization);
             
             if (useAISummarization)
             {
@@ -151,6 +163,76 @@ namespace RimTalk.MemoryPatch
             
             listingStandard.Gap();
             listingStandard.GapLine();
+
+            // === AI 配置 ===
+            if (useAISummarization)
+            {
+                Text.Font = GameFont.Medium;
+                listingStandard.Label("AI API 配置");
+                Text.Font = GameFont.Small;
+                
+                listingStandard.CheckboxLabeled("优先使用 RimTalk 的 AI 配置", ref useRimTalkAIConfig);
+                
+                GUI.color = Color.gray;
+                if (useRimTalkAIConfig)
+                {
+                    listingStandard.Label("  将尝试读取 RimTalk Mod 的 API 配置");
+                    listingStandard.Label("  如果 RimTalk 未安装或未配置，将使用下方的独立配置");
+                }
+                else
+                {
+                    listingStandard.Label("  将使用下方的独立配置，不依赖 RimTalk");
+                }
+                GUI.color = Color.white;
+                
+                listingStandard.Gap();
+                
+                // 独立配置区域
+                GUI.color = new Color(1f, 1f, 0.8f);
+                listingStandard.Label("=== 独立 AI 配置 ===");
+                GUI.color = Color.white;
+                
+                listingStandard.Label("提供商：");
+                Rect providerRect = listingStandard.GetRect(30f);
+                float buttonWidth = providerRect.width / 2f;
+                if (Widgets.ButtonText(new Rect(providerRect.x, providerRect.y, buttonWidth - 5f, providerRect.height), 
+                    independentProvider == "OpenAI" ? "OpenAI ✓" : "OpenAI"))
+                {
+                    independentProvider = "OpenAI";
+                    if (string.IsNullOrEmpty(independentApiUrl))
+                        independentApiUrl = "https://api.openai.com/v1/chat/completions";
+                }
+                if (Widgets.ButtonText(new Rect(providerRect.x + buttonWidth + 5f, providerRect.y, buttonWidth - 5f, providerRect.height), 
+                    independentProvider == "Google" ? "Google ✓" : "Google"))
+                {
+                    independentProvider = "Google";
+                    if (string.IsNullOrEmpty(independentApiUrl))
+                        independentApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/";
+                }
+                
+                listingStandard.Gap();
+                
+                listingStandard.Label("API Key:");
+                independentApiKey = listingStandard.TextEntry(independentApiKey);
+                
+                listingStandard.Gap();
+                
+                listingStandard.Label("API URL:");
+                independentApiUrl = listingStandard.TextEntry(independentApiUrl);
+                
+                listingStandard.Gap();
+                
+                listingStandard.Label("模型名称:");
+                independentModel = listingStandard.TextEntry(independentModel);
+                
+                GUI.color = Color.gray;
+                listingStandard.Label($"  OpenAI 示例: gpt-3.5-turbo, gpt-4");
+                listingStandard.Label($"  Google 示例: gemini-pro, gemini-1.5-flash");
+                GUI.color = Color.white;
+                
+                listingStandard.Gap();
+                listingStandard.GapLine();
+            }
 
             // === 记忆类型开关 ===
             Text.Font = GameFont.Medium;
