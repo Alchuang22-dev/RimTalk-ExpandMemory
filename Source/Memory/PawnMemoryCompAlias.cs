@@ -97,5 +97,11 @@ namespace RimTalk.Memory
         {
             return SituationalMemories.Count;
         }
+        
+        // 新增：获取ELS记忆数量（用于UI判断）
+        public int GetEventLogMemoryCount()
+        {
+            return EventLogMemories.Count;
+        }
     }
 }

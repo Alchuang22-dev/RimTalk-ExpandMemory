@@ -303,6 +303,59 @@ namespace RimTalk.Memory
         }
 
         /// <summary>
+        /// 手动触发归档：ELS -> CLPA
+        /// </summary>
+        public void ManualArchive()
+        {
+            if (eventLogMemories.Count == 0)
+            {
+                Log.Message($"[FourLayer] {parent.LabelShort}: No ELS memories to archive");
+                return;
+            }
+
+            Log.Message($"[FourLayer] {parent.LabelShort}: Manual archiving triggered ({eventLogMemories.Count} ELS memories)");
+
+            var pawn = parent as Pawn;
+            if (pawn == null) return;
+
+            // 将所有 ELS 按类型分组进行深度总结
+            var byType = eventLogMemories.GroupBy(m => m.type);
+            
+            int archivedCount = 0;
+            foreach (var typeGroup in byType)
+            {
+                var memories = typeGroup.ToList();
+                
+                // 使用 AI 进行深度总结
+                string archiveSummary = TryDeepArchive(pawn, memories);
+
+                if (!string.IsNullOrEmpty(archiveSummary))
+                {
+                    var archiveEntry = new MemoryEntry(
+                        content: archiveSummary,
+                        type: typeGroup.Key,
+                        layer: MemoryLayer.Archive,
+                        importance: memories.Average(m => m.importance) + 0.3f
+                    );
+
+                    archiveEntry.AddTag("手动归档");
+                    archiveEntry.AddTag($"源自{memories.Count}条ELS");
+                    archiveMemories.Insert(0, archiveEntry);
+                    archivedCount++;
+                    
+                    Log.Message($"[FourLayer] ✅ Manual ELS -> CLPA: {archiveSummary.Substring(0, Math.Min(50, archiveSummary.Length))}...");
+                }
+            }
+
+            // 清空已归档的 ELS
+            if (archivedCount > 0)
+            {
+                eventLogMemories.Clear();
+                Log.Message($"[FourLayer] ✅ Manual archive complete: {archivedCount} CLPA entries created");
+            }
+        }
+
+        /// <summary>
         /// 分层检索记忆（用于对话生成）
         /// </summary>
         public List<MemoryEntry> RetrieveMemories(MemoryQuery query)
