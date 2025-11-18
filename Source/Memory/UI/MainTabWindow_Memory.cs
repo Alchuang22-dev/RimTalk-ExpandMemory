@@ -155,7 +155,7 @@ namespace RimTalk.Memory.UI
                     archiveLabel = "立即归档 (无ELS记忆)";
                 }
                 
-                if (Widgets.ButtonText(archiveButtonRect, archiveLabel))
+                if ( Widgets.ButtonText(archiveButtonRect, archiveLabel))
                 {
                     if (canArchive)
                     {
@@ -228,11 +228,10 @@ namespace RimTalk.Memory.UI
 
         private void DrawFilterButtons(Rect rect)
         {
-            // 只显示实际使用的类型：Conversation, Interaction, Action
+            // 只显示实际使用的类型
             var types = new List<MemoryType>
             {
                 MemoryType.Conversation,
-                MemoryType.Interaction,
                 MemoryType.Action
             };
             
@@ -354,12 +353,6 @@ namespace RimTalk.Memory.UI
                 Find.WindowStack.Add(new Dialog_CreateMemory(selectedPawn, currentMemoryComp as FourLayerMemoryComp, targetLayer, MemoryType.Conversation));
             }));
             
-            // 选项3：添加互动记忆
-            options.Add(new FloatMenuOption($"添加互动记忆到 {layerName}", delegate
-            {
-                Find.WindowStack.Add(new Dialog_CreateMemory(selectedPawn, currentMemoryComp as FourLayerMemoryComp, targetLayer, MemoryType.Interaction));
-            }));
-            
             Find.WindowStack.Add(new FloatMenu(options));
         }
 
@@ -379,22 +372,6 @@ namespace RimTalk.Memory.UI
                     fourLayerComp.SituationalMemories.Count,
                     fourLayerComp.EventLogMemories.Count,
                     fourLayerComp.ArchiveMemories.Count
-                );
-                
-                Widgets.Label(rect, stats);
-                Text.Anchor = TextAnchor.UpperLeft;
-            }
-            else
-            {
-                // 兼容旧系统
-                Text.Anchor = TextAnchor.MiddleLeft;
-                
-                string stats = string.Format(
-                    "RimTalk_MemoryStats".Translate(),
-                    memoryComp.ShortTermMemories.Count.ToString(),
-                    RimTalkMemoryPatchMod.Settings.maxShortTermMemories.ToString(),
-                    memoryComp.LongTermMemories.Count.ToString(),
-                    RimTalkMemoryPatchMod.Settings.maxLongTermMemories.ToString()
                 );
                 
                 Widgets.Label(rect, stats);
@@ -518,31 +495,6 @@ namespace RimTalk.Memory.UI
                 if (showCLPA)
                 {
                     foreach (var memory in fourLayerComp.ArchiveMemories)
-                    {
-                        if (filterType == null || memory.type == filterType.Value)
-                        {
-                            allMemories.Add(new MemoryListEntry { memory = memory, layer = MemoryLayer.Archive });
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // 兼容旧系统（映射到四层）
-                if (showABM || showSCM)
-                {
-                    foreach (var memory in memoryComp.ShortTermMemories)
-                    {
-                        if (filterType == null || memory.type == filterType.Value)
-                        {
-                            allMemories.Add(new MemoryListEntry { memory = memory, layer = MemoryLayer.Situational });
-                        }
-                    }
-                }
-                
-                if (showELS || showCLPA)
-                {
-                    foreach (var memory in memoryComp.LongTermMemories)
                     {
                         if (filterType == null || memory.type == filterType.Value)
                         {

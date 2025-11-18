@@ -134,9 +134,6 @@ namespace RimTalk.Memory
                 case MemoryType.Conversation:
                     AddTag("对话");
                     break;
-                case MemoryType.Interaction:
-                    AddTag("互动");
-                    break;
                 case MemoryType.Action:
                     AddTag("行动");
                     break;
@@ -229,7 +226,6 @@ namespace RimTalk.Memory
                 switch (type)
                 {
                     case MemoryType.Conversation: return "对话";
-                    case MemoryType.Interaction: return "互动";
                     case MemoryType.Action: return "行动";
                     case MemoryType.Observation: return "观察";
                     case MemoryType.Event: return "事件";

@@ -127,13 +127,9 @@ namespace RimTalk.Memory.UI
         {
             Text.Anchor = TextAnchor.MiddleLeft;
             
-            string stats = string.Format(
-                "RimTalk_MemoryStats".Translate(),
-                memoryComp.ShortTermMemories.Count.ToString(),
-                RimTalkMemoryPatchMod.Settings.maxShortTermMemories.ToString(),
-                memoryComp.LongTermMemories.Count.ToString(),
-                RimTalkMemoryPatchMod.Settings.maxLongTermMemories.ToString()
-            );
+            // 使用四层记忆架构的设置
+            string stats = $"SCM: {memoryComp.SituationalMemories.Count}/{RimTalkMemoryPatchMod.Settings.maxSituationalMemories} | " +
+                          $"ELS: {memoryComp.EventLogMemories.Count}/{RimTalkMemoryPatchMod.Settings.maxEventLogMemories}";
             
             Widgets.Label(rect, stats);
             Text.Anchor = TextAnchor.UpperLeft;

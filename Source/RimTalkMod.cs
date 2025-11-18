@@ -11,10 +11,9 @@ namespace RimTalk.MemoryPatch
         public RimTalkMemoryPatchMod(ModContentPack content) : base(content)
         {
             Settings = GetSettings<RimTalkMemoryPatchSettings>();
-            // Use different Harmony ID to avoid conflicts with original RimTalk
             var harmony = new Harmony("cj.rimtalk.expandmemory");
             harmony.PatchAll();
-            Log.Message("[RimTalk-Expand Memory] Memory system enhancement loaded successfully.");
+            Log.Message("[RimTalk-Expand Memory] Loaded successfully");
         }
 
         public override void DoSettingsWindowContents(Rect inRect)

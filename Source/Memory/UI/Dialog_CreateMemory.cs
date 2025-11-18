@@ -192,8 +192,6 @@ namespace RimTalk.Memory.UI
                     return "行动记忆";
                 case MemoryType.Conversation:
                     return "对话记忆";
-                case MemoryType.Interaction:
-                    return "互动记忆";
                 default:
                     return type.ToString();
             }

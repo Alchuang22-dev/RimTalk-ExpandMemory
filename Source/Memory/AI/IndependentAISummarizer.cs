@@ -64,16 +64,11 @@ namespace RimTalk.Memory.AI
             if (isInitialized) return;
             try
             {
-                Log.Message("[Independent AI Summarizer] Initializing...");
-                
                 var settings = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings;
                 
                 // 优先使用独立配置
                 if (!settings.useRimTalkAIConfig || !TryLoadFromRimTalk())
                 {
-                    Log.Message("[Independent AI Summarizer] Using independent AI configuration");
-                    
-                    // 使用独立配置
                     apiKey = settings.independentApiKey;
                     apiUrl = settings.independentApiUrl;
                     model = settings.independentModel;
@@ -95,28 +90,18 @@ namespace RimTalk.Memory.AI
                     // 验证配置
                     if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiUrl))
                     {
-                        Log.Warning("[Independent AI Summarizer] ❌ Configuration incomplete. Please configure API settings.");
-                        Log.Warning("[Independent AI Summarizer] AI summarization disabled, using rule-based summary");
+                        Log.Warning("[AI] Configuration incomplete, using rule-based summary");
                         return;
                     }
                     
-                    Log.Message($"[Independent AI Summarizer] ✅ Initialized (Provider: {provider}, Model: {model})");
+                    Log.Message($"[AI] Initialized ({provider}/{model})");
                     isInitialized = true;
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"[Independent AI Summarizer] Initialization failed: {ex.Message}");
-                if (Prefs.DevMode)
-                {
-                    Log.Error($"[Independent AI Summarizer] Stack trace: {ex.StackTrace}");
-                }
+                Log.Error($"[AI] Init failed: {ex.Message}");
                 isInitialized = false;
-            }
-            
-            if (!isInitialized)
-            {
-                Log.Message("[Independent AI Summarizer] AI summarization disabled, using rule-based summary");
             }
         }
 
@@ -127,16 +112,8 @@ namespace RimTalk.Memory.AI
         {
             try
             {
-                Log.Message("[Independent AI Summarizer] Attempting to load RimTalk AI configuration...");
-                
                 Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault((Assembly a) => a.GetName().Name == "RimTalk");
-                if (assembly == null)
-                {
-                    Log.Warning("[Independent AI Summarizer] ❌ RimTalk assembly not found");
-                    return false;
-                }
-                
-                Log.Message("[Independent AI Summarizer] ✓ Found RimTalk assembly");
+                if (assembly == null) return false;
                 
                 Type type = assembly.GetType("RimTalk.Settings");
                 if (type == null) return false;
@@ -152,11 +129,7 @@ namespace RimTalk.Memory.AI
                 if (method2 == null) return false;
                 
                 object obj2 = method2.Invoke(obj, null);
-                if (obj2 == null)
-                {
-                    Log.Warning("[Independent AI Summarizer] ❌ RimTalk GetActiveConfig() returned null");
-                    return false;
-                }
+                if (obj2 == null) return false;
                 
                 Type type3 = obj2.GetType();
                 
@@ -212,16 +185,15 @@ namespace RimTalk.Memory.AI
                 
                 if (!string.IsNullOrEmpty(apiKey) && !string.IsNullOrEmpty(apiUrl))
                 {
-                    Log.Message($"[Independent AI Summarizer] ✅ Loaded from RimTalk (Provider: {provider}, Model: {model})");
+                    Log.Message($"[AI] Loaded from RimTalk ({provider}/{model})");
                     isInitialized = true;
                     return true;
                 }
                 
                 return false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Log.Warning($"[Independent AI Summarizer] Failed to load RimTalk config: {ex.Message}");
                 return false;
             }
         }

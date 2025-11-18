@@ -36,14 +36,6 @@ namespace RimTalk.MemoryPatch
         // 记忆类型开关
         public bool enableActionMemory = true;        // 行动记忆（工作、战斗）
         public bool enableConversationMemory = true;  // 对话记忆（RimTalk对话内容）
-        
-        // 兼容旧设置（用于数据迁移）
-        [System.Obsolete("使用四层架构设置")]
-        public int maxShortTermMemories = 20;
-        [System.Obsolete("使用四层架构设置")]
-        public int maxLongTermMemories = 50;
-        [System.Obsolete("使用四层架构设置")]
-        public float memoryDecayRate = 0.01f;
 
         public override void ExposeData()
         {
@@ -242,10 +234,6 @@ namespace RimTalk.MemoryPatch
             listingStandard.CheckboxLabeled("行动记忆（工作、战斗）", ref enableActionMemory);
             listingStandard.CheckboxLabeled("对话记忆（RimTalk 对话）", ref enableConversationMemory);
             
-            GUI.color = Color.gray;
-            listingStandard.Label("注：观察记忆已移除，因实现成本过高且与现有类型重叠");
-            GUI.color = Color.white;
-            
             listingStandard.Gap();
             listingStandard.GapLine();
 
@@ -254,8 +242,7 @@ namespace RimTalk.MemoryPatch
             
             listingStandard.Gap();
             GUI.color = Color.gray;
-            listingStandard.Label("对话功能请在 RimTalk 原版设置中配置");
-            listingStandard.Label("记忆不会自动生成对话，仅作为上下文使用");
+            listingStandard.Label("提示：本 Mod 完全独立，不依赖 RimTalk");
             GUI.color = Color.white;
 
             listingStandard.End();

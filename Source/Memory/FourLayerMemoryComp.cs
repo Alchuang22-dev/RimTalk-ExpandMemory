@@ -55,16 +55,8 @@ namespace RimTalk.Memory
         {
             var memory = new MemoryEntry(content, type, MemoryLayer.Active, importance, relatedPawn);
             
-            // 自动提取关键词
             ExtractKeywords(memory);
-            
             activeMemories.Insert(0, memory);
-            
-            // 只在调试模式输出详细日志（对话记录由上层统一输出）
-            if (Prefs.DevMode)
-            {
-                Log.Message($"[FourLayer] {parent.LabelShort} ABM: {content.Substring(0, Math.Min(30, content.Length))}...");
-            }
 
             // 超短期记忆满了，转移到短期
             if (activeMemories.Count > MAX_ACTIVE)
@@ -82,17 +74,11 @@ namespace RimTalk.Memory
         {
             memory.layer = MemoryLayer.Situational;
             situationalMemories.Insert(0, memory);
-            
-            // 只在调试模式输出详细日志
-            if (Prefs.DevMode)
-            {
-                Log.Message($"[FourLayer] {parent.LabelShort} ABM -> SCM: {memory.content.Substring(0, Math.Min(30, memory.content.Length))}...");
-            }
 
-            // 短期记忆满了，触发每日总结（会在每天0点批量处理）
+            // 短期记忆溢出警告
             if (situationalMemories.Count > MAX_SITUATIONAL * 1.5f)
             {
-                Log.Warning($"[FourLayer] {parent.LabelShort} SCM overflow ({situationalMemories.Count}), waiting for daily summarization");
+                Log.Warning($"[Memory] {parent.LabelShort} SCM overflow ({situationalMemories.Count}), needs summarization");
             }
         }
 
@@ -274,11 +260,10 @@ namespace RimTalk.Memory
             // 按类型分组进行深度总结
             var byType = toArchive.GroupBy(m => m.type);
             
+            int archivedCount = 0;
             foreach (var typeGroup in byType)
             {
                 var memories = typeGroup.ToList();
-                
-                // 使用 AI 进行深度总结
                 string archiveSummary = TryDeepArchive(pawn, memories);
 
                 if (!string.IsNullOrEmpty(archiveSummary))
@@ -292,14 +277,18 @@ namespace RimTalk.Memory
 
                     archiveEntry.AddTag("深度归档");
                     archiveEntry.AddTag($"源自{memories.Count}条ELS");
-
                     archiveMemories.Insert(0, archiveEntry);
-                    Log.Message($"[FourLayer] ✅ ELS -> CLPA: {archiveSummary.Substring(0, Math.Min(50, archiveSummary.Length))}...");
+                    archivedCount++;
                 }
             }
 
             // 移除已归档的 ELS
             eventLogMemories.RemoveRange(MAX_EVENTLOG, eventLogMemories.Count - MAX_EVENTLOG);
+            
+            if (archivedCount > 0)
+            {
+                Log.Message($"[Memory] {parent.LabelShort} archived {archivedCount} CLPA entries");
+            }
         }
 
         /// <summary>
@@ -307,26 +296,17 @@ namespace RimTalk.Memory
         /// </summary>
         public void ManualArchive()
         {
-            if (eventLogMemories.Count == 0)
-            {
-                Log.Message($"[FourLayer] {parent.LabelShort}: No ELS memories to archive");
-                return;
-            }
-
-            Log.Message($"[FourLayer] {parent.LabelShort}: Manual archiving triggered ({eventLogMemories.Count} ELS memories)");
+            if (eventLogMemories.Count == 0) return;
 
             var pawn = parent as Pawn;
             if (pawn == null) return;
 
-            // 将所有 ELS 按类型分组进行深度总结
             var byType = eventLogMemories.GroupBy(m => m.type);
             
             int archivedCount = 0;
             foreach (var typeGroup in byType)
             {
                 var memories = typeGroup.ToList();
-                
-                // 使用 AI 进行深度总结
                 string archiveSummary = TryDeepArchive(pawn, memories);
 
                 if (!string.IsNullOrEmpty(archiveSummary))
@@ -342,16 +322,13 @@ namespace RimTalk.Memory
                     archiveEntry.AddTag($"源自{memories.Count}条ELS");
                     archiveMemories.Insert(0, archiveEntry);
                     archivedCount++;
-                    
-                    Log.Message($"[FourLayer] ✅ Manual ELS -> CLPA: {archiveSummary.Substring(0, Math.Min(50, archiveSummary.Length))}...");
                 }
             }
 
-            // 清空已归档的 ELS
             if (archivedCount > 0)
             {
                 eventLogMemories.Clear();
-                Log.Message($"[FourLayer] ✅ Manual archive complete: {archivedCount} CLPA entries created");
+                Log.Message($"[Memory] {parent.LabelShort} manual archive: {archivedCount} entries");
             }
         }
 
@@ -565,7 +542,6 @@ namespace RimTalk.Memory
                 {
                     memory.notes = notes;
                 }
-                Log.Message($"[FourLayer] Memory edited: {memoryId}");
             }
         }
 
@@ -578,7 +554,6 @@ namespace RimTalk.Memory
             if (memory != null)
             {
                 memory.isPinned = pinned;
-                Log.Message($"[FourLayer] Memory {(pinned ? "pinned" : "unpinned")}: {memoryId}");
             }
         }
 
@@ -591,7 +566,6 @@ namespace RimTalk.Memory
             situationalMemories.RemoveAll(m => m.id == memoryId);
             eventLogMemories.RemoveAll(m => m.id == memoryId);
             archiveMemories.RemoveAll(m => m.id == memoryId);
-            Log.Message($"[FourLayer] Memory deleted: {memoryId}");
         }
 
         /// <summary>
@@ -628,7 +602,6 @@ namespace RimTalk.Memory
                 PromoteToSituational(memory);
             }
             activeMemories.Clear();
-            Log.Message($"[FourLayer] {parent.LabelShort}: ABM cleared");
         }
     }
 }
