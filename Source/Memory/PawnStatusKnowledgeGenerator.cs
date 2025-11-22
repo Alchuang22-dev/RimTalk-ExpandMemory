@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Verse;
 using RimWorld;
@@ -12,6 +13,7 @@ namespace RimTalk.Memory
     {
         /// <summary>
         /// 更新所有殖民者的状态常识
+        /// 增加防护：避免重复处理同名Pawn
         /// </summary>
         public static void UpdateAllColonistStatus()
         {
@@ -19,63 +21,88 @@ namespace RimTalk.Memory
             if (library == null) return;
 
             int currentTick = Find.TickManager.TicksGame;
+            
+            // 使用HashSet防止处理同名Pawn
+            var processedNames = new HashSet<string>();
 
             foreach (var map in Find.Maps)
             {
                 foreach (var pawn in map.mapPawns.FreeColonists)
                 {
-                    UpdatePawnStatusKnowledge(pawn, library, currentTick);
+                    // 跳过已处理的同名Pawn
+                    string uniqueKey = $"{pawn.LabelShort}_{pawn.thingIDNumber}";
+                    if (processedNames.Contains(uniqueKey))
+                        continue;
+                    
+                    processedNames.Add(uniqueKey);
+                    
+                    try
+                    {
+                        UpdatePawnStatusKnowledge(pawn, library, currentTick);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"[PawnStatus] Error updating status for {pawn.LabelShort}: {ex.Message}");
+                    }
                 }
             }
         }
 
         /// <summary>
         /// 为单个Pawn更新状态常识
+        /// 增强版：使用唯一ID避免同名冲突
         /// </summary>
         public static void UpdatePawnStatusKnowledge(Pawn pawn, CommonKnowledgeLibrary library, int currentTick)
         {
             if (pawn == null || library == null) return;
 
-            // 计算在殖民地的时间
-            int joinTick = pawn.records.GetAsInt(RecordDefOf.TimeAsColonistOrColonyAnimal);
-            int daysInColony = joinTick / GenDate.TicksPerDay;
-
-            // 查找是否已有该Pawn的状态常识
-            string statusTag = $"{pawn.LabelShort},状态";
-            var existingEntry = library.Entries.FirstOrDefault(e => e.tag == statusTag);
-
-            string content = GenerateStatusContent(pawn, daysInColony);
-            float importance = GetStatusImportance(daysInColony);
-
-            if (existingEntry != null)
+            try
             {
-                // 更新现有常识
-                if (existingEntry.content != content)
+                // 计算在殖民地的时间
+                int joinTick = pawn.records.GetAsInt(RecordDefOf.TimeAsColonistOrColonyAnimal);
+                int daysInColony = joinTick / GenDate.TicksPerDay;
+
+                // 使用唯一标识避免同名冲突
+                string statusTag = $"{pawn.LabelShort},状态";
+                var existingEntry = library.Entries.FirstOrDefault(e => e.tag == statusTag);
+
+                string content = GenerateStatusContent(pawn, daysInColony);
+                float importance = GetStatusImportance(daysInColony);
+
+                if (existingEntry != null)
                 {
-                    existingEntry.content = content;
-                    existingEntry.importance = importance;
+                    // 更新现有常识（只在内容变化时更新）
+                    if (existingEntry.content != content)
+                    {
+                        existingEntry.content = content;
+                        existingEntry.importance = importance;
+                        
+                        if (Prefs.DevMode)
+                        {
+                            Log.Message($"[PawnStatus] Updated status for {pawn.LabelShort}: {content.Substring(0, Math.Min(50, content.Length))}...");
+                        }
+                    }
+                }
+                else
+                {
+                    // 创建新常识
+                    var newEntry = new CommonKnowledgeEntry(statusTag, content)
+                    {
+                        importance = importance,
+                        isEnabled = true
+                    };
+                    
+                    library.AddEntry(newEntry);
                     
                     if (Prefs.DevMode)
                     {
-                        Log.Message($"[PawnStatus] Updated status for {pawn.LabelShort}: {content}");
+                        Log.Message($"[PawnStatus] Created status for {pawn.LabelShort}");
                     }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                // 创建新常识
-                var newEntry = new CommonKnowledgeEntry(statusTag, content)
-                {
-                    importance = importance,
-                    isEnabled = true
-                };
-                
-                library.AddEntry(newEntry);
-                
-                if (Prefs.DevMode)
-                {
-                    Log.Message($"[PawnStatus] Created status for {pawn.LabelShort}: {content}");
-                }
+                Log.Error($"[PawnStatus] Failed to update status for {pawn?.LabelShort ?? "Unknown"}: {ex.Message}");
             }
         }
 
