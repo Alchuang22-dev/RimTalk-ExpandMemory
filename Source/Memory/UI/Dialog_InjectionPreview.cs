@@ -9,17 +9,18 @@ using RimTalk.MemoryPatch;
 namespace RimTalk.Memory.Debug
 {
     /// <summary>
-    /// 注入内容预览器 - 显示即将注入到AI的记忆和常识
+    /// 调试预览器 - 模拟RimTalk预期发送的JSON，分析记忆和常识注入内容
     /// </summary>
     public class Dialog_InjectionPreview : Window
     {
         private Pawn selectedPawn;
+        private Pawn targetPawn;  // ⭐ 新增：目标Pawn
         private Vector2 scrollPosition;
         private string cachedPreview = "";
         private int cachedMemoryCount = 0;
         private int cachedKnowledgeCount = 0;
 
-        public override Vector2 InitialSize => new Vector2(900f, 700f);
+        public override Vector2 InitialSize => new Vector2(1000f, 750f);
 
         public Dialog_InjectionPreview()
         {
@@ -41,13 +42,15 @@ namespace RimTalk.Memory.Debug
 
             // 标题
             Text.Font = GameFont.Medium;
-            Widgets.Label(new Rect(0f, yPos, 400f, 35f), "注入内容预览器");
+            GUI.color = new Color(1f, 0.9f, 0.7f);
+            Widgets.Label(new Rect(0f, yPos, 500f, 35f), "🔍 调试预览器 - RimTalk JSON 模拟");
+            GUI.color = Color.white;
             Text.Font = GameFont.Small;
             yPos += 40f;
 
-            // 殖民者选择器
-            DrawPawnSelector(new Rect(0f, yPos, inRect.width, 40f));
-            yPos += 45f;
+            // 殖民者选择器（当前角色 + 目标角色）
+            DrawPawnSelectors(new Rect(0f, yPos, inRect.width, 80f));  // ⬅️ 增加高度
+            yPos += 85f;
 
             if (selectedPawn == null)
             {
@@ -61,8 +64,8 @@ namespace RimTalk.Memory.Debug
             }
 
             // 统计信息
-            DrawStats(new Rect(0f, yPos, inRect.width, 60f));
-            yPos += 65f;
+            DrawStats(new Rect(0f, yPos, inRect.width, 80f));
+            yPos += 85f;
 
             // 刷新按钮
             Rect refreshButtonRect = new Rect(inRect.width - 110f, yPos, 100f, 35f);
@@ -77,36 +80,19 @@ namespace RimTalk.Memory.Debug
             DrawPreview(previewRect);
         }
 
-        private void DrawPawnSelector(Rect rect)
+        private void DrawPawnSelectors(Rect rect)
         {
+            // 第一行：当前角色选择器
             GUI.color = new Color(0.8f, 0.9f, 1f);
-            Widgets.Label(new Rect(rect.x, rect.y, 100f, rect.height), "选择殖民者：");
+            Widgets.Label(new Rect(rect.x, rect.y, 120f, rect.height / 2), "当前角色：");
             GUI.color = Color.white;
 
-            Rect buttonRect = new Rect(rect.x + 110f, rect.y, 200f, 35f);
+            Rect buttonRect = new Rect(rect.x + 130f, rect.y, 200f, 35f);
             
             string label = selectedPawn != null ? selectedPawn.LabelShort : "无";
             if (Widgets.ButtonText(buttonRect, label))
             {
-                List<FloatMenuOption> options = new List<FloatMenuOption>();
-                
-                if (Find.CurrentMap != null)
-                {
-                    foreach (var pawn in Find.CurrentMap.mapPawns.FreeColonists)
-                    {
-                        Pawn localPawn = pawn;
-                        options.Add(new FloatMenuOption(pawn.LabelShort, delegate
-                        {
-                            selectedPawn = localPawn;
-                            cachedPreview = ""; // 清空缓存，强制刷新
-                        }));
-                    }
-                }
-
-                if (options.Count > 0)
-                {
-                    Find.WindowStack.Add(new FloatMenu(options));
-                }
+                ShowPawnSelectionMenu(isPrimary: true);
             }
 
             // 显示选中殖民者的基本信息
@@ -116,8 +102,89 @@ namespace RimTalk.Memory.Debug
                 string info = $"{selectedPawn.def.label}";
                 if (selectedPawn.gender != null)
                     info += $" | {selectedPawn.gender.GetLabel()}";
-                Widgets.Label(new Rect(rect.x + 320f, rect.y + 8f, 300f, rect.height), info);
+                Widgets.Label(new Rect(rect.x + 340f, rect.y + 8f, 300f, rect.height / 2), info);
                 GUI.color = Color.white;
+            }
+
+            // 第二行：目标角色选择器 ⭐ 新增
+            float secondRowY = rect.y + 40f;
+            GUI.color = new Color(1f, 0.9f, 0.8f);
+            Widgets.Label(new Rect(rect.x, secondRowY, 120f, rect.height / 2), "目标角色：");
+            GUI.color = Color.white;
+
+            Rect targetButtonRect = new Rect(rect.x + 130f, secondRowY, 200f, 35f);
+            
+            string targetLabel = targetPawn != null ? targetPawn.LabelShort : "无（点击选择）";
+            if (Widgets.ButtonText(targetButtonRect, targetLabel))
+            {
+                ShowPawnSelectionMenu(isPrimary: false);
+            }
+
+            // 显示目标角色信息
+            if (targetPawn != null)
+            {
+                GUI.color = Color.gray;
+                string targetInfo = $"{targetPawn.def.label}";
+                if (targetPawn.gender != null)
+                    targetInfo += $" | {targetPawn.gender.GetLabel()}";
+                Widgets.Label(new Rect(rect.x + 340f, secondRowY + 8f, 300f, rect.height / 2), targetInfo);
+                GUI.color = Color.white;
+                
+                // 清除按钮
+                Rect clearButtonRect = new Rect(rect.x + 650f, secondRowY, 80f, 35f);
+                if (Widgets.ButtonText(clearButtonRect, "清除"))
+                {
+                    targetPawn = null;
+                    cachedPreview = ""; // 清空缓存
+                }
+            }
+        }
+
+        /// <summary>
+        /// 显示Pawn选择菜单（支持主要角色和目标角色）
+        /// </summary>
+        private void ShowPawnSelectionMenu(bool isPrimary)
+        {
+            List<FloatMenuOption> options = new List<FloatMenuOption>();
+            
+            if (Find.CurrentMap != null)
+            {
+                foreach (var pawn in Find.CurrentMap.mapPawns.FreeColonists)
+                {
+                    Pawn localPawn = pawn;
+                    
+                    // 构建选项标签
+                    string optionLabel = pawn.LabelShort;
+                    
+                    // 如果是选择目标角色，且与当前角色相同，添加提示
+                    if (!isPrimary && selectedPawn != null && pawn == selectedPawn)
+                    {
+                        optionLabel += " (与当前角色相同)";
+                    }
+                    
+                    options.Add(new FloatMenuOption(optionLabel, delegate
+                    {
+                        if (isPrimary)
+                        {
+                            selectedPawn = localPawn;
+                            // 如果新选的当前角色与目标角色相同，清除目标角色
+                            if (targetPawn == localPawn)
+                            {
+                                targetPawn = null;
+                            }
+                        }
+                        else
+                        {
+                            targetPawn = localPawn;
+                        }
+                        cachedPreview = ""; // 清空缓存，强制刷新
+                    }));
+                }
+            }
+
+            if (options.Count > 0)
+            {
+                Find.WindowStack.Add(new FloatMenu(options));
             }
         }
 
@@ -141,16 +208,18 @@ namespace RimTalk.Memory.Debug
             float x = innerRect.x;
             float lineHeight = Text.LineHeight;
 
-            // 第一行
+            // 第一行 - 记忆统计
             GUI.color = new Color(0.8f, 1f, 0.8f);
-            Widgets.Label(new Rect(x, innerRect.y, 200f, lineHeight), "记忆统计：");
+            Widgets.Label(new Rect(x, innerRect.y, 150f, lineHeight), "记忆层级统计：");
             GUI.color = Color.white;
 
-            x += 100f;
-            Widgets.Label(new Rect(x, innerRect.y, 150f, lineHeight), 
-                $"ABM: {memoryComp.ActiveMemories.Count}");
-            
             x += 120f;
+            GUI.color = new Color(0.7f, 0.7f, 1f);
+            Widgets.Label(new Rect(x, innerRect.y, 200f, lineHeight), 
+                $"ABM: {memoryComp.ActiveMemories.Count}/6 (固定，不注入)");
+            GUI.color = Color.white;
+            
+            x += 220f;
             Widgets.Label(new Rect(x, innerRect.y, 150f, lineHeight), 
                 $"SCM: {memoryComp.SituationalMemories.Count}");
             
@@ -162,13 +231,13 @@ namespace RimTalk.Memory.Debug
             Widgets.Label(new Rect(x, innerRect.y, 150f, lineHeight), 
                 $"CLPA: {memoryComp.ArchiveMemories.Count}");
 
-            // 第二行
+            // 第二行 - 常识统计
             x = innerRect.x;
             GUI.color = new Color(1f, 1f, 0.8f);
-            Widgets.Label(new Rect(x, innerRect.y + lineHeight + 5f, 200f, lineHeight), "常识库统计：");
+            Widgets.Label(new Rect(x, innerRect.y + lineHeight + 5f, 150f, lineHeight), "常识库统计：");
             GUI.color = Color.white;
 
-            x += 100f;
+            x += 120f;
             var library = MemoryManager.GetCommonKnowledge();
             int totalKnowledge = library.Entries.Count;
             int enabledKnowledge = library.Entries.Count(e => e.isEnabled);
@@ -176,19 +245,20 @@ namespace RimTalk.Memory.Debug
             Widgets.Label(new Rect(x, innerRect.y + lineHeight + 5f, 300f, lineHeight), 
                 $"总数: {totalKnowledge} | 启用: {enabledKnowledge}");
 
-            // 第三行 - 当前配置
+            // 第三行 - 注入配置
             x = innerRect.x;
             GUI.color = new Color(0.8f, 0.8f, 1f);
-            Widgets.Label(new Rect(x, innerRect.y + lineHeight * 2 + 10f, 200f, lineHeight), "注入配置：");
+            Widgets.Label(new Rect(x, innerRect.y + lineHeight * 2 + 10f, 150f, lineHeight), "注入配置：");
             GUI.color = Color.white;
 
-            x += 100f;
+            x += 120f;
             var settings = RimTalkMemoryPatchMod.Settings;
             if (settings != null)
             {
-                string mode = settings.useDynamicInjection ? "动态" : "静态";
-                Widgets.Label(new Rect(x, innerRect.y + lineHeight * 2 + 10f, 500f, lineHeight), 
-                    $"模式: {mode} | 记忆: {settings.maxInjectedMemories} | 常识: {settings.maxInjectedKnowledge}");
+                string mode = settings.useDynamicInjection ? "动态评分" : "静态顺序";
+                Widgets.Label(new Rect(x, innerRect.y + lineHeight * 2 + 10f, 700f, lineHeight), 
+                    $"模式: {mode} | 最大记忆: {settings.maxInjectedMemories} | 最大常识: {settings.maxInjectedKnowledge} | " +
+                    $"记忆阈值: {settings.memoryScoreThreshold:F2} | 常识阈值: {settings.knowledgeScoreThreshold:F2}");
             }
         }
 
@@ -244,132 +314,409 @@ namespace RimTalk.Memory.Debug
             try
             {
                 var preview = new System.Text.StringBuilder();
-                preview.AppendLine("=".PadRight(80, '='));
-                preview.AppendLine($"殖民者：{selectedPawn.LabelShort}");
-                preview.AppendLine($"时间：{Find.TickManager.TicksGame.ToStringTicksToPeriod()}");
-                preview.AppendLine($"注入模式：{(settings.useDynamicInjection ? "动态" : "静态")}");
-                preview.AppendLine("=".PadRight(80, '='));
+                
+                // ===== 模拟 RimTalk JSON 结构 =====
+                preview.AppendLine("╔════════════════════════════════════════════════════════════════════════╗");
+                preview.AppendLine("║        RimTalk API JSON 请求模拟 (ExpandMemory 注入部分)             ║");
+                preview.AppendLine("╚════════════════════════════════════════════════════════════════════════╝");
                 preview.AppendLine();
-
-                // 记忆部分
-                preview.AppendLine("【记忆注入内容】");
+                
+                preview.AppendLine($"殖民者: {selectedPawn.LabelShort}");
+                preview.AppendLine($"时间: {Find.TickManager.TicksGame.ToStringTicksToPeriod()}");
+                preview.AppendLine($"注入模式: {(settings.useDynamicInjection ? "动态评分" : "静态顺序")}");
                 preview.AppendLine();
+                
+                // 先获取记忆和常识内容
+                string memoryInjection = null;
+                string knowledgeInjection = null;
+                List<DynamicMemoryInjection.MemoryScore> memoryScores = null;
+                List<KnowledgeScore> knowledgeScores = null;
 
-                string memoryContext;
                 if (settings.useDynamicInjection)
                 {
-                    var injectedMemories = DynamicMemoryInjection.InjectMemoriesWithDetails(
+                    memoryInjection = DynamicMemoryInjection.InjectMemoriesWithDetails(
                         memoryComp, 
-                        "", // 不使用模拟上下文
+                        "", 
                         settings.maxInjectedMemories,
-                        out var memoryScores
+                        out memoryScores
                     );
+                }
 
-                    cachedMemoryCount = memoryScores.Count;
+                var library = MemoryManager.GetCommonKnowledge();
+                KeywordExtractionInfo keywordInfo;
+                
+                // 构造测试上下文：使用角色名作为种子，这样可以触发关键词匹配
+                string testContext = selectedPawn != null ? selectedPawn.LabelShort : "";
+                if (targetPawn != null)
+                {
+                    testContext += " " + targetPawn.LabelShort;
+                }
+                
+                // 传递targetPawn参数 ⭐
+                knowledgeInjection = library.InjectKnowledgeWithDetails(
+                    testContext,  // 传递角色名作为上下文，触发关键词匹配
+                    settings.maxInjectedKnowledge,
+                    out knowledgeScores,
+                    out keywordInfo,
+                    selectedPawn,  // 传递当前Pawn以提取角色关键词
+                    targetPawn     // 传递目标Pawn ⭐
+                );
 
-                    if (memoryScores.Count > 0)
+                cachedMemoryCount = memoryScores?.Count ?? 0;
+                cachedKnowledgeCount = knowledgeScores?.Count ?? 0;
+                
+                // 构建完整的system content
+                var systemContent = new System.Text.StringBuilder();
+                
+                // 【优先级1: 常识库】- 放在最上方，可以覆盖RimTalk内置提示词
+                if (!string.IsNullOrEmpty(knowledgeInjection))
+                {
+                    systemContent.AppendLine("【常识】");
+                    systemContent.AppendLine(knowledgeInjection);
+                    systemContent.AppendLine();
+                }
+                
+                // 【优先级2: RimTalk内置提示词将在这里】
+                systemContent.AppendLine("你是一个RimWorld殖民地的角色扮演AI。");
+                systemContent.AppendLine($"你正在扮演 {selectedPawn.LabelShort}。");
+                systemContent.AppendLine();
+                
+                // 【优先级3: 记忆】- 放在最后，提供上下文
+                if (!string.IsNullOrEmpty(memoryInjection))
+                {
+                    systemContent.AppendLine("【记忆】");
+                    systemContent.AppendLine(memoryInjection);
+                    systemContent.AppendLine();
+                }
+
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                preview.AppendLine("📋 完整的 JSON 请求结构:");
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                preview.AppendLine();
+                
+                preview.AppendLine("{");
+                preview.AppendLine("  \"model\": \"gpt-4\",");
+                preview.AppendLine("  \"messages\": [");
+                preview.AppendLine("    {");
+                preview.AppendLine("      \"role\": \"system\",");
+                preview.AppendLine("      \"content\": \"");
+                
+                // 显示实际的system content，带缩进和转义
+                var systemLines = systemContent.ToString().Split('\n');
+                foreach (var line in systemLines.Take(20)) // 限制显示前20行
+                {
+                    if (!string.IsNullOrEmpty(line))
                     {
-                        preview.AppendLine($"动态选择了 {memoryScores.Count} 条记忆（评分从高到低）：");
-                        preview.AppendLine();
-
-                        for (int i = 0; i < memoryScores.Count; i++)
-                        {
-                            var score = memoryScores[i];
-                            preview.AppendLine($"[{i + 1}] 评分: {score.TotalScore:F2}");
-                            preview.AppendLine($"    层级: {score.Memory.layer} | 时间: {score.Memory.Age:F1}小时前");
-                            preview.AppendLine($"    ├ 时间衰减: {score.TimeScore:F2}");
-                            preview.AppendLine($"    ├ 重要性: {score.ImportanceScore:F2}");
-                            preview.AppendLine($"    ├ 关键词: {score.KeywordScore:F2}");
-                            preview.AppendLine($"    └ 加成: {score.BonusScore:F2}");
-                            preview.AppendLine($"    内容: {score.Memory.content}");
-                            preview.AppendLine();
-                        }
-
-                        preview.AppendLine("注入的完整文本：");
-                        preview.AppendLine("-".PadRight(80, '-'));
-                        preview.AppendLine(injectedMemories);
-                        preview.AppendLine("-".PadRight(80, '-'));
+                        string escapedLine = line.Replace("\"", "\\\"").Replace("\r", "");
+                        preview.AppendLine($"        {escapedLine}");
                     }
-                    else
+                }
+                
+                if (systemLines.Length > 20)
+                {
+                    preview.AppendLine($"        ... (共 {systemLines.Length} 行，省略剩余部分)");
+                }
+                
+                preview.AppendLine("      \"");
+                preview.AppendLine("    }, ");
+                preview.AppendLine("    {");
+                preview.AppendLine("      \"role\": \"user\", ");
+                preview.AppendLine("      \"content\": \"[用户输入的对话内容]\"");
+                preview.AppendLine("    }");
+                preview.AppendLine("  ],");
+                preview.AppendLine("  \"temperature\": 0.7,");
+                preview.AppendLine("  \"max_tokens\": 500");
+                preview.AppendLine("}");
+                preview.AppendLine();
+                
+                // ===== 记忆注入详细分析 =====
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                preview.AppendLine("📝 【ExpandMemory - 记忆注入详细分析】");
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                preview.AppendLine();
+
+                if (memoryInjection != null && memoryScores != null)
+                {
+                    preview.AppendLine($"🎯 动态评分选择了 {memoryScores.Count} 条记忆");
+                    preview.AppendLine($"📊 评分阈值: {settings.memoryScoreThreshold:F2} (低于此分数不注入)");
+                    preview.AppendLine();
+
+                    // 显示评分详情
+                    for (int i = 0; i < memoryScores.Count; i++)
                     {
-                        preview.AppendLine("没有可注入的记忆");
+                        var score = memoryScores[i];
+                        var memory = score.Memory;
+                        
+                        // 使用颜色代码标注来源
+                        string source = GetMemorySourceTag(memory.layer);
+                        string colorTag = GetMemoryColorTag(memory.layer);
+                        
+                        preview.AppendLine($"[{i + 1}] {colorTag} 评分: {score.TotalScore:F3}");
+                        preview.AppendLine($"    来源: {source} | 类型: {memory.TypeName}");
+                        preview.AppendLine($"    ├─ 重要性: {score.ImportanceScore:F3}");
+                        preview.AppendLine($"    ├─ 关键词: {score.KeywordScore:F3}");
+                        preview.AppendLine($"    ├─ 时间: {score.TimeScore:F3} (SCM/ELS不计时间)");
+                        preview.AppendLine($"    └─ 加成: {score.BonusScore:F3} (层级+固定+编辑)");
+                        preview.AppendLine($"    内容: \"{memory.content}\"");
+                        preview.AppendLine();
                     }
                 }
                 else
                 {
-                    // 静态注入
-                    var allMemories = new System.Text.StringBuilder();
-                    if (memoryComp.ActiveMemories.Count > 0)
-                    {
-                        allMemories.AppendLine("ABM (超短期):");
-                        foreach (var m in memoryComp.ActiveMemories)
-                            allMemories.AppendLine($"  - {m.content}");
-                    }
-                    if (memoryComp.SituationalMemories.Count > 0)
-                    {
-                        allMemories.AppendLine("SCM (短期):");
-                        foreach (var m in memoryComp.SituationalMemories)
-                            allMemories.AppendLine($"  - {m.content}");
-                    }
-                    
-                    preview.AppendLine("静态注入（按层级顺序）：");
+                    preview.AppendLine("⚠️ 没有记忆达到阈值，返回 null (不注入记忆)");
+                    preview.AppendLine($"📊 当前阈值: {settings.memoryScoreThreshold:F2}");
                     preview.AppendLine();
-                    preview.AppendLine(allMemories.ToString());
                 }
 
                 preview.AppendLine();
+                
+                // ===== 常识注入详细分析 =====
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                preview.AppendLine("🎓 【ExpandMemory - 常识库注入详细分析】");
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
                 preview.AppendLine();
 
-                // 常识部分
-                preview.AppendLine("【常识注入内容】");
-                preview.AppendLine();
-
-                var library = MemoryManager.GetCommonKnowledge();
-                var knowledgeWithScores = library.InjectKnowledgeWithDetails(
-                    "", // 不使用模拟上下文
-                    settings.maxInjectedKnowledge,
-                    out var knowledgeScores
-                );
-
-                cachedKnowledgeCount = knowledgeScores.Count;
-
-                if (knowledgeScores.Count > 0)
+                if (knowledgeInjection != null && knowledgeScores != null)
                 {
-                    preview.AppendLine($"动态选择了 {knowledgeScores.Count} 条常识（评分从高到低）：");
+                    preview.AppendLine($"🎯 动态评分选择了 {knowledgeScores.Count} 条常识");
+                    preview.AppendLine($"📊 评分阈值: {settings.knowledgeScoreThreshold:F2} (低于此分数不注入)");
                     preview.AppendLine();
 
                     for (int i = 0; i < knowledgeScores.Count; i++)
                     {
                         var score = knowledgeScores[i];
-                        preview.AppendLine($"[{i + 1}] 评分: {score.Score:F2}");
+                        preview.AppendLine($"[{i + 1}] 📘 评分: {score.Score:F3}");
                         preview.AppendLine($"    标签: [{score.Entry.tag}]");
-                        preview.AppendLine($"    重要性: {score.Entry.importance:F1}");
-                        preview.AppendLine($"    内容: {score.Entry.content}");
+                        preview.AppendLine($"    重要性: {score.Entry.importance:F2}");
+                        preview.AppendLine($"    内容: \"{score.Entry.content}\"");
                         preview.AppendLine();
                     }
-
-                    preview.AppendLine("注入的完整文本：");
-                    preview.AppendLine("-".PadRight(80, '-'));
-                    preview.AppendLine(knowledgeWithScores);
-                    preview.AppendLine("-".PadRight(80, '-'));
                 }
                 else
                 {
-                    preview.AppendLine("没有可注入的常识");
+                    preview.AppendLine("⚠️ 没有常识达到阈值，返回 null (不注入常识)");
+                    preview.AppendLine($"📊 当前阈值: {settings.knowledgeScoreThreshold:F2}");
+                    preview.AppendLine();
+                }
+
+                // ===== 关键词提取详情 =====
+                if (keywordInfo != null)
+                {
+                    preview.AppendLine();
+                    preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                    preview.AppendLine("🔑 【关键词提取详情】");
+                    preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                    preview.AppendLine();
+                    
+                    // 当前角色信息
+                    preview.AppendLine($"【当前角色】: {selectedPawn.LabelShort}");
+                    
+                    // 目标角色信息 ⭐ 新增
+                    if (targetPawn != null)
+                    {
+                        preview.AppendLine($"【目标角色】: {targetPawn.LabelShort}");
+                    }
+                    
+                    preview.AppendLine($"从上下文提取: {keywordInfo.ContextKeywords.Count} 个关键词");
+                    preview.AppendLine($"从角色信息提取: {keywordInfo.PawnKeywordsCount} 个关键词");
+                    preview.AppendLine($"总关键词: {keywordInfo.TotalKeywords} 个");
+                    preview.AppendLine();
+                    
+                    // 显示PawnInfo（仅显示当前角色的详细信息）
+                    if (keywordInfo.PawnInfo != null)
+                    {
+                        var pawnInfo = keywordInfo.PawnInfo;
+                        preview.AppendLine($"【{pawnInfo.PawnName} 的关键词分类】");
+                        preview.AppendLine();
+                        
+                        if (pawnInfo.NameKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"👤 名字关键词 ({pawnInfo.NameKeywords.Count}个)");
+                            preview.AppendLine(string.Join(", ", pawnInfo.NameKeywords));
+                            preview.AppendLine();
+                        }
+                        
+                        if (pawnInfo.AgeKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"🎂 年龄关键词 ({pawnInfo.AgeKeywords.Count}个)");
+                            preview.AppendLine(string.Join(", ", pawnInfo.AgeKeywords));
+                            preview.AppendLine();
+                        }
+                        
+                        if (pawnInfo.GenderKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"⚥ 性别关键词 ({pawnInfo.GenderKeywords.Count}个)");
+                            preview.AppendLine(string.Join(", ", pawnInfo.GenderKeywords));
+                            preview.AppendLine();
+                        }
+                        
+                        if (pawnInfo.RaceKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"🧬 种族关键词 ({pawnInfo.RaceKeywords.Count}个)");
+                            preview.AppendLine(string.Join(", ", pawnInfo.RaceKeywords));
+                            preview.AppendLine();
+                        }
+                        
+                        if (pawnInfo.TraitKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"🎭 特质关键词 ({pawnInfo.TraitKeywords.Count}个)");
+                            preview.AppendLine(string.Join(", ", pawnInfo.TraitKeywords.Take(10)));
+                            if (pawnInfo.TraitKeywords.Count > 10)
+                                preview.AppendLine($"... 还有 {pawnInfo.TraitKeywords.Count - 10} 个");
+                            preview.AppendLine();
+                        }
+                        
+                        if (pawnInfo.SkillKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"🛠️ 技能关键词 ({pawnInfo.SkillKeywords.Count}个)");
+                            preview.AppendLine(string.Join(", ", pawnInfo.SkillKeywords));
+                            preview.AppendLine();
+                        }
+                        
+                        if (pawnInfo.SkillLevelKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"⭐ 技能等级关键词 ({pawnInfo.SkillLevelKeywords.Count}个)");
+                            preview.AppendLine(string.Join(", ", pawnInfo.SkillLevelKeywords.Distinct()));
+                            preview.AppendLine();
+                        }
+                        
+                        if (pawnInfo.HealthKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"💚 健康状况关键词 ({pawnInfo.HealthKeywords.Count}个)");
+                            preview.AppendLine(string.Join(", ", pawnInfo.HealthKeywords.Distinct()));
+                            preview.AppendLine();
+                        }
+                        
+                        if (pawnInfo.RelationshipKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"👥 关系网络关键词 ({pawnInfo.RelationshipKeywords.Count}个)");
+                            preview.AppendLine(string.Join(", ", pawnInfo.RelationshipKeywords.Take(10)));
+                            if (pawnInfo.RelationshipKeywords.Count > 10)
+                                preview.AppendLine($"... 还有 {pawnInfo.RelationshipKeywords.Count - 10} 个");
+                            preview.AppendLine();
+                        }
+                        
+                        if (pawnInfo.BackstoryKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"📖 背景故事关键词 ({pawnInfo.BackstoryKeywords.Count}个)");
+                            preview.AppendLine(string.Join(", ", pawnInfo.BackstoryKeywords.Take(15)));
+                            if (pawnInfo.BackstoryKeywords.Count > 15)
+                                preview.AppendLine($"... 还有 {pawnInfo.BackstoryKeywords.Count - 15} 个");
+                            preview.AppendLine();
+                        }
+                        
+                        if (pawnInfo.ChildhoodKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"🎈 童年背景关键词 ({pawnInfo.ChildhoodKeywords.Count}个)");
+                            preview.AppendLine(string.Join(", ", pawnInfo.ChildhoodKeywords.Take(15)));
+                            if (pawnInfo.ChildhoodKeywords.Count > 15)
+                                preview.AppendLine($"... 还有 {pawnInfo.ChildhoodKeywords.Count - 15} 个");
+                            preview.AppendLine();
+                        }
+                    }
+                    
+                    // 如果有目标角色，显示提示信息 ⭐
+                    if (targetPawn != null)
+                    {
+                        preview.AppendLine($"💡 【提示】");
+                        preview.AppendLine($"目标角色 {targetPawn.LabelShort} 的关键词已合并到总关键词池中");
+                        preview.AppendLine($"用于常识匹配，但详细分类仅显示当前角色");
+                        preview.AppendLine();
+                    }
                 }
 
                 preview.AppendLine();
-                preview.AppendLine("=".PadRight(80, '='));
-                preview.AppendLine($"总结：注入了 {cachedMemoryCount} 条记忆 + {cachedKnowledgeCount} 条常识");
-                preview.AppendLine("=".PadRight(80, '='));
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                preview.AppendLine("📊 【注入统计】");
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                preview.AppendLine();
+                preview.AppendLine($"✅ 记忆注入: {cachedMemoryCount} 条");
+                preview.AppendLine($"✅ 常识注入: {cachedKnowledgeCount} 条");
+                preview.AppendLine($"📦 总Token估算: ~{EstimateTokens(memoryInjection, knowledgeInjection)} tokens");
+                preview.AppendLine($"💰 API成本估算: ~${EstimateCost(memoryInjection, knowledgeInjection):F4} (GPT-4)");
+                preview.AppendLine();
+                
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                preview.AppendLine("感谢使用 RimTalk 调试预览器！");
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                preview.AppendLine();
+                
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                preview.AppendLine("💡 【颜色标注说明】");
+                preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                preview.AppendLine();
+                preview.AppendLine("🟦 [ABM] - 超短期记忆 (不会被注入，保留给 TalkHistory)");
+                preview.AppendLine("🟨 [SCM] - 短期记忆 (近期事件，无时间加成)");
+                preview.AppendLine("🟧 [ELS] - 中期记忆 (AI总结，无时间加成)");
+                preview.AppendLine("🟪 [CLPA] - 长期记忆 (核心人设，有时间加成)");
+                preview.AppendLine("📘 [常识] - 常识库条目 (世界观/背景知识)");
+                preview.AppendLine();
 
                 cachedPreview = preview.ToString();
             }
             catch (Exception ex)
             {
-                cachedPreview = $"生成预览时出错：\n{ex.Message}\n\n{ex.StackTrace}";
-                Log.Error($"[Injection Preview] Error: {ex}");
+                cachedPreview = $"生成预览时发生错误: {ex.Message}";
             }
+        }
+
+        private string GetMemorySourceTag(MemoryLayer layer)
+        {
+            switch (layer)
+            {
+                case MemoryLayer.Active:
+                    return "ABM (不注入)";
+                case MemoryLayer.Situational:
+                    return "SCM (ExpandMemory)";
+                case MemoryLayer.EventLog:
+                    return "ELS (ExpandMemory)";
+                case MemoryLayer.Archive:
+                    return "CLPA (ExpandMemory)";
+                default:
+                    return "Unknown";
+            }
+        }
+        
+        private string GetMemoryColorTag(MemoryLayer layer)
+        {
+            switch (layer)
+            {
+                case MemoryLayer.Active:
+                    return "🟦";
+                case MemoryLayer.Situational:
+                    return "🟨";
+                case MemoryLayer.EventLog:
+                    return "🟧";
+                case MemoryLayer.Archive:
+                    return "🟪";
+                default:
+                    return "⬜";
+            }
+        }
+        
+        private int EstimateTokens(string memoryText, string knowledgeText)
+        {
+            int total = 0;
+            
+            if (!string.IsNullOrEmpty(memoryText))
+            {
+                // 中文约 1.5 字符 = 1 token
+                total += (int)(memoryText.Length / 1.5f);
+            }
+            
+            if (!string.IsNullOrEmpty(knowledgeText))
+            {
+                total += (int)(knowledgeText.Length / 1.5f);
+            }
+            
+            return total;
+        }
+        
+        private float EstimateCost(string memoryText, string knowledgeText)
+        {
+            int tokens = EstimateTokens(memoryText, knowledgeText);
+            // GPT-4 input cost: $0.03 per 1K tokens
+            return tokens * 0.03f / 1000f;
         }
     }
 }

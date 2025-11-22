@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <!-- RimTalk Memory Patch - 繁體中文翻譯 -->
+    
+    <!-- Filter Buttons -->
+    <RimTalk_Filter_All>全部</RimTalk_Filter_All>
+    <RimTalk_Filter_Conversation>對話</RimTalk_Filter_Conversation>
+    <RimTalk_Filter_Interaction>互動</RimTalk_Filter_Interaction>
+    <RimTalk_Filter_Action>行動</RimTalk_Filter_Action>
+    <RimTalk_Filter_Observation>觀察</RimTalk_Filter_Observation>
+    <RimTalk_Filter_Event>事件</RimTalk_Filter_Event>
+    <RimTalk_Filter_Emotion>情緒</RimTalk_Filter_Emotion>
+    <RimTalk_Filter_Relationship>關係</RimTalk_Filter_Relationship>
+    
+    <!-- Memory Stats -->
+    <RimTalk_MemoryStats>短期記憶: {0}/{1} | 長期記憶: {2}/{3}</RimTalk_MemoryStats>
+    <RimTalk_MemoryTitle>{0} 的記憶</RimTalk_MemoryTitle>
+    
+    <!-- Four Layer Memory Stats -->
+    <RimTalk_FourLayerMemoryStats>ABM: {0}/{1} | SCM: {2}/{3} | ELS: {4}/{5} | CLPA: {6}</RimTalk_FourLayerMemoryStats>
+    <RimTalk_ActiveBufferMemory>超短期記憶</RimTalk_ActiveBufferMemory>
+    <RimTalk_SituationalMemory>短期記憶</RimTalk_SituationalMemory>
+    <RimTalk_EventLogSummary>中期記憶</RimTalk_EventLogSummary>
+    <RimTalk_ArchiveMemory>長期記憶</RimTalk_ArchiveMemory>
+    
+    <!-- Colonist Selection -->
+    <RimTalk_SelectColonist>選擇殖民者</RimTalk_SelectColonist>
+    <RimTalk_ChooseColonist>選擇...</RimTalk_ChooseColonist>
+    <RimTalk_NoColonists>沒有殖民者</RimTalk_NoColonists>
+    <RimTalk_NoMemoryComponent>該殖民者沒有記憶組件</RimTalk_NoMemoryComponent>
+    
+    <!-- Time Display -->
+    <RimTalk_JustNow>剛剛</RimTalk_JustNow>
+    <RimTalk_MinutesAgo>{0} 分鐘前</RimTalk_MinutesAgo>
+    <RimTalk_HoursAgo>{0} 小時前</RimTalk_HoursAgo>
+    <RimTalk_DaysAgo>{0} 天前</RimTalk_DaysAgo>
+    
+    <!-- Memory Types -->
+    <RimTalk_MemoryType_Conversation>對話</RimTalk_MemoryType_Conversation>
+    <RimTalk_MemoryType_Interaction>互動</RimTalk_MemoryType_Interaction>
+    <RimTalk_MemoryType_Action>行動</RimTalk_MemoryType_Action>
+    <RimTalk_MemoryType_Observation>觀察</RimTalk_MemoryType_Observation>
+    <RimTalk_MemoryType_Event>事件</RimTalk_MemoryType_Event>
+    <RimTalk_MemoryType_Emotion>情緒</RimTalk_MemoryType_Emotion>
+    <RimTalk_MemoryType_Relationship>關係</RimTalk_MemoryType_Relationship>
+    
+    <!-- Memory Tab -->
+    <RimTalk_TabMemory>記憶</RimTalk_TabMemory>
+    <RimTalk_TabMemoryDesc>查看該殖民者的記憶</RimTalk_TabMemoryDesc>
+    
+    <!-- Settings -->
+    <RimTalk_MemoryPatchSettings>記憶系統設定</RimTalk_MemoryPatchSettings>
+    <RimTalk_MemoryPatchDescription>為 RimTalk 提供記憶系統支援</RimTalk_MemoryPatchDescription>
+    <RimTalk_OriginalRimTalkSettings>對話功能請在 RimTalk 原版設定中配置</RimTalk_OriginalRimTalkSettings>
+    
+    <!-- Memory Settings -->
+    <RimTalk_MaxShortTermMemories>短期記憶上限</RimTalk_MaxShortTermMemories>
+    <RimTalk_MaxLongTermMemories>長期記憶上限</RimTalk_MaxLongTermMemories>
+    <RimTalk_MemoryDecayRate>記憶衰減速率</RimTalk_MemoryDecayRate>
+    <RimTalk_EnableMemoryUI>啟用記憶界面</RimTalk_EnableMemoryUI>
+    
+    <!-- Four Layer Memory Settings -->
+    <RimTalk_MaxActiveMemories>超短期記憶上限</RimTalk_MaxActiveMemories>
+    <RimTalk_MaxSituationalMemories>短期記憶上限</RimTalk_MaxSituationalMemories>
+    <RimTalk_MaxEventLogMemories>中期記憶上限</RimTalk_MaxEventLogMemories>
+    <RimTalk_EnableDailySummarization>啟用每日總結</RimTalk_EnableDailySummarization>
+    <RimTalk_SummarizationHour>總結觸發時間（遊戲小時）</RimTalk_SummarizationHour>
+    
+    <!-- Memory Type Toggles -->
+    <RimTalk_MemoryTypeToggles>記憶類型設定</RimTalk_MemoryTypeToggles>
+    <RimTalk_EnableInteractionMemory>啟用互動記憶</RimTalk_EnableInteractionMemory>
+    <RimTalk_EnableInteractionMemoryDesc>記錄殖民者之間的社交互動</RimTalk_EnableInteractionMemoryDesc>
+    <RimTalk_EnableActionMemory>啟用行動記憶</RimTalk_EnableActionMemory>
+    <RimTalk_EnableActionMemoryDesc>記錄工作、戰鬥等活動</RimTalk_EnableActionMemoryDesc>
+    <RimTalk_EnableConversationMemory>啟用對話記憶</RimTalk_EnableConversationMemory>
+    <RimTalk_EnableConversationMemoryDesc>記錄 RimTalk 生成的對話（需要 RimTalk 集成）</RimTalk_EnableConversationMemoryDesc>
+    <RimTalk_EnableObservationMemory>啟用觀察記憶</RimTalk_EnableObservationMemory>
+    <RimTalk_EnableObservationMemoryDesc>記錄觀察到的事件</RimTalk_EnableObservationMemoryDesc>
+    <RimTalk_EnableEventMemory>啟用事件記憶</RimTalk_EnableEventMemory>
+    <RimTalk_EnableEventMemoryDesc>記錄重要事件（襲擊、死亡等）</RimTalk_EnableEventMemoryDesc>
+    <RimTalk_EnableEmotionMemory>啟用情緒記憶</RimTalk_EnableEmotionMemory>
+    <RimTalk_EnableEmotionMemoryDesc>記錄情緒變化</RimTalk_EnableEmotionMemoryDesc>
+    <RimTalk_EnableRelationshipMemory>啟用關係記憶</RimTalk_EnableRelationshipMemory>
+    <RimTalk_EnableRelationshipMemoryDesc>記錄關係變化（戀愛、衝突等）</RimTalk_EnableRelationshipMemoryDesc>
+    
+    <!-- Memory Edit Dialog -->
+    <RimTalk_EditMemory>編輯記憶</RimTalk_EditMemory>
+    <RimTalk_DeleteMemory>刪除記憶</RimTalk_DeleteMemory>
+    <RimTalk_PinMemory>固定記憶</RimTalk_PinMemory>
+    <RimTalk_UnpinMemory>取消固定</RimTalk_UnpinMemory>
+    <RimTalk_MemoryContent>內容</RimTalk_MemoryContent>
+    <RimTalk_MemoryNotes>備註</RimTalk_MemoryNotes>
+    <RimTalk_MemoryTags>標籤</RimTalk_MemoryTags>
+    <RimTalk_AddTag>添加標籤</RimTalk_AddTag>
+    <RimTalk_RemoveTag>移除標籤</RimTalk_RemoveTag>
+    <RimTalk_CustomTag>自定義標籤</RimTalk_CustomTag>
+    <RimTalk_Save>保存</RimTalk_Save>
+    <RimTalk_Cancel>取消</RimTalk_Cancel>
+    <RimTalk_ConfirmDelete>確認刪除此記憶？</RimTalk_ConfirmDelete>
+    <RimTalk_MemoryUpdated>記憶已更新</RimTalk_MemoryUpdated>
+    <RimTalk_MemoryDeleted>記憶已刪除</RimTalk_MemoryDeleted>
+    
+    <!-- Memory Actions -->
+    <RimTalk_ClearAll>清空全部</RimTalk_ClearAll>
+    <RimTalk_ClearShortTerm>清空短期</RimTalk_ClearShortTerm>
+    <RimTalk_ClearLongTerm>清空長期</RimTalk_ClearLongTerm>
+    <RimTalk_ConfirmClearAll>確認清空所有記憶？</RimTalk_ConfirmClearAll>
+    <RimTalk_ConfirmClearShortTerm>確認清空短期記憶？</RimTalk_ConfirmClearShortTerm>
+    <RimTalk_ConfirmClearLongTerm>確認清空長期記憶？</RimTalk_ConfirmClearLongTerm>
+    
+    <!-- Other -->
+    <RimTalk_With>與</RimTalk_With>
+    <RimTalk_ObservationPlaceholder>（觀察記憶佔位，尚未實現）</RimTalk_ObservationPlaceholder>
+</LanguageData>

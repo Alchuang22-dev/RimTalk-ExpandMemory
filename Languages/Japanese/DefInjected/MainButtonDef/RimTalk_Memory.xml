@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <RimTalk_Memory.label>記憶</RimTalk_Memory.label>
+  <RimTalk_Memory.description>交流と行動の記憶を表示（会話はRimTalk統合が必要、観察は未実装）。</RimTalk_Memory.description>
+</LanguageData>

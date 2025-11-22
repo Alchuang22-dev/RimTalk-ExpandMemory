@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <RimTalk_Memory.label>記憶</RimTalk_Memory.label>
+  <RimTalk_Memory.description>查看殖民者的互動與行動記憶（對話需 RimTalk 集成，觀察功能未實現）。</RimTalk_Memory.description>
+</LanguageData>

@@ -55,9 +55,9 @@ namespace RimTalk.Memory
             // 提取上下文关键词
             List<string> contextKeywords = ExtractKeywords(context);
 
-            // 收集所有记忆
+            // 收集记忆：跳过超短期记忆(ABM)，只收集SCM、ELS、CLPA
             var allMemories = new List<MemoryEntry>();
-            allMemories.AddRange(memoryComp.ActiveMemories);
+            // allMemories.AddRange(memoryComp.ActiveMemories); // 不再注入超短期记忆
             allMemories.AddRange(memoryComp.SituationalMemories);
             allMemories.AddRange(memoryComp.EventLogMemories);
             
@@ -70,21 +70,35 @@ namespace RimTalk.Memory
             if (allMemories.Count == 0)
                 return string.Empty;
 
-            // 计算每个记忆的评分
+            // 获取阈值设置
+            float threshold = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings?.memoryScoreThreshold ?? 0.15f;
+
+            // 计算每个记忆的评分并过滤低分项
             var scoredMemories = allMemories
                 .Select(m => new ScoredMemory
                 {
                     Memory = m,
-                    Score = CalculateMemoryScore(m, contextKeywords)
+                    Score = CalculateMemoryScore(m, contextKeywords, false) // 不对SCM/ELS计算时间加成
                 })
+                .Where(sm => sm.Score >= threshold) // 应用阈值过滤
                 .OrderByDescending(sm => sm.Score)
                 .Take(maxMemories)
                 .ToList();
 
+            // 如果没有记忆达到阈值，返回null
+            if (scoredMemories.Count == 0)
+            {
+                if (Prefs.DevMode)
+                {
+                    Log.Message($"[Memory Injection] No memories met threshold ({threshold:F2}), returning null");
+                }
+                return null;
+            }
+
             // 生成详细评分信息
             foreach (var scored in scoredMemories)
             {
-                float timeScore = CalculateTimeDecayScore(scored.Memory) * Weights.TimeDecay;
+                float timeScore = 0f; // SCM和ELS不计算时间评分
                 float importanceScore = scored.Memory.importance * Weights.Importance;
                 float keywordScore = CalculateKeywordMatchScore(scored.Memory, contextKeywords) * Weights.KeywordMatch;
                 float bonusScore = GetLayerBonus(scored.Memory.layer) * Weights.LayerBonus;
@@ -109,16 +123,18 @@ namespace RimTalk.Memory
         /// <summary>
         /// 计算记忆评分
         /// </summary>
-        private static float CalculateMemoryScore(MemoryEntry memory, List<string> contextKeywords)
+        private static float CalculateMemoryScore(MemoryEntry memory, List<string> contextKeywords, bool includeTimeDecay = true)
         {
             float score = 0f;
-            int currentTick = Find.TickManager.TicksGame;
-            int age = currentTick - memory.timestamp;
 
-            // 1. 时间衰减分数（越新越好，使用指数衰减）
-            // 半衰期设置为 1 天（60000 ticks）
-            float timeScore = UnityEngine.Mathf.Exp(-age / 60000f);
-            score += timeScore * Weights.TimeDecay;
+            // 1. 时间衰减分数 - 仅对CLPA计算，ABM和SCM不计算
+            if (includeTimeDecay && memory.layer == MemoryLayer.Archive)
+            {
+                int currentTick = Find.TickManager.TicksGame;
+                int age = currentTick - memory.timestamp;
+                float timeScore = UnityEngine.Mathf.Exp(-age / 60000f);
+                score += timeScore * Weights.TimeDecay;
+            }
 
             // 2. 重要性分数
             score += memory.importance * Weights.Importance;

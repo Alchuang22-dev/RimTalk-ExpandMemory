@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <!-- RimTalk Memory Patch - 日本語翻訳 -->
+    
+    <!-- Filter Buttons -->
+    <RimTalk_Filter_All>すべて</RimTalk_Filter_All>
+    <RimTalk_Filter_Conversation>会話</RimTalk_Filter_Conversation>
+    <RimTalk_Filter_Interaction>交流</RimTalk_Filter_Interaction>
+    <RimTalk_Filter_Action>行動</RimTalk_Filter_Action>
+    <RimTalk_Filter_Observation>観察</RimTalk_Filter_Observation>
+    <RimTalk_Filter_Event>イベント</RimTalk_Filter_Event>
+    <RimTalk_Filter_Emotion>感情</RimTalk_Filter_Emotion>
+    <RimTalk_Filter_Relationship>関係</RimTalk_Filter_Relationship>
+    
+    <!-- Memory Stats -->
+    <RimTalk_MemoryStats>短期記憶: {0}/{1} | 長期記憶: {2}/{3}</RimTalk_MemoryStats>
+    <RimTalk_MemoryTitle>{0}の記憶</RimTalk_MemoryTitle>
+    
+    <!-- Four Layer Memory Stats -->
+    <RimTalk_FourLayerMemoryStats>ABM: {0}/{1} | SCM: {2}/{3} | ELS: {4}/{5} | CLPA: {6}</RimTalk_FourLayerMemoryStats>
+    <RimTalk_ActiveBufferMemory>活動バッファ記憶</RimTalk_ActiveBufferMemory>
+    <RimTalk_SituationalMemory>状況的文脈記憶</RimTalk_SituationalMemory>
+    <RimTalk_EventLogSummary>イベントログ要約</RimTalk_EventLogSummary>
+    <RimTalk_ArchiveMemory>圧縮長期ペルソナアーカイブ</RimTalk_ArchiveMemory>
+    
+    <!-- Colonist Selection -->
+    <RimTalk_SelectColonist>入植者を選択</RimTalk_SelectColonist>
+    <RimTalk_ChooseColonist>選択...</RimTalk_ChooseColonist>
+    <RimTalk_NoColonists>入植者なし</RimTalk_NoColonists>
+    <RimTalk_NoMemoryComponent>この入植者には記憶コンポーネントがありません</RimTalk_NoMemoryComponent>
+    
+    <!-- Time Display -->
+    <RimTalk_JustNow>たった今</RimTalk_JustNow>
+    <RimTalk_MinutesAgo>{0}分前</RimTalk_MinutesAgo>
+    <RimTalk_HoursAgo>{0}時間前</RimTalk_HoursAgo>
+    <RimTalk_DaysAgo>{0}日前</RimTalk_DaysAgo>
+    
+    <!-- Memory Types -->
+    <RimTalk_MemoryType_Conversation>会話</RimTalk_MemoryType_Conversation>
+    <RimTalk_MemoryType_Interaction>交流</RimTalk_MemoryType_Interaction>
+    <RimTalk_MemoryType_Action>行動</RimTalk_MemoryType_Action>
+    <RimTalk_MemoryType_Observation>観察</RimTalk_MemoryType_Observation>
+    <RimTalk_MemoryType_Event>イベント</RimTalk_MemoryType_Event>
+    <RimTalk_MemoryType_Emotion>感情</RimTalk_MemoryType_Emotion>
+    <RimTalk_MemoryType_Relationship>関係</RimTalk_MemoryType_Relationship>
+    
+    <!-- Memory Tab -->
+    <RimTalk_TabMemory>記憶</RimTalk_TabMemory>
+    <RimTalk_TabMemoryDesc>この入植者の記憶を表示</RimTalk_TabMemoryDesc>
+    
+    <!-- Settings -->
+    <RimTalk_MemoryPatchSettings>記憶システム設定</RimTalk_MemoryPatchSettings>
+    <RimTalk_MemoryPatchDescription>RimTalkに記憶システムのサポートを提供</RimTalk_MemoryPatchDescription>
+    <RimTalk_OriginalRimTalkSettings>会話機能は元のRimTalk設定で構成してください</RimTalk_OriginalRimTalkSettings>
+    
+    <!-- Memory Settings -->
+    <RimTalk_MaxShortTermMemories>短期記憶の上限</RimTalk_MaxShortTermMemories>
+    <RimTalk_MaxLongTermMemories>長期記憶の上限</RimTalk_MaxLongTermMemories>
+    <RimTalk_MemoryDecayRate>記憶減衰率</RimTalk_MemoryDecayRate>
+    <RimTalk_EnableMemoryUI>記憶UIを有効にする</RimTalk_EnableMemoryUI>
+    
+    <!-- Four Layer Memory Settings -->
+    <RimTalk_MaxActiveMemories>活動バッファ記憶の上限</RimTalk_MaxActiveMemories>
+    <RimTalk_MaxSituationalMemories>状況的記憶の上限</RimTalk_MaxSituationalMemories>
+    <RimTalk_MaxEventLogMemories>イベントログ記憶の上限</RimTalk_MaxEventLogMemories>
+    <RimTalk_EnableDailySummarization>毎日の要約を有効にする</RimTalk_EnableDailySummarization>
+    <RimTalk_SummarizationHour>要約時刻（ゲーム時間）</RimTalk_SummarizationHour>
+    
+    <!-- Memory Type Toggles -->
+    <RimTalk_MemoryTypeToggles>記憶タイプ設定</RimTalk_MemoryTypeToggles>
+    <RimTalk_EnableInteractionMemory>交流記憶を有効にする</RimTalk_EnableInteractionMemory>
+    <RimTalk_EnableInteractionMemoryDesc>入植者間の社会的交流を記録</RimTalk_EnableInteractionMemoryDesc>
+    <RimTalk_EnableActionMemory>行動記憶を有効にする</RimTalk_EnableActionMemory>
+    <RimTalk_EnableActionMemoryDesc>作業、戦闘、その他の活動を記録</RimTalk_EnableActionMemoryDesc>
+    <RimTalk_EnableConversationMemory>会話記憶を有効にする</RimTalk_EnableConversationMemory>
+    <RimTalk_EnableConversationMemoryDesc>RimTalkが生成した対話を記録（RimTalk統合が必要）</RimTalk_EnableConversationMemoryDesc>
+    <RimTalk_EnableObservationMemory>観察記憶を有効にする</RimTalk_EnableObservationMemory>
+    <RimTalk_EnableObservationMemoryDesc>観察されたイベントを記録</RimTalk_EnableObservationMemoryDesc>
+    <RimTalk_EnableEventMemory>イベント記憶を有効にする</RimTalk_EnableEventMemory>
+    <RimTalk_EnableEventMemoryDesc>重要なイベント（襲撃、死亡など）を記録</RimTalk_EnableEventMemoryDesc>
+    <RimTalk_EnableEmotionMemory>感情記憶を有効にする</RimTalk_EnableEmotionMemory>
+    <RimTalk_EnableEmotionMemoryDesc>感情の変化を記録</RimTalk_EnableEmotionMemoryDesc>
+    <RimTalk_EnableRelationshipMemory>関係記憶を有効にする</RimTalk_EnableRelationshipMemory>
+    <RimTalk_EnableRelationshipMemoryDesc>関係の変化（恋愛、対立など）を記録</RimTalk_EnableRelationshipMemoryDesc>
+    
+    <!-- Memory Edit Dialog -->
+    <RimTalk_EditMemory>記憶を編集</RimTalk_EditMemory>
+    <RimTalk_DeleteMemory>記憶を削除</RimTalk_DeleteMemory>
+    <RimTalk_PinMemory>記憶を固定</RimTalk_PinMemory>
+    <RimTalk_UnpinMemory>固定を解除</RimTalk_UnpinMemory>
+    <RimTalk_MemoryContent>内容</RimTalk_MemoryContent>
+    <RimTalk_MemoryNotes>ノート</RimTalk_MemoryNotes>
+    <RimTalk_MemoryTags>タグ</RimTalk_MemoryTags>
+    <RimTalk_AddTag>タグを追加</RimTalk_AddTag>
+    <RimTalk_RemoveTag>タグを削除</RimTalk_RemoveTag>
+    <RimTalk_CustomTag>カスタムタグ</RimTalk_CustomTag>
+    <RimTalk_Save>保存</RimTalk_Save>
+    <RimTalk_Cancel>キャンセル</RimTalk_Cancel>
+    <RimTalk_ConfirmDelete>この記憶を削除してもよろしいですか？</RimTalk_ConfirmDelete>
+    <RimTalk_MemoryUpdated>記憶が更新されました</RimTalk_MemoryUpdated>
+    <RimTalk_MemoryDeleted>記憶が削除されました</RimTalk_MemoryDeleted>
+    
+    <!-- Memory Actions -->
+    <RimTalk_ClearAll>すべてクリア</RimTalk_ClearAll>
+    <RimTalk_ClearShortTerm>短期記憶をクリア</RimTalk_ClearShortTerm>
+    <RimTalk_ClearLongTerm>長期記憶をクリア</RimTalk_ClearLongTerm>
+    <RimTalk_ConfirmClearAll>すべての記憶をクリアしてもよろしいですか？</RimTalk_ConfirmClearAll>
+    <RimTalk_ConfirmClearShortTerm>短期記憶をクリアしてもよろしいですか？</RimTalk_ConfirmClearShortTerm>
+    <RimTalk_ConfirmClearLongTerm>長期記憶をクリアしてもよろしいですか？</RimTalk_ConfirmClearLongTerm>
+    
+    <!-- Other -->
+    <RimTalk_With>と</RimTalk_With>
+    <RimTalk_ObservationPlaceholder>（観察記憶のプレースホルダー - 未実装）</RimTalk_ObservationPlaceholder>
+</LanguageData>

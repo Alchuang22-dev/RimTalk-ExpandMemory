@@ -9,7 +9,7 @@ namespace RimTalk.MemoryPatch
     public class RimTalkMemoryPatchSettings : ModSettings
     {
         // 四层记忆容量设置
-        public int maxActiveMemories = 3;        // ABM 容量
+        public int maxActiveMemories = 6;        // ABM 容量固定为6
         public int maxSituationalMemories = 20;  // SCM 容量
         public int maxEventLogMemories = 50;     // ELS 容量
         // CLPA 无限制
@@ -44,6 +44,9 @@ namespace RimTalk.MemoryPatch
         public bool enableActionMemory = true;        // 行动记忆（工作、战斗）
         public bool enableConversationMemory = true;  // 对话记忆（RimTalk对话内容）
         
+        // === Pawn状态常识自动生成 ===
+        public bool enablePawnStatusKnowledge = true;  // 自动生成新人/老人状态常识
+
         // === 对话缓存设置 ===
         public bool enableConversationCache = true;   // 启用对话缓存
         public int conversationCacheSize = 100;       // 缓存大小（50-500）
@@ -58,6 +61,16 @@ namespace RimTalk.MemoryPatch
         public float weightTimeDecay = 0.3f;          // 时间衰减权重
         public float weightImportance = 0.3f;         // 重要性权重
         public float weightKeywordMatch = 0.4f;       // 关键词匹配权重
+        
+        // 注入阈值设置
+        public float memoryScoreThreshold = 0.15f;    // 记忆评分阈值（低于此分数不注入）
+        public float knowledgeScoreThreshold = 0.1f;  // 常识评分阈值（低于此分数不注入）
+        
+        // === 常识库权重配置 ===
+        public float knowledgeBaseScore = 0.05f;      // 基础分系数（固定为0.05，不提供UI配置）
+        public float knowledgeJaccardWeight = 0.7f;   // Jaccard相似度权重
+        public float knowledgeTagWeight = 0.3f;       // 标签匹配权重
+        public float knowledgeMatchBonus = 0.08f;     // 每个匹配关键词加分（固定，不提供UI配置）
 
         // UI折叠状态（不保存到存档）
         private static bool expandDynamicInjection = true;
@@ -72,7 +85,7 @@ namespace RimTalk.MemoryPatch
             base.ExposeData();
             
             // 四层记忆容量
-            Scribe_Values.Look(ref maxActiveMemories, "fourLayer_maxActiveMemories", 3);
+            Scribe_Values.Look(ref maxActiveMemories, "fourLayer_maxActiveMemories", 6);
             Scribe_Values.Look(ref maxSituationalMemories, "fourLayer_maxSituationalMemories", 20);
             Scribe_Values.Look(ref maxEventLogMemories, "fourLayer_maxEventLogMemories", 50);
             
@@ -106,6 +119,9 @@ namespace RimTalk.MemoryPatch
         Scribe_Values.Look(ref enableActionMemory, "memoryPatch_enableActionMemory", true);
         Scribe_Values.Look(ref enableConversationMemory, "memoryPatch_enableConversationMemory", true);
         
+        // Pawn状态常识
+        Scribe_Values.Look(ref enablePawnStatusKnowledge, "pawnStatus_enablePawnStatusKnowledge", true);
+
         // 对话缓存设置
         Scribe_Values.Look(ref enableConversationCache, "cache_enableConversationCache", true);
         Scribe_Values.Look(ref conversationCacheSize, "cache_conversationCacheSize", 100);
@@ -118,6 +134,14 @@ namespace RimTalk.MemoryPatch
         Scribe_Values.Look(ref weightTimeDecay, "dynamic_weightTimeDecay", 0.3f);
         Scribe_Values.Look(ref weightImportance, "dynamic_weightImportance", 0.3f);
         Scribe_Values.Look(ref weightKeywordMatch, "dynamic_weightKeywordMatch", 0.4f);
+        Scribe_Values.Look(ref memoryScoreThreshold, "dynamic_memoryScoreThreshold", 0.15f);
+        Scribe_Values.Look(ref knowledgeScoreThreshold, "dynamic_knowledgeScoreThreshold", 0.1f);
+        
+        // 常识库权重配置
+        Scribe_Values.Look(ref knowledgeBaseScore, "knowledge_baseScore", 0.05f);
+        Scribe_Values.Look(ref knowledgeJaccardWeight, "knowledge_jaccardWeight", 0.7f);
+        Scribe_Values.Look(ref knowledgeTagWeight, "knowledge_tagWeight", 0.3f);
+        Scribe_Values.Look(ref knowledgeMatchBonus, "knowledge_matchBonus", 0.08f);
     }
 
         public void DoSettingsWindowContents(Rect inRect)
@@ -267,34 +291,38 @@ namespace RimTalk.MemoryPatch
             if (useDynamicInjection)
             {
                 GUI.color = new Color(0.8f, 1f, 0.8f);
-                listing.Label("  根据时间、重要性和关键词匹配动态选择最相关的记忆");
+                listing.Label("  根据时间、重要性和关键词匹配动态选择最相关的记忆和常识");
                 GUI.color = Color.white;
-                
-                listing.Label($"  最大注入记忆数: {maxInjectedMemories}");
-                maxInjectedMemories = (int)listing.Slider(maxInjectedMemories, 1, 20);
-                
-                listing.Label($"  最大注入常识数: {maxInjectedKnowledge}");
-                maxInjectedKnowledge = (int)listing.Slider(maxInjectedKnowledge, 1, 10);
                 
                 listing.Gap();
                 
-                Text.Font = GameFont.Tiny;
-                listing.Label("评分权重配置:");
-                Text.Font = GameFont.Small;
+                // === 注入数量配置 ===
+                listing.Label($"最大注入记忆数: {maxInjectedMemories}");
+                maxInjectedMemories = (int)listing.Slider(maxInjectedMemories, 1, 20);
                 
-                listing.Label($"  时间衰减: {weightTimeDecay:P0}");
-                weightTimeDecay = listing.Slider(weightTimeDecay, 0f, 1f);
+                listing.Label($"最大注入常识数: {maxInjectedKnowledge}");
+                maxInjectedKnowledge = (int)listing.Slider(maxInjectedKnowledge, 1, 10);
                 
-                listing.Label($"  重要性: {weightImportance:P0}");
-                weightImportance = listing.Slider(weightImportance, 0f, 1f);
+                listing.Gap();
+                listing.GapLine();
                 
-                listing.Label($"  关键词匹配: {weightKeywordMatch:P0}");
-                weightKeywordMatch = listing.Slider(weightKeywordMatch, 0f, 1f);
+                // === 左右分栏布局：记忆权重 | 常识权重 ===
+                Rect weightsRect = listing.GetRect(200f);
+                float columnWidth = (weightsRect.width - 20f) / 2f;
                 
-                // 应用权重到动态注入系统
+                // 左侧：记忆权重配置
+                Rect leftColumn = new Rect(weightsRect.x, weightsRect.y, columnWidth, weightsRect.height);
+                DrawMemoryWeightsColumn(leftColumn);
+                
+                // 右侧：常识权重配置
+                Rect rightColumn = new Rect(weightsRect.x + columnWidth + 20f, weightsRect.y, columnWidth, weightsRect.height);
+                DrawKnowledgeWeightsColumn(rightColumn);
+                
+                // 应用权重到系统
                 DynamicMemoryInjection.Weights.TimeDecay = weightTimeDecay;
                 DynamicMemoryInjection.Weights.Importance = weightImportance;
                 DynamicMemoryInjection.Weights.KeywordMatch = weightKeywordMatch;
+                RimTalk.Memory.KnowledgeWeights.LoadFromSettings(this);
             }
             else
             {
@@ -302,15 +330,98 @@ namespace RimTalk.MemoryPatch
                 listing.Label("  将使用静态注入（按层级顺序）");
                 GUI.color = Color.white;
             }
+            
+            listing.Gap();
+            
+            // === 评分阈值配置 ===
+            Text.Font = GameFont.Tiny;
+            GUI.color = new Color(1f, 1f, 0.8f);
+            listing.Label("评分阈值（低于此分数不注入）:");
+            GUI.color = Color.white;
+            Text.Font = GameFont.Small;
+            
+            listing.Label($"  记忆评分阈值: {memoryScoreThreshold:P0}");
+            memoryScoreThreshold = listing.Slider(memoryScoreThreshold, 0f, 1f);
+            
+            listing.Label($"  常识评分阈值: {knowledgeScoreThreshold:P0}");
+            knowledgeScoreThreshold = listing.Slider(knowledgeScoreThreshold, 0f, 1f);
         }
-
+        
+        /// <summary>
+        /// 绘制记忆权重配置列
+        /// </summary>
+        private void DrawMemoryWeightsColumn(Rect rect)
+        {
+            Listing_Standard listing = new Listing_Standard();
+            listing.Begin(rect);
+            
+            // 标题
+            Text.Font = GameFont.Small;
+            GUI.color = new Color(0.8f, 0.9f, 1f);
+            listing.Label("📝 记忆权重");
+            GUI.color = Color.white;
+            Text.Font = GameFont.Tiny;
+            
+            listing.Gap(3f);
+            
+            // 时间权重
+            listing.Label($"时间衰减: {weightTimeDecay:P0}");
+            weightTimeDecay = listing.Slider(weightTimeDecay, 0f, 1f);
+            
+            // 重要性
+            listing.Label($"重要性: {weightImportance:P0}");
+            weightImportance = listing.Slider(weightImportance, 0f, 1f);
+            
+            // 关键词匹配度
+            listing.Label($"关键词匹配: {weightKeywordMatch:P0}");
+            weightKeywordMatch = listing.Slider(weightKeywordMatch, 0f, 1f);
+            
+            Text.Font = GameFont.Small;
+            listing.End();
+        }
+        
+        /// <summary>
+        /// 绘制常识权重配置列
+        /// </summary>
+        private void DrawKnowledgeWeightsColumn(Rect rect)
+        {
+            Listing_Standard listing = new Listing_Standard();
+            listing.Begin(rect);
+            
+            // 标题
+            Text.Font = GameFont.Small;
+            GUI.color = new Color(1f, 1f, 0.8f);
+            listing.Label("📘 常识权重");
+            GUI.color = Color.white;
+            Text.Font = GameFont.Tiny;
+            
+            listing.Gap(3f);
+            
+            // 标签权重
+            listing.Label($"标签匹配: {knowledgeTagWeight:P0}");
+            knowledgeTagWeight = listing.Slider(knowledgeTagWeight, 0f, 1f);
+            
+            // 重要性（使用Jaccard权重，但显示为"重要性"）
+            listing.Label($"重要性: {knowledgeJaccardWeight:P0}");
+            knowledgeJaccardWeight = listing.Slider(knowledgeJaccardWeight, 0f, 1f);
+            
+            // 关键词匹配度（隐藏，使用固定值）
+            GUI.color = Color.gray;
+            listing.Label($"关键词匹配: 自动");
+            GUI.color = Color.white;
+            
+            Text.Font = GameFont.Small;
+            listing.End();
+        }
+        
         /// <summary>
         /// 绘制记忆容量设置
         /// </summary>
         private void DrawMemoryCapacitySettings(Listing_Standard listing)
         {
-            listing.Label($"ABM（超短期）: {maxActiveMemories} 条");
-            maxActiveMemories = (int)listing.Slider(maxActiveMemories, 2, 5);
+            GUI.color = Color.gray;
+            listing.Label($"ABM（超短期）: 6 条 (固定，不可调整)");
+            GUI.color = Color.white;
             
             listing.Label($"SCM（短期）: {maxSituationalMemories} 条");
             maxSituationalMemories = (int)listing.Slider(maxSituationalMemories, 10, 50);
@@ -456,6 +567,25 @@ namespace RimTalk.MemoryPatch
         {
             listing.CheckboxLabeled("行动记忆（工作、战斗）", ref enableActionMemory);
             listing.CheckboxLabeled("对话记忆（RimTalk 对话）", ref enableConversationMemory);
+            
+            listing.Gap();
+            listing.GapLine();
+            
+            listing.CheckboxLabeled("自动生成新人/老人状态常识", ref enablePawnStatusKnowledge);
+            
+            if (enablePawnStatusKnowledge)
+            {
+                GUI.color = new Color(0.8f, 1f, 0.8f);
+                listing.Label("  根据殖民者加入时间自动生成状态常识");
+                listing.Label("  如：Alice是3天前加入的新成员，对殖民地历史不了解");
+                GUI.color = Color.white;
+            }
+            else
+            {
+                GUI.color = Color.gray;
+                listing.Label("  禁用后，新成员可能会错误地谈论不属于他们经历的事件");
+                GUI.color = Color.white;
+            }
         }
         
         private void OpenCommonKnowledgeDialog()

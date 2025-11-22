@@ -218,13 +218,16 @@ namespace RimTalk.Memory.Patches
                         RimTalkMemoryPatchMod.Settings.maxInjectedMemories
                     );
                     
-                    // 注入常识库
+                    // 注入常识库 - 传递当前Pawn以提取角色关键词
                     var memoryManager = Find.World?.GetComponent<MemoryManager>();
                     if (memoryManager != null)
                     {
-                        string knowledgeContext = memoryManager.CommonKnowledge.InjectKnowledge(
+                        string knowledgeContext = memoryManager.CommonKnowledge.InjectKnowledgeWithDetails(
                             __result,
-                            RimTalkMemoryPatchMod.Settings.maxInjectedKnowledge
+                            RimTalkMemoryPatchMod.Settings.maxInjectedKnowledge,
+                            out _,
+                            mainPawn,  // 当前Pawn
+                            pawns.Count > 1 ? pawns[1] : null  // 目标Pawn（如果有对话对象）
                         );
                         
                         if (!string.IsNullOrEmpty(knowledgeContext))
@@ -298,13 +301,23 @@ namespace RimTalk.Memory.Patches
                         RimTalkMemoryPatchMod.Settings.maxInjectedMemories
                     );
                     
-                    // 注入常识库
+                    // 注入常识库 - 传递当前Pawn以提取角色关键词
                     var memoryManager = Find.World?.GetComponent<MemoryManager>();
                     if (memoryManager != null)
                     {
-                        string knowledgeContext = memoryManager.CommonKnowledge.InjectKnowledge(
+                        // 尝试获取目标Pawn（如果有对话对象）
+                        Pawn targetPawn = null;
+                        if (pawns != null && pawns.Count > 1)
+                        {
+                            targetPawn = pawns[1];
+                        }
+                        
+                        string knowledgeContext = memoryManager.CommonKnowledge.InjectKnowledgeWithDetails(
                             currentPrompt,
-                            RimTalkMemoryPatchMod.Settings.maxInjectedKnowledge
+                            RimTalkMemoryPatchMod.Settings.maxInjectedKnowledge,
+                            out _,
+                            mainPawn,     // 当前Pawn
+                            targetPawn    // 目标Pawn（可能为null）
                         );
                         
                         if (!string.IsNullOrEmpty(knowledgeContext))

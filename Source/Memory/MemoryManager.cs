@@ -82,6 +82,12 @@ namespace RimTalk.Memory
                 
                 // 检查工作会话超时
                 WorkSessionAggregator.CheckSessionTimeouts();
+                
+                // 每小时更新一次Pawn状态常识
+                if (RimTalkMemoryPatchMod.Settings.enablePawnStatusKnowledge)
+                {
+                    PawnStatusKnowledgeGenerator.UpdateAllColonistStatus();
+                }
             }
             
             // 每天 0 点触发总结

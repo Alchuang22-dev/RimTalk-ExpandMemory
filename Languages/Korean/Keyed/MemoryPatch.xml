@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <!-- RimTalk Memory Patch - ??? ?? -->
+    
+    <!-- Filter Buttons -->
+    <RimTalk_Filter_All>??</RimTalk_Filter_All>
+    <RimTalk_Filter_Conversation>??</RimTalk_Filter_Conversation>
+    <RimTalk_Filter_Interaction>????</RimTalk_Filter_Interaction>
+    <RimTalk_Filter_Action>??</RimTalk_Filter_Action>
+    <RimTalk_Filter_Observation>??</RimTalk_Filter_Observation>
+    <RimTalk_Filter_Event>???</RimTalk_Filter_Event>
+    <RimTalk_Filter_Emotion>??</RimTalk_Filter_Emotion>
+    <RimTalk_Filter_Relationship>??</RimTalk_Filter_Relationship>
+    
+    <!-- Memory Stats -->
+    <RimTalk_MemoryStats>?? ??: {0}/{1} | ?? ??: {2}/{3}</RimTalk_MemoryStats>
+    <RimTalk_MemoryTitle>{0}? ??</RimTalk_MemoryTitle>
+    
+    <!-- Four Layer Memory Stats -->
+    <RimTalk_FourLayerMemoryStats>ABM: {0}/{1} | SCM: {2}/{3} | ELS: {4}/{5} | CLPA: {6}</RimTalk_FourLayerMemoryStats>
+    <RimTalk_ActiveBufferMemory>?? ?? ??</RimTalk_ActiveBufferMemory>
+    <RimTalk_SituationalMemory>??? ?? ??</RimTalk_SituationalMemory>
+    <RimTalk_EventLogSummary>??? ?? ??</RimTalk_EventLogSummary>
+    <RimTalk_ArchiveMemory>?? ?? ???? ????</RimTalk_ArchiveMemory>
+    
+    <!-- Colonist Selection -->
+    <RimTalk_SelectColonist>??? ??</RimTalk_SelectColonist>
+    <RimTalk_ChooseColonist>??...</RimTalk_ChooseColonist>
+    <RimTalk_NoColonists>??? ??</RimTalk_NoColonists>
+    <RimTalk_NoMemoryComponent>? ?????? ?? ?? ??? ????</RimTalk_NoMemoryComponent>
+    
+    <!-- Time Display -->
+    <RimTalk_JustNow>??</RimTalk_JustNow>
+    <RimTalk_MinutesAgo>{0}? ?</RimTalk_MinutesAgo>
+    <RimTalk_HoursAgo>{0}?? ?</RimTalk_HoursAgo>
+    <RimTalk_DaysAgo>{0}? ?</RimTalk_DaysAgo>
+    
+    <!-- Memory Types -->
+    <RimTalk_MemoryType_Conversation>??</RimTalk_MemoryType_Conversation>
+    <RimTalk_MemoryType_Interaction>????</RimTalk_MemoryType_Interaction>
+    <RimTalk_MemoryType_Action>??</RimTalk_MemoryType_Action>
+    <RimTalk_MemoryType_Observation>??</RimTalk_MemoryType_Observation>
+    <RimTalk_MemoryType_Event>???</RimTalk_MemoryType_Event>
+    <RimTalk_MemoryType_Emotion>??</RimTalk_MemoryType_Emotion>
+    <RimTalk_MemoryType_Relationship>??</RimTalk_MemoryType_Relationship>
+    
+    <!-- Memory Tab -->
+    <RimTalk_TabMemory>??</RimTalk_TabMemory>
+    <RimTalk_TabMemoryDesc>? ???? ?? ??</RimTalk_TabMemoryDesc>
+    
+    <!-- Settings -->
+    <RimTalk_MemoryPatchSettings>?? ??? ??</RimTalk_MemoryPatchSettings>
+    <RimTalk_MemoryPatchDescription>RimTalk? ?? ??? ?? ??</RimTalk_MemoryPatchDescription>
+    <RimTalk_OriginalRimTalkSettings>?? ??? ?? RimTalk ???? ?????</RimTalk_OriginalRimTalkSettings>
+    
+    <!-- Memory Settings -->
+    <RimTalk_MaxShortTermMemories>?? ?? ??</RimTalk_MaxShortTermMemories>
+    <RimTalk_MaxLongTermMemories>?? ?? ??</RimTalk_MaxLongTermMemories>
+    <RimTalk_MemoryDecayRate>?? ???</RimTalk_MemoryDecayRate>
+    <RimTalk_EnableMemoryUI>?? UI ???</RimTalk_EnableMemoryUI>
+    
+    <!-- Four Layer Memory Settings -->
+    <RimTalk_MaxActiveMemories>?? ?? ?? ??</RimTalk_MaxActiveMemories>
+    <RimTalk_MaxSituationalMemories>??? ?? ??</RimTalk_MaxSituationalMemories>
+    <RimTalk_MaxEventLogMemories>??? ?? ?? ??</RimTalk_MaxEventLogMemories>
+    <RimTalk_EnableDailySummarization>?? ?? ???</RimTalk_EnableDailySummarization>
+    <RimTalk_SummarizationHour>?? ?? (?? ??)</RimTalk_SummarizationHour>
+    
+    <!-- Memory Type Toggles -->
+    <RimTalk_MemoryTypeToggles>?? ?? ??</RimTalk_MemoryTypeToggles>
+    <RimTalk_EnableInteractionMemory>???? ?? ???</RimTalk_EnableInteractionMemory>
+    <RimTalk_EnableInteractionMemoryDesc>??? ?? ??? ???? ??</RimTalk_EnableInteractionMemoryDesc>
+    <RimTalk_EnableActionMemory>?? ?? ???</RimTalk_EnableActionMemory>
+    <RimTalk_EnableActionMemoryDesc>??, ?? ? ?? ?? ??</RimTalk_EnableActionMemoryDesc>
+    <RimTalk_EnableConversationMemory>?? ?? ???</RimTalk_EnableConversationMemory>
+    <RimTalk_EnableConversationMemoryDesc>RimTalk? ??? ?? ?? (RimTalk ?? ??)</RimTalk_EnableConversationMemoryDesc>
+    <RimTalk_EnableObservationMemory>?? ?? ???</RimTalk_EnableObservationMemory>
+    <RimTalk_EnableObservationMemoryDesc>??? ??? ??</RimTalk_EnableObservationMemoryDesc>
+    <RimTalk_EnableEventMemory>??? ?? ???</RimTalk_EnableEventMemory>
+    <RimTalk_EnableEventMemoryDesc>??? ??? (??, ?? ?) ??</RimTalk_EnableEventMemoryDesc>
+    <RimTalk_EnableEmotionMemory>?? ?? ???</RimTalk_EnableEmotionMemory>
+    <RimTalk_EnableEmotionMemoryDesc>?? ?? ??</RimTalk_EnableEmotionMemoryDesc>
+    <RimTalk_EnableRelationshipMemory>?? ?? ???</RimTalk_EnableRelationshipMemory>
+    <RimTalk_EnableRelationshipMemoryDesc>?? ?? (??, ?? ?) ??</RimTalk_EnableRelationshipMemoryDesc>
+    
+    <!-- Memory Edit Dialog -->
+    <RimTalk_EditMemory>?? ??</RimTalk_EditMemory>
+    <RimTalk_DeleteMemory>?? ??</RimTalk_DeleteMemory>
+    <RimTalk_PinMemory>?? ??</RimTalk_PinMemory>
+    <RimTalk_UnpinMemory>?? ??</RimTalk_UnpinMemory>
+    <RimTalk_MemoryContent>??</RimTalk_MemoryContent>
+    <RimTalk_MemoryNotes>??</RimTalk_MemoryNotes>
+    <RimTalk_MemoryTags>??</RimTalk_MemoryTags>
+    <RimTalk_AddTag>?? ??</RimTalk_AddTag>
+    <RimTalk_RemoveTag>?? ??</RimTalk_RemoveTag>
+    <RimTalk_CustomTag>??? ?? ??</RimTalk_CustomTag>
+    <RimTalk_Save>??</RimTalk_Save>
+    <RimTalk_Cancel>??</RimTalk_Cancel>
+    <RimTalk_ConfirmDelete>? ??? ?????????</RimTalk_ConfirmDelete>
+    <RimTalk_MemoryUpdated>??? ?????????</RimTalk_MemoryUpdated>
+    <RimTalk_MemoryDeleted>??? ???????</RimTalk_MemoryDeleted>
+    
+    <!-- Memory Actions -->
+    <RimTalk_ClearAll>?? ???</RimTalk_ClearAll>
+    <RimTalk_ClearShortTerm>?? ?? ???</RimTalk_ClearShortTerm>
+    <RimTalk_ClearLongTerm>?? ?? ???</RimTalk_ClearLongTerm>
+    <RimTalk_ConfirmClearAll>?? ??? ????????</RimTalk_ConfirmClearAll>
+    <RimTalk_ConfirmClearShortTerm>?? ??? ????????</RimTalk_ConfirmClearShortTerm>
+    <RimTalk_ConfirmClearLongTerm>?? ??? ????????</RimTalk_ConfirmClearLongTerm>
+    
+    <!-- Other -->
+    <RimTalk_With>?(?)</RimTalk_With>
+    <RimTalk_ObservationPlaceholder>(?? ?? ????? - ?? ???? ??)</RimTalk_ObservationPlaceholder>
+</LanguageData>

@@ -319,13 +319,8 @@ namespace RimTalk.Memory.UI
                 selectedEntry.content = editContent;
                 selectedEntry.importance = editImportance;
                 
-                // 处理关键词
-                if (string.IsNullOrWhiteSpace(editKeywords))
-                {
-                    // 自动提取
-                    selectedEntry.ExtractKeywords();
-                }
-                else
+                // 处理关键词（可选功能）
+                if (!string.IsNullOrWhiteSpace(editKeywords))
                 {
                     // 使用用户输入的关键词
                     selectedEntry.keywords = editKeywords
@@ -334,6 +329,14 @@ namespace RimTalk.Memory.UI
                         .Where(k => !string.IsNullOrEmpty(k))
                         .ToList();
                 }
+                else
+                {
+                    // 不自动提取，保持为空
+                    selectedEntry.keywords.Clear();
+                }
+                
+                // 清除标签缓存，强制重新解析
+                selectedEntry.GetTags();
             }
             else
             {
@@ -341,7 +344,7 @@ namespace RimTalk.Memory.UI
                 var newEntry = new CommonKnowledgeEntry(editTag, editContent);
                 newEntry.importance = editImportance;
                 
-                // 处理关键词
+                // 处理关键词（可选功能）
                 if (!string.IsNullOrWhiteSpace(editKeywords))
                 {
                     newEntry.keywords = editKeywords

@@ -2,16 +2,26 @@
 <LanguageData>
     <!-- RimTalk Memory Patch - English translations -->
     
-    <!-- Filter Buttons (Thought removed) -->
+    <!-- Filter Buttons -->
     <RimTalk_Filter_All>All</RimTalk_Filter_All>
+    <RimTalk_Filter_Conversation>Conversation</RimTalk_Filter_Conversation>
     <RimTalk_Filter_Interaction>Interaction</RimTalk_Filter_Interaction>
     <RimTalk_Filter_Action>Action</RimTalk_Filter_Action>
-    <RimTalk_Filter_Conversation>Conversation</RimTalk_Filter_Conversation>
     <RimTalk_Filter_Observation>Observation</RimTalk_Filter_Observation>
+    <RimTalk_Filter_Event>Event</RimTalk_Filter_Event>
+    <RimTalk_Filter_Emotion>Emotion</RimTalk_Filter_Emotion>
+    <RimTalk_Filter_Relationship>Relationship</RimTalk_Filter_Relationship>
     
     <!-- Memory Stats -->
     <RimTalk_MemoryStats>Short-term: {0}/{1} | Long-term: {2}/{3}</RimTalk_MemoryStats>
     <RimTalk_MemoryTitle>{0}'s Memories</RimTalk_MemoryTitle>
+    
+    <!-- Four Layer Memory Stats -->
+    <RimTalk_FourLayerMemoryStats>ABM: {0}/{1} | SCM: {2}/{3} | ELS: {4}/{5} | CLPA: {6}</RimTalk_FourLayerMemoryStats>
+    <RimTalk_ActiveBufferMemory>Active Buffer Memory</RimTalk_ActiveBufferMemory>
+    <RimTalk_SituationalMemory>Situational Context Memory</RimTalk_SituationalMemory>
+    <RimTalk_EventLogSummary>Event Log Summary</RimTalk_EventLogSummary>
+    <RimTalk_ArchiveMemory>Compressed Long-term Persona Archive</RimTalk_ArchiveMemory>
     
     <!-- Colonist Selection -->
     <RimTalk_SelectColonist>Select Colonist</RimTalk_SelectColonist>
@@ -25,11 +35,14 @@
     <RimTalk_HoursAgo>{0} hours ago</RimTalk_HoursAgo>
     <RimTalk_DaysAgo>{0} days ago</RimTalk_DaysAgo>
     
-    <!-- Memory Types (Thought removed) -->
+    <!-- Memory Types -->
+    <RimTalk_MemoryType_Conversation>Conversation</RimTalk_MemoryType_Conversation>
     <RimTalk_MemoryType_Interaction>Interaction</RimTalk_MemoryType_Interaction>
     <RimTalk_MemoryType_Action>Action</RimTalk_MemoryType_Action>
-    <RimTalk_MemoryType_Conversation>Conversation</RimTalk_MemoryType_Conversation>
     <RimTalk_MemoryType_Observation>Observation</RimTalk_MemoryType_Observation>
+    <RimTalk_MemoryType_Event>Event</RimTalk_MemoryType_Event>
+    <RimTalk_MemoryType_Emotion>Emotion</RimTalk_MemoryType_Emotion>
+    <RimTalk_MemoryType_Relationship>Relationship</RimTalk_MemoryType_Relationship>
     
     <!-- Memory Tab -->
     <RimTalk_TabMemory>Memory</RimTalk_TabMemory>
@@ -46,7 +59,14 @@
     <RimTalk_MemoryDecayRate>Memory Decay Rate</RimTalk_MemoryDecayRate>
     <RimTalk_EnableMemoryUI>Enable Memory UI</RimTalk_EnableMemoryUI>
     
-    <!-- Memory Type Toggles (Thought memory removed) -->
+    <!-- Four Layer Memory Settings -->
+    <RimTalk_MaxActiveMemories>Active Buffer Memory Limit</RimTalk_MaxActiveMemories>
+    <RimTalk_MaxSituationalMemories>Situational Memory Limit</RimTalk_MaxSituationalMemories>
+    <RimTalk_MaxEventLogMemories>Event Log Memory Limit</RimTalk_MaxEventLogMemories>
+    <RimTalk_EnableDailySummarization>Enable Daily Summarization</RimTalk_EnableDailySummarization>
+    <RimTalk_SummarizationHour>Summarization Hour (Game Time)</RimTalk_SummarizationHour>
+    
+    <!-- Memory Type Toggles -->
     <RimTalk_MemoryTypeToggles>Memory Type Settings</RimTalk_MemoryTypeToggles>
     <RimTalk_EnableInteractionMemory>Enable Interaction Memory</RimTalk_EnableInteractionMemory>
     <RimTalk_EnableInteractionMemoryDesc>Record social interactions between colonists</RimTalk_EnableInteractionMemoryDesc>
@@ -56,6 +76,37 @@
     <RimTalk_EnableConversationMemoryDesc>Record RimTalk-generated dialogues (requires RimTalk integration)</RimTalk_EnableConversationMemoryDesc>
     <RimTalk_EnableObservationMemory>Enable Observation Memory</RimTalk_EnableObservationMemory>
     <RimTalk_EnableObservationMemoryDesc>Record observed events</RimTalk_EnableObservationMemoryDesc>
+    <RimTalk_EnableEventMemory>Enable Event Memory</RimTalk_EnableEventMemory>
+    <RimTalk_EnableEventMemoryDesc>Record important events (raids, deaths, etc.)</RimTalk_EnableEventMemoryDesc>
+    <RimTalk_EnableEmotionMemory>Enable Emotion Memory</RimTalk_EnableEmotionMemory>
+    <RimTalk_EnableEmotionMemoryDesc>Record emotional changes</RimTalk_EnableEmotionMemoryDesc>
+    <RimTalk_EnableRelationshipMemory>Enable Relationship Memory</RimTalk_EnableRelationshipMemory>
+    <RimTalk_EnableRelationshipMemoryDesc>Record relationship changes (romance, conflicts, etc.)</RimTalk_EnableRelationshipMemoryDesc>
+    
+    <!-- Memory Edit Dialog -->
+    <RimTalk_EditMemory>Edit Memory</RimTalk_EditMemory>
+    <RimTalk_DeleteMemory>Delete Memory</RimTalk_DeleteMemory>
+    <RimTalk_PinMemory>Pin Memory</RimTalk_PinMemory>
+    <RimTalk_UnpinMemory>Unpin Memory</RimTalk_UnpinMemory>
+    <RimTalk_MemoryContent>Content</RimTalk_MemoryContent>
+    <RimTalk_MemoryNotes>Notes</RimTalk_MemoryNotes>
+    <RimTalk_MemoryTags>Tags</RimTalk_MemoryTags>
+    <RimTalk_AddTag>Add Tag</RimTalk_AddTag>
+    <RimTalk_RemoveTag>Remove Tag</RimTalk_RemoveTag>
+    <RimTalk_CustomTag>Custom Tag</RimTalk_CustomTag>
+    <RimTalk_Save>Save</RimTalk_Save>
+    <RimTalk_Cancel>Cancel</RimTalk_Cancel>
+    <RimTalk_ConfirmDelete>Confirm deletion of this memory?</RimTalk_ConfirmDelete>
+    <RimTalk_MemoryUpdated>Memory updated</RimTalk_MemoryUpdated>
+    <RimTalk_MemoryDeleted>Memory deleted</RimTalk_MemoryDeleted>
+    
+    <!-- Memory Actions -->
+    <RimTalk_ClearAll>Clear All</RimTalk_ClearAll>
+    <RimTalk_ClearShortTerm>Clear Short-term</RimTalk_ClearShortTerm>
+    <RimTalk_ClearLongTerm>Clear Long-term</RimTalk_ClearLongTerm>
+    <RimTalk_ConfirmClearAll>Confirm clearing all memories?</RimTalk_ConfirmClearAll>
+    <RimTalk_ConfirmClearShortTerm>Confirm clearing short-term memories?</RimTalk_ConfirmClearShortTerm>
+    <RimTalk_ConfirmClearLongTerm>Confirm clearing long-term memories?</RimTalk_ConfirmClearLongTerm>
     
     <!-- Other -->
     <RimTalk_With>with</RimTalk_With>
