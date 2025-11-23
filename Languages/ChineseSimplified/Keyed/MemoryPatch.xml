@@ -13,6 +13,8 @@
     <!-- Memory Stats -->
     <RimTalk_MemoryStats>短期记忆: {0}/{1} | 长期记忆: {2}/{3}</RimTalk_MemoryStats>
     <RimTalk_MemoryTitle>{0} 的记忆</RimTalk_MemoryTitle>
+    <RimTalk_ShortTermMemories>短期记忆</RimTalk_ShortTermMemories>
+    <RimTalk_LongTermMemories>长期记忆</RimTalk_LongTermMemories>
     
     <!-- Four Layer Memory Stats -->
     <RimTalk_FourLayerMemoryStats>ABM: {0}/{1} | SCM: {2}/{3} | ELS: {4}/{5} | CLPA: {6}</RimTalk_FourLayerMemoryStats>
