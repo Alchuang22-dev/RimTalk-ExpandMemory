@@ -15,6 +15,8 @@
     <!-- Memory Stats -->
     <RimTalk_MemoryStats>Short-term: {0}/{1} | Long-term: {2}/{3}</RimTalk_MemoryStats>
     <RimTalk_MemoryTitle>{0}'s Memories</RimTalk_MemoryTitle>
+    <RimTalk_ShortTermMemories>Short-term</RimTalk_ShortTermMemories>
+    <RimTalk_LongTermMemories>Long-term</RimTalk_LongTermMemories>
     
     <!-- Four Layer Memory Stats -->
     <RimTalk_FourLayerMemoryStats>ABM: {0}/{1} | SCM: {2}/{3} | ELS: {4}/{5} | CLPA: {6}</RimTalk_FourLayerMemoryStats>

@@ -96,7 +96,7 @@ namespace RimTalk.Memory.UI
             
             // 短期记忆按钮
             Rect shortTermRect = new Rect(rect.x, rect.y, buttonWidth - 2f, rect.height);
-            string shortTermLabel = "短期记忆" + (showShortTerm ? " ✓" : "");
+            string shortTermLabel = "RimTalk_ShortTermMemories".Translate() + (showShortTerm ? " ✓" : "");
             if (Widgets.ButtonText(shortTermRect, shortTermLabel))
             {
                 bool newShowShortTerm = !showShortTerm;
@@ -110,7 +110,7 @@ namespace RimTalk.Memory.UI
             
             // 长期记忆按钮
             Rect longTermRect = new Rect(rect.x + buttonWidth + 2f, rect.y, buttonWidth - 2f, rect.height);
-            string longTermLabel = "长期记忆" + (showLongTerm ? " ✓" : "");
+            string longTermLabel = "RimTalk_LongTermMemories".Translate() + (showLongTerm ? " ✓" : "");
             if (Widgets.ButtonText(longTermRect, longTermLabel))
             {
                 bool newShowLongTerm = !showLongTerm;
