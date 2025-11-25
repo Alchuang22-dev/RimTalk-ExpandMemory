@@ -93,11 +93,27 @@ namespace RimTalk.Memory.UI
                 Find.WindowStack.Add(new FloatMenu(options));
             }
 
+            // ⭐ 新增：注入预览器按钮（右上角，紧凑版）
+            Rect previewButtonRect = new Rect(rect.xMax - 140f, rect.y, 60f, 35f);
+            if (Widgets.ButtonText(previewButtonRect, "RimTalk_UI_Preview".Translate()))
+            {
+                Find.WindowStack.Add(new RimTalk.Memory.Debug.Dialog_InjectionPreview());
+            }
+            TooltipHandler.TipRegion(previewButtonRect, "打开注入内容预览器\n实时查看将要注入给AI的记忆和常识");
+            
+            // ⭐ 新增：常识按钮（预览按钮左边）
+            Rect knowledgeButtonRect = new Rect(rect.xMax - 70f, rect.y, 60f, 35f);
+            if (Widgets.ButtonText(knowledgeButtonRect, "RimTalk_UI_Knowledge".Translate()))
+            {
+                OpenCommonKnowledgeDialog();
+            }
+            TooltipHandler.TipRegion(knowledgeButtonRect, "打开常识库管理\n查看和编辑常识条目");
+            
             // 立即总结按钮（SCM → ELS）
             if (selectedPawn != null)
             {
                 Rect summarizeButtonRect = new Rect(rect.x + 470f, rect.y, 180f, 35f);
-                string summarizeLabel = "立即总结 (SCM→ELS)";
+                string summarizeLabel = "RimTalk_UI_ImmediateSummarize".Translate();
                 
                 var memoryComp = selectedPawn.TryGetComp<PawnMemoryComp>();
                 bool canSummarize = memoryComp != null && memoryComp.GetSituationalMemoryCount() > 0;
@@ -105,7 +121,7 @@ namespace RimTalk.Memory.UI
                 if (!canSummarize)
                 {
                     GUI.color = Color.gray;
-                    summarizeLabel = "立即总结 (无SCM记忆)";
+                    summarizeLabel = "RimTalk_UI_ImmediateSummarizeNoMemory".Translate();
                 }
                 
                 if (Widgets.ButtonText(summarizeButtonRect, summarizeLabel))
@@ -114,7 +130,7 @@ namespace RimTalk.Memory.UI
                     {
                         Log.Message($"[RimTalk Memory] 🔄 Manual summarization triggered for {selectedPawn.LabelShort}");
                         memoryComp.DailySummarization();
-                        Messages.Message($"{selectedPawn.LabelShort} 的短期记忆已总结到中期记忆", MessageTypeDefOf.TaskCompletion);
+                        Messages.Message("RimTalk_UI_MemorySummarized".Translate(selectedPawn.LabelShort), MessageTypeDefOf.TaskCompletion);
                     }
                 }
                 
@@ -122,9 +138,10 @@ namespace RimTalk.Memory.UI
                 
                 // 总结所有人按钮
                 Rect summarizeAllButtonRect = new Rect(rect.x + 660f, rect.y, 180f, 35f);
-                if (Widgets.ButtonText(summarizeAllButtonRect, "总结所有殖民者"))
+                if (Widgets.ButtonText(summarizeAllButtonRect, "RimTalk_UI_SummarizeAll".Translate()))
                 {
-                    int count = 0;
+                    // ⭐ 使用队列系统（1秒延迟）
+                    List<Pawn> pawnsToSummarize = new List<Pawn>();
                     foreach (var map in Find.Maps)
                     {
                         foreach (var pawn in map.mapPawns.FreeColonists)
@@ -132,19 +149,26 @@ namespace RimTalk.Memory.UI
                             var comp = pawn.TryGetComp<PawnMemoryComp>();
                             if (comp != null && comp.GetSituationalMemoryCount() > 0)
                             {
-                                comp.DailySummarization();
-                                count++;
+                                pawnsToSummarize.Add(pawn);
                             }
                         }
                     }
                     
-                    Log.Message($"[RimTalk Memory] 🔄 Manual summarization triggered for {count} colonists");
-                    Messages.Message($"已为 {count} 名殖民者进行记忆总结", MessageTypeDefOf.TaskCompletion);
+                    if (pawnsToSummarize.Count > 0)
+                    {
+                        var memoryManager = Find.World.GetComponent<MemoryManager>();
+                        memoryManager?.QueueManualSummarization(pawnsToSummarize);
+                        Messages.Message("RimTalk_UI_MemoriesSummarizedCount".Translate(pawnsToSummarize.Count), MessageTypeDefOf.TaskCompletion);
+                    }
+                    else
+                    {
+                        Messages.Message("RimTalk_UI_NoColonistsNeedSummarize".Translate(), MessageTypeDefOf.RejectInput);
+                    }
                 }
                 
                 // === CLPA 归档按钮（对齐） ===
                 Rect archiveButtonRect = new Rect(rect.x + 470f, rect.y + 40f, 180f, 35f);
-                string archiveLabel = "立即归档 (ELS→CLPA)";
+                string archiveLabel = "RimTalk_UI_ImmediateArchive".Translate();
                 
                 var archiveComp = selectedPawn.TryGetComp<PawnMemoryComp>();
                 bool canArchive = archiveComp != null && archiveComp.GetEventLogMemoryCount() > 0;
@@ -152,7 +176,7 @@ namespace RimTalk.Memory.UI
                 if (!canArchive)
                 {
                     GUI.color = Color.gray;
-                    archiveLabel = "立即归档 (无ELS记忆)";
+                    archiveLabel = "RimTalk_UI_ImmediateArchiveNoMemory".Translate();
                 }
                 
                 if ( Widgets.ButtonText(archiveButtonRect, archiveLabel))
@@ -161,7 +185,7 @@ namespace RimTalk.Memory.UI
                     {
                         Log.Message($"[RimTalk Memory] 📚 Manual archiving triggered for {selectedPawn.LabelShort}");
                         archiveComp.ManualArchive();
-                        Messages.Message($"{selectedPawn.LabelShort} 的中期记忆已归档到长期记忆", MessageTypeDefOf.TaskCompletion);
+                        Messages.Message("RimTalk_UI_MemoryArchived".Translate(selectedPawn.LabelShort), MessageTypeDefOf.TaskCompletion);
                     }
                 }
                 
@@ -169,7 +193,7 @@ namespace RimTalk.Memory.UI
                 
                 // 归档所有人按钮（CLPA）
                 Rect archiveAllButtonRect = new Rect(rect.x + 660f, rect.y + 40f, 180f, 35f);
-                if (Widgets.ButtonText(archiveAllButtonRect, "归档所有殖民者"))
+                if (Widgets.ButtonText(archiveAllButtonRect, "RimTalk_UI_ArchiveAll".Translate()))
                 {
                     int count = 0;
                     foreach (var map in Find.Maps)
@@ -186,7 +210,7 @@ namespace RimTalk.Memory.UI
                     }
                     
                     Log.Message($"[RimTalk Memory] 📚 Manual archiving triggered for {count} colonists");
-                    Messages.Message($"已为 {count} 名殖民者归档记忆", MessageTypeDefOf.TaskCompletion);
+                    Messages.Message("RimTalk_UI_MemoriesArchivedCount".Translate(count), MessageTypeDefOf.TaskCompletion);
                 }
             }
 
@@ -284,7 +308,7 @@ namespace RimTalk.Memory.UI
             }
             if (Mouse.IsOver(scmRect))
             {
-                TooltipHandler.TipRegion(scmRect, "短期记忆 (Situational Context Memory)\n最近几天的事件和互动\n\n左键：显示/隐藏");
+                TooltipHandler.TipRegion(scmRect, "短期记忆 (Situational Context Memory)\n最近几天的事件和对话\n\n左键：显示/隐藏");
             }
             
             // ELS 按钮（中期） - 支持右键添加
@@ -771,6 +795,27 @@ namespace RimTalk.Memory.UI
                 default:
                     return GameFont.Small;
             }
+        }
+        
+        /// <summary>
+        /// 打开常识库对话框
+        /// </summary>
+        private void OpenCommonKnowledgeDialog()
+        {
+            if (Current.Game == null)
+            {
+                Messages.Message("请先进入游戏", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            var memoryManager = Find.World.GetComponent<MemoryManager>();
+            if (memoryManager == null)
+            {
+                Messages.Message("无法找到记忆管理器", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            Find.WindowStack.Add(new Dialog_CommonKnowledge(memoryManager.CommonKnowledge));
         }
 
         private class MemoryListEntry

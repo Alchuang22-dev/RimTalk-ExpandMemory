@@ -1,114 +1,114 @@
-<?xml version="1.0" encoding="utf-8"?>
+ï»¿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-    <!-- RimTalk Memory Patch - §²§å§ã§ã§Ü§Ú§Û §á§Ö§â§Ö§Ó§à§Õ -->
+    <!-- RimTalk Memory Patch - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü§Ú§ï¿½ ï¿½ï¿½Ö§ï¿½Ö§Ó§ï¿½ï¿½ -->
     
     <!-- Filter Buttons -->
-    <RimTalk_Filter_All>§£§ã§Ö</RimTalk_Filter_All>
-    <RimTalk_Filter_Conversation>§²§Ñ§Ù§Ô§à§Ó§à§â</RimTalk_Filter_Conversation>
-    <RimTalk_Filter_Interaction>§£§Ù§Ñ§Ú§Þ§à§Õ§Ö§Û§ã§ä§Ó§Ú§Ö</RimTalk_Filter_Interaction>
-    <RimTalk_Filter_Action>§¥§Ö§Û§ã§ä§Ó§Ú§Ö</RimTalk_Filter_Action>
-    <RimTalk_Filter_Observation>§¯§Ñ§Ò§Ý§ð§Õ§Ö§ß§Ú§Ö</RimTalk_Filter_Observation>
-    <RimTalk_Filter_Event>§³§à§Ò§í§ä§Ú§ñ</RimTalk_Filter_Event>
-    <RimTalk_Filter_Emotion>§¿§Þ§à§è§Ú§Ú</RimTalk_Filter_Emotion>
-    <RimTalk_Filter_Relationship>§°§ä§ß§à§ê§Ö§ß§Ú§ñ</RimTalk_Filter_Relationship>
+    <RimTalk_Filter_All>ï¿½ï¿½ï¿½ï¿½ï¿½</RimTalk_Filter_All>
+    <RimTalk_Filter_Conversation>ï¿½ï¿½ï¿½Ñ§Ù§Ô§ï¿½Ó§ï¿½ï¿½</RimTalk_Filter_Conversation>
+    <RimTalk_Filter_Interaction>ï¿½ï¿½ï¿½Ù§Ñ§Ú§Þ§ï¿½Õ§Ö§Û§ï¿½ï¿½Ó§Ú§ï¿½</RimTalk_Filter_Interaction>
+    <RimTalk_Filter_Action>ï¿½ï¿½ï¿½Ö§Û§ï¿½ï¿½Ó§Ú§ï¿½</RimTalk_Filter_Action>
+    <RimTalk_Filter_Observation>ï¿½ï¿½ï¿½Ñ§Ò§Ý§ï¿½Õ§Ö§ß§Ú§ï¿½</RimTalk_Filter_Observation>
+    <RimTalk_Filter_Event>ï¿½ï¿½ï¿½ï¿½Ò§ï¿½ï¿½Ú§ï¿½</RimTalk_Filter_Event>
+    <RimTalk_Filter_Emotion>ï¿½ï¿½ï¿½Þ§ï¿½ï¿½Ú§ï¿½</RimTalk_Filter_Emotion>
+    <RimTalk_Filter_Relationship>ï¿½ï¿½ï¿½ï¿½ß§ï¿½ï¿½Ö§ß§Ú§ï¿½</RimTalk_Filter_Relationship>
     
     <!-- Memory Stats -->
-    <RimTalk_MemoryStats>§¬§â§Ñ§ä§Ü§à§Ó§â§Ö§Þ§Ö§ß§ß§Ñ§ñ: {0}/{1} | §¥§à§Ý§Ô§à§Ó§â§Ö§Þ§Ö§ß§ß§Ñ§ñ: {2}/{3}</RimTalk_MemoryStats>
-    <RimTalk_MemoryTitle>§£§à§ã§á§à§Þ§Ú§ß§Ñ§ß§Ú§ñ {0}</RimTalk_MemoryTitle>
+    <RimTalk_MemoryStats>ï¿½ï¿½ï¿½ï¿½Ñ§ï¿½Ü§ï¿½Ó§ï¿½Ö§Þ§Ö§ß§ß§Ñ§ï¿½: {0}/{1} | ï¿½ï¿½ï¿½ï¿½Ý§Ô§ï¿½Ó§ï¿½Ö§Þ§Ö§ß§ß§Ñ§ï¿½: {2}/{3}</RimTalk_MemoryStats>
+    <RimTalk_MemoryTitle>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ§Ú§ß§Ñ§ß§Ú§ï¿½ {0}</RimTalk_MemoryTitle>
     
     <!-- Four Layer Memory Stats -->
     <RimTalk_FourLayerMemoryStats>ABM: {0}/{1} | SCM: {2}/{3} | ELS: {4}/{5} | CLPA: {6}</RimTalk_FourLayerMemoryStats>
-    <RimTalk_ActiveBufferMemory>§¡§Ü§ä§Ú§Ó§ß§Ñ§ñ §Ò§å§æ§Ö§â§ß§Ñ§ñ §á§Ñ§Þ§ñ§ä§î</RimTalk_ActiveBufferMemory>
-    <RimTalk_SituationalMemory>§³§Ú§ä§å§Ñ§ä§Ú§Ó§ß§Ñ§ñ §Ü§à§ß§ä§Ö§Ü§ã§ä§ß§Ñ§ñ §á§Ñ§Þ§ñ§ä§î</RimTalk_SituationalMemory>
-    <RimTalk_EventLogSummary>§³§Ó§à§Õ§Ü§Ñ §Ø§å§â§ß§Ñ§Ý§Ñ §ã§à§Ò§í§ä§Ú§Û</RimTalk_EventLogSummary>
-    <RimTalk_ArchiveMemory>§³§Ø§Ñ§ä§í§Û §Õ§à§Ý§Ô§à§Ó§â§Ö§Þ§Ö§ß§ß§í§Û §Ñ§â§ç§Ú§Ó §Ý§Ú§é§ß§à§ã§ä§Ú</RimTalk_ArchiveMemory>
+    <RimTalk_ActiveBufferMemory>ï¿½ï¿½ï¿½Ü§ï¿½Ú§Ó§ß§Ñ§ï¿½ ï¿½Ò§ï¿½ï¿½Ö§ï¿½ß§Ñ§ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_ActiveBufferMemory>
+    <RimTalk_SituationalMemory>ï¿½ï¿½ï¿½Ú§ï¿½ï¿½Ñ§ï¿½Ú§Ó§ß§Ñ§ï¿½ ï¿½Ü§ï¿½ß§ï¿½Ö§Ü§ï¿½ï¿½ß§Ñ§ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_SituationalMemory>
+    <RimTalk_EventLogSummary>ï¿½ï¿½ï¿½Ó§ï¿½Õ§Ü§ï¿½ ï¿½Ø§ï¿½ï¿½ß§Ñ§Ý§ï¿½ ï¿½ï¿½ï¿½Ò§ï¿½ï¿½Ú§ï¿½</RimTalk_EventLogSummary>
+    <RimTalk_ArchiveMemory>ï¿½ï¿½ï¿½Ø§Ñ§ï¿½ï¿½ï¿½ ï¿½Õ§ï¿½Ý§Ô§ï¿½Ó§ï¿½Ö§Þ§Ö§ß§ß§ï¿½ï¿½ ï¿½Ñ§ï¿½ï¿½Ú§ï¿½ ï¿½Ý§Ú§ï¿½ß§ï¿½ï¿½ï¿½ï¿½</RimTalk_ArchiveMemory>
     
     <!-- Colonist Selection -->
-    <RimTalk_SelectColonist>§£§í§Ò§â§Ñ§ä§î §Ü§à§Ý§à§ß§Ú§ã§ä§Ñ</RimTalk_SelectColonist>
-    <RimTalk_ChooseColonist>§£§í§Ò§â§Ñ§ä§î...</RimTalk_ChooseColonist>
-    <RimTalk_NoColonists>§¯§Ö§ä §Ü§à§Ý§à§ß§Ú§ã§ä§à§Ó</RimTalk_NoColonists>
-    <RimTalk_NoMemoryComponent>§µ §ï§ä§à§Ô§à §Ü§à§Ý§à§ß§Ú§ã§ä§Ñ §ß§Ö§ä §Ü§à§Þ§á§à§ß§Ö§ß§ä§Ñ §á§Ñ§Þ§ñ§ä§Ú</RimTalk_NoMemoryComponent>
+    <RimTalk_SelectColonist>ï¿½ï¿½ï¿½ï¿½Ò§ï¿½Ñ§ï¿½ï¿½ ï¿½Ü§ï¿½Ý§ï¿½ß§Ú§ï¿½ï¿½ï¿½</RimTalk_SelectColonist>
+    <RimTalk_ChooseColonist>ï¿½ï¿½ï¿½ï¿½Ò§ï¿½Ñ§ï¿½ï¿½...</RimTalk_ChooseColonist>
+    <RimTalk_NoColonists>ï¿½ï¿½ï¿½Ö§ï¿½ ï¿½Ü§ï¿½Ý§ï¿½ß§Ú§ï¿½ï¿½ï¿½ï¿½</RimTalk_NoColonists>
+    <RimTalk_NoMemoryComponent>ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ô§ï¿½ ï¿½Ü§ï¿½Ý§ï¿½ß§Ú§ï¿½ï¿½ï¿½ ï¿½ß§Ö§ï¿½ ï¿½Ü§ï¿½Þ§ï¿½ï¿½ß§Ö§ß§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_NoMemoryComponent>
     
     <!-- Time Display -->
-    <RimTalk_JustNow>§´§à§Ý§î§Ü§à §é§ä§à</RimTalk_JustNow>
-    <RimTalk_MinutesAgo>{0} §Þ§Ú§ß§å§ä §ß§Ñ§Ù§Ñ§Õ</RimTalk_MinutesAgo>
-    <RimTalk_HoursAgo>{0} §é§Ñ§ã§à§Ó §ß§Ñ§Ù§Ñ§Õ</RimTalk_HoursAgo>
-    <RimTalk_DaysAgo>{0} §Õ§ß§Ö§Û §ß§Ñ§Ù§Ñ§Õ</RimTalk_DaysAgo>
+    <RimTalk_JustNow>ï¿½ï¿½ï¿½ï¿½Ý§ï¿½Ü§ï¿½ ï¿½ï¿½ï¿½ï¿½</RimTalk_JustNow>
+    <RimTalk_MinutesAgo>{0} ï¿½Þ§Ú§ß§ï¿½ï¿½ ï¿½ß§Ñ§Ù§Ñ§ï¿½</RimTalk_MinutesAgo>
+    <RimTalk_HoursAgo>{0} ï¿½ï¿½Ñ§ï¿½ï¿½ï¿½ ï¿½ß§Ñ§Ù§Ñ§ï¿½</RimTalk_HoursAgo>
+    <RimTalk_DaysAgo>{0} ï¿½Õ§ß§Ö§ï¿½ ï¿½ß§Ñ§Ù§Ñ§ï¿½</RimTalk_DaysAgo>
     
     <!-- Memory Types -->
-    <RimTalk_MemoryType_Conversation>§²§Ñ§Ù§Ô§à§Ó§à§â</RimTalk_MemoryType_Conversation>
-    <RimTalk_MemoryType_Interaction>§£§Ù§Ñ§Ú§Þ§à§Õ§Ö§Û§ã§ä§Ó§Ú§Ö</RimTalk_MemoryType_Interaction>
-    <RimTalk_MemoryType_Action>§¥§Ö§Û§ã§ä§Ó§Ú§Ö</RimTalk_MemoryType_Action>
-    <RimTalk_MemoryType_Observation>§¯§Ñ§Ò§Ý§ð§Õ§Ö§ß§Ú§Ö</RimTalk_MemoryType_Observation>
-    <RimTalk_MemoryType_Event>§³§à§Ò§í§ä§Ú§ñ</RimTalk_MemoryType_Event>
-    <RimTalk_MemoryType_Emotion>§¿§Þ§à§è§Ú§Ú</RimTalk_MemoryType_Emotion>
-    <RimTalk_MemoryType_Relationship>§°§ä§ß§à§ê§Ö§ß§Ú§ñ</RimTalk_MemoryType_Relationship>
+    <RimTalk_MemoryType_Conversation>ï¿½ï¿½ï¿½Ñ§Ù§Ô§ï¿½Ó§ï¿½ï¿½</RimTalk_MemoryType_Conversation>
+    <RimTalk_MemoryType_Interaction>ï¿½ï¿½ï¿½Ù§Ñ§Ú§Þ§ï¿½Õ§Ö§Û§ï¿½ï¿½Ó§Ú§ï¿½</RimTalk_MemoryType_Interaction>
+    <RimTalk_MemoryType_Action>ï¿½ï¿½ï¿½Ö§Û§ï¿½ï¿½Ó§Ú§ï¿½</RimTalk_MemoryType_Action>
+    <RimTalk_MemoryType_Observation>ï¿½ï¿½ï¿½Ñ§Ò§Ý§ï¿½Õ§Ö§ß§Ú§ï¿½</RimTalk_MemoryType_Observation>
+    <RimTalk_MemoryType_Event>ï¿½ï¿½ï¿½ï¿½Ò§ï¿½ï¿½Ú§ï¿½</RimTalk_MemoryType_Event>
+    <RimTalk_MemoryType_Emotion>ï¿½ï¿½ï¿½Þ§ï¿½ï¿½Ú§ï¿½</RimTalk_MemoryType_Emotion>
+    <RimTalk_MemoryType_Relationship>ï¿½ï¿½ï¿½ï¿½ß§ï¿½ï¿½Ö§ß§Ú§ï¿½</RimTalk_MemoryType_Relationship>
     
     <!-- Memory Tab -->
-    <RimTalk_TabMemory>§±§Ñ§Þ§ñ§ä§î</RimTalk_TabMemory>
-    <RimTalk_TabMemoryDesc>§±§â§à§ã§Þ§à§ä§â §Ó§à§ã§á§à§Þ§Ú§ß§Ñ§ß§Ú§Û §ï§ä§à§Ô§à §Ü§à§Ý§à§ß§Ú§ã§ä§Ñ</RimTalk_TabMemoryDesc>
+    <RimTalk_TabMemory>ï¿½ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_TabMemory>
+    <RimTalk_TabMemoryDesc>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ§ï¿½ï¿½ï¿½ ï¿½Ó§ï¿½ï¿½ï¿½ï¿½Þ§Ú§ß§Ñ§ß§Ú§ï¿½ ï¿½ï¿½ï¿½ï¿½Ô§ï¿½ ï¿½Ü§ï¿½Ý§ï¿½ß§Ú§ï¿½ï¿½ï¿½</RimTalk_TabMemoryDesc>
     
     <!-- Settings -->
-    <RimTalk_MemoryPatchSettings>§¯§Ñ§ã§ä§â§à§Û§Ü§Ú §ã§Ú§ã§ä§Ö§Þ§í §á§Ñ§Þ§ñ§ä§Ú</RimTalk_MemoryPatchSettings>
-    <RimTalk_MemoryPatchDescription>§°§Ò§Ö§ã§á§Ö§é§Ú§Ó§Ñ§Ö§ä §á§à§Õ§Õ§Ö§â§Ø§Ü§å §ã§Ú§ã§ä§Ö§Þ§í §á§Ñ§Þ§ñ§ä§Ú §Õ§Ý§ñ RimTalk</RimTalk_MemoryPatchDescription>
-    <RimTalk_OriginalRimTalkSettings>§¯§Ñ§ã§ä§â§à§Û§ä§Ö §æ§å§ß§Ü§è§Ú§Ú §Õ§Ú§Ñ§Ý§à§Ô§à§Ó §Ó §à§â§Ú§Ô§Ú§ß§Ñ§Ý§î§ß§í§ç §ß§Ñ§ã§ä§â§à§Û§Ü§Ñ§ç RimTalk</RimTalk_OriginalRimTalkSettings>
+    <RimTalk_MemoryPatchSettings>ï¿½ï¿½ï¿½Ñ§ï¿½ï¿½ï¿½ï¿½Û§Ü§ï¿½ ï¿½ï¿½Ú§ï¿½ï¿½Ö§Þ§ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_MemoryPatchSettings>
+    <RimTalk_MemoryPatchDescription>ï¿½ï¿½ï¿½Ò§Ö§ï¿½ï¿½Ö§ï¿½Ú§Ó§Ñ§Ö§ï¿½ ï¿½ï¿½ï¿½Õ§Õ§Ö§ï¿½Ø§Ü§ï¿½ ï¿½ï¿½Ú§ï¿½ï¿½Ö§Þ§ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½ ï¿½Õ§Ý§ï¿½ RimTalk</RimTalk_MemoryPatchDescription>
+    <RimTalk_OriginalRimTalkSettings>ï¿½ï¿½ï¿½Ñ§ï¿½ï¿½ï¿½ï¿½Û§ï¿½ï¿½ ï¿½ï¿½ï¿½ß§Ü§ï¿½Ú§ï¿½ ï¿½Õ§Ú§Ñ§Ý§ï¿½Ô§ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ú§Ô§Ú§ß§Ñ§Ý§ï¿½ß§ï¿½ï¿½ ï¿½ß§Ñ§ï¿½ï¿½ï¿½ï¿½Û§Ü§Ñ§ï¿½ RimTalk</RimTalk_OriginalRimTalkSettings>
     
     <!-- Memory Settings -->
-    <RimTalk_MaxShortTermMemories>§­§Ú§Þ§Ú§ä §Ü§â§Ñ§ä§Ü§à§Ó§â§Ö§Þ§Ö§ß§ß§à§Û §á§Ñ§Þ§ñ§ä§Ú</RimTalk_MaxShortTermMemories>
-    <RimTalk_MaxLongTermMemories>§­§Ú§Þ§Ú§ä §Õ§à§Ý§Ô§à§Ó§â§Ö§Þ§Ö§ß§ß§à§Û §á§Ñ§Þ§ñ§ä§Ú</RimTalk_MaxLongTermMemories>
-    <RimTalk_MemoryDecayRate>§³§Ü§à§â§à§ã§ä§î §Ù§Ñ§ä§å§ç§Ñ§ß§Ú§ñ §á§Ñ§Þ§ñ§ä§Ú</RimTalk_MemoryDecayRate>
-    <RimTalk_EnableMemoryUI>§£§Ü§Ý§ð§é§Ú§ä§î §Ú§ß§ä§Ö§â§æ§Ö§Û§ã §á§Ñ§Þ§ñ§ä§Ú</RimTalk_EnableMemoryUI>
+    <RimTalk_MaxShortTermMemories>ï¿½ï¿½ï¿½Ú§Þ§Ú§ï¿½ ï¿½Ü§ï¿½Ñ§ï¿½Ü§ï¿½Ó§ï¿½Ö§Þ§Ö§ß§ß§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_MaxShortTermMemories>
+    <RimTalk_MaxLongTermMemories>ï¿½ï¿½ï¿½Ú§Þ§Ú§ï¿½ ï¿½Õ§ï¿½Ý§Ô§ï¿½Ó§ï¿½Ö§Þ§Ö§ß§ß§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_MaxLongTermMemories>
+    <RimTalk_MemoryDecayRate>ï¿½ï¿½ï¿½Ü§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù§Ñ§ï¿½ï¿½ï¿½Ñ§ß§Ú§ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_MemoryDecayRate>
+    <RimTalk_EnableMemoryUI>ï¿½ï¿½ï¿½Ü§Ý§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½Ú§ß§ï¿½Ö§ï¿½ï¿½Ö§Û§ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_EnableMemoryUI>
     
     <!-- Four Layer Memory Settings -->
-    <RimTalk_MaxActiveMemories>§­§Ú§Þ§Ú§ä §Ñ§Ü§ä§Ú§Ó§ß§à§Û §Ò§å§æ§Ö§â§ß§à§Û §á§Ñ§Þ§ñ§ä§Ú</RimTalk_MaxActiveMemories>
-    <RimTalk_MaxSituationalMemories>§­§Ú§Þ§Ú§ä §ã§Ú§ä§å§Ñ§ä§Ú§Ó§ß§à§Û §á§Ñ§Þ§ñ§ä§Ú</RimTalk_MaxSituationalMemories>
-    <RimTalk_MaxEventLogMemories>§­§Ú§Þ§Ú§ä §á§Ñ§Þ§ñ§ä§Ú §Ø§å§â§ß§Ñ§Ý§Ñ §ã§à§Ò§í§ä§Ú§Û</RimTalk_MaxEventLogMemories>
-    <RimTalk_EnableDailySummarization>§£§Ü§Ý§ð§é§Ú§ä§î §Ö§Ø§Ö§Õ§ß§Ö§Ó§ß§å§ð §ã§Ó§à§Õ§Ü§å</RimTalk_EnableDailySummarization>
-    <RimTalk_SummarizationHour>§¹§Ñ§ã §ã§à§Ù§Õ§Ñ§ß§Ú§ñ §ã§Ó§à§Õ§Ü§Ú (§Ú§Ô§â§à§Ó§à§Ö §Ó§â§Ö§Þ§ñ)</RimTalk_SummarizationHour>
+    <RimTalk_MaxActiveMemories>ï¿½ï¿½ï¿½Ú§Þ§Ú§ï¿½ ï¿½Ñ§Ü§ï¿½Ú§Ó§ß§ï¿½ï¿½ ï¿½Ò§ï¿½ï¿½Ö§ï¿½ß§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_MaxActiveMemories>
+    <RimTalk_MaxSituationalMemories>ï¿½ï¿½ï¿½Ú§Þ§Ú§ï¿½ ï¿½ï¿½Ú§ï¿½ï¿½Ñ§ï¿½Ú§Ó§ß§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_MaxSituationalMemories>
+    <RimTalk_MaxEventLogMemories>ï¿½ï¿½ï¿½Ú§Þ§Ú§ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½ ï¿½Ø§ï¿½ï¿½ß§Ñ§Ý§ï¿½ ï¿½ï¿½ï¿½Ò§ï¿½ï¿½Ú§ï¿½</RimTalk_MaxEventLogMemories>
+    <RimTalk_EnableDailySummarization>ï¿½ï¿½ï¿½Ü§Ý§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½Ö§Ø§Ö§Õ§ß§Ö§Ó§ß§ï¿½ï¿½ ï¿½ï¿½Ó§ï¿½Õ§Ü§ï¿½</RimTalk_EnableDailySummarization>
+    <RimTalk_SummarizationHour>ï¿½ï¿½ï¿½Ñ§ï¿½ ï¿½ï¿½ï¿½Ù§Õ§Ñ§ß§Ú§ï¿½ ï¿½ï¿½Ó§ï¿½Õ§Ü§ï¿½ (ï¿½Ú§Ô§ï¿½ï¿½Ó§ï¿½ï¿½ ï¿½Ó§ï¿½Ö§Þ§ï¿½)</RimTalk_SummarizationHour>
     
     <!-- Memory Type Toggles -->
-    <RimTalk_MemoryTypeToggles>§¯§Ñ§ã§ä§â§à§Û§Ü§Ú §ä§Ú§á§à§Ó §á§Ñ§Þ§ñ§ä§Ú</RimTalk_MemoryTypeToggles>
-    <RimTalk_EnableInteractionMemory>§£§Ü§Ý§ð§é§Ú§ä§î §á§Ñ§Þ§ñ§ä§î §Ó§Ù§Ñ§Ú§Þ§à§Õ§Ö§Û§ã§ä§Ó§Ú§Û</RimTalk_EnableInteractionMemory>
-    <RimTalk_EnableInteractionMemoryDesc>§©§Ñ§á§Ú§ã§í§Ó§Ñ§ä§î §ã§à§è§Ú§Ñ§Ý§î§ß§í§Ö §Ó§Ù§Ñ§Ú§Þ§à§Õ§Ö§Û§ã§ä§Ó§Ú§ñ §Þ§Ö§Ø§Õ§å §Ü§à§Ý§à§ß§Ú§ã§ä§Ñ§Þ§Ú</RimTalk_EnableInteractionMemoryDesc>
-    <RimTalk_EnableActionMemory>§£§Ü§Ý§ð§é§Ú§ä§î §á§Ñ§Þ§ñ§ä§î §Õ§Ö§Û§ã§ä§Ó§Ú§Û</RimTalk_EnableActionMemory>
-    <RimTalk_EnableActionMemoryDesc>§©§Ñ§á§Ú§ã§í§Ó§Ñ§ä§î §â§Ñ§Ò§à§ä§å, §ã§â§Ñ§Ø§Ö§ß§Ú§ñ §Ú §Õ§â§å§Ô§Ú§Ö §Õ§Ö§Û§ã§ä§Ó§Ú§ñ</RimTalk_EnableActionMemoryDesc>
-    <RimTalk_EnableConversationMemory>§£§Ü§Ý§ð§é§Ú§ä§î §á§Ñ§Þ§ñ§ä§î §â§Ñ§Ù§Ô§à§Ó§à§â§à§Ó</RimTalk_EnableConversationMemory>
-    <RimTalk_EnableConversationMemoryDesc>§©§Ñ§á§Ú§ã§í§Ó§Ñ§ä§î §Õ§Ú§Ñ§Ý§à§Ô§Ú, §ã§à§Ù§Õ§Ñ§ß§ß§í§Ö RimTalk (§ä§â§Ö§Ò§å§Ö§ä§ã§ñ §Ú§ß§ä§Ö§Ô§â§Ñ§è§Ú§ñ §ã RimTalk)</RimTalk_EnableConversationMemoryDesc>
-    <RimTalk_EnableObservationMemory>§£§Ü§Ý§ð§é§Ú§ä§î §á§Ñ§Þ§ñ§ä§î §ß§Ñ§Ò§Ý§ð§Õ§Ö§ß§Ú§Û</RimTalk_EnableObservationMemory>
-    <RimTalk_EnableObservationMemoryDesc>§©§Ñ§á§Ú§ã§í§Ó§Ñ§ä§î §ß§Ñ§Ò§Ý§ð§Õ§Ñ§Ö§Þ§í§Ö §ã§à§Ò§í§ä§Ú§ñ</RimTalk_EnableObservationMemoryDesc>
-    <RimTalk_EnableEventMemory>§£§Ü§Ý§ð§é§Ú§ä§î §á§Ñ§Þ§ñ§ä§î §ã§à§Ò§í§ä§Ú§Û</RimTalk_EnableEventMemory>
-    <RimTalk_EnableEventMemoryDesc>§©§Ñ§á§Ú§ã§í§Ó§Ñ§ä§î §Ó§Ñ§Ø§ß§í§Ö §ã§à§Ò§í§ä§Ú§ñ (§â§Ö§Û§Õ§í, §ã§Þ§Ö§â§ä§Ú §Ú §ä.§Õ.)</RimTalk_EnableEventMemoryDesc>
-    <RimTalk_EnableEmotionMemory>§£§Ü§Ý§ð§é§Ú§ä§î §á§Ñ§Þ§ñ§ä§î §ï§Þ§à§è§Ú§Û</RimTalk_EnableEmotionMemory>
-    <RimTalk_EnableEmotionMemoryDesc>§©§Ñ§á§Ú§ã§í§Ó§Ñ§ä§î §ï§Þ§à§è§Ú§à§ß§Ñ§Ý§î§ß§í§Ö §Ú§Ù§Þ§Ö§ß§Ö§ß§Ú§ñ</RimTalk_EnableEmotionMemoryDesc>
-    <RimTalk_EnableRelationshipMemory>§£§Ü§Ý§ð§é§Ú§ä§î §á§Ñ§Þ§ñ§ä§î §à§ä§ß§à§ê§Ö§ß§Ú§Û</RimTalk_EnableRelationshipMemory>
-    <RimTalk_EnableRelationshipMemoryDesc>§©§Ñ§á§Ú§ã§í§Ó§Ñ§ä§î §Ú§Ù§Þ§Ö§ß§Ö§ß§Ú§ñ §Ó §à§ä§ß§à§ê§Ö§ß§Ú§ñ§ç (§â§à§Þ§Ñ§ß§ä§Ú§Ü§Ñ, §Ü§à§ß§æ§Ý§Ú§Ü§ä§í §Ú §ä.§Õ.)</RimTalk_EnableRelationshipMemoryDesc>
+    <RimTalk_MemoryTypeToggles>ï¿½ï¿½ï¿½Ñ§ï¿½ï¿½ï¿½ï¿½Û§Ü§ï¿½ ï¿½ï¿½Ú§ï¿½ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½</RimTalk_MemoryTypeToggles>
+    <RimTalk_EnableInteractionMemory>ï¿½ï¿½ï¿½Ü§Ý§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½ ï¿½Ó§Ù§Ñ§Ú§Þ§ï¿½Õ§Ö§Û§ï¿½ï¿½Ó§Ú§ï¿½</RimTalk_EnableInteractionMemory>
+    <RimTalk_EnableInteractionMemoryDesc>ï¿½ï¿½ï¿½Ñ§ï¿½Ú§ï¿½ï¿½Ó§Ñ§ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ú§Ñ§Ý§ï¿½ß§ï¿½ï¿½ ï¿½Ó§Ù§Ñ§Ú§Þ§ï¿½Õ§Ö§Û§ï¿½ï¿½Ó§Ú§ï¿½ ï¿½Þ§Ö§Ø§Õ§ï¿½ ï¿½Ü§ï¿½Ý§ï¿½ß§Ú§ï¿½ï¿½Ñ§Þ§ï¿½</RimTalk_EnableInteractionMemoryDesc>
+    <RimTalk_EnableActionMemory>ï¿½ï¿½ï¿½Ü§Ý§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½ ï¿½Õ§Ö§Û§ï¿½ï¿½Ó§Ú§ï¿½</RimTalk_EnableActionMemory>
+    <RimTalk_EnableActionMemoryDesc>ï¿½ï¿½ï¿½Ñ§ï¿½Ú§ï¿½ï¿½Ó§Ñ§ï¿½ï¿½ ï¿½ï¿½Ñ§Ò§ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½Ñ§Ø§Ö§ß§Ú§ï¿½ ï¿½ï¿½ ï¿½Õ§ï¿½ï¿½Ô§Ú§ï¿½ ï¿½Õ§Ö§Û§ï¿½ï¿½Ó§Ú§ï¿½</RimTalk_EnableActionMemoryDesc>
+    <RimTalk_EnableConversationMemory>ï¿½ï¿½ï¿½Ü§Ý§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½ ï¿½ï¿½Ñ§Ù§Ô§ï¿½Ó§ï¿½ï¿½ï¿½ï¿½</RimTalk_EnableConversationMemory>
+    <RimTalk_EnableConversationMemoryDesc>ï¿½ï¿½ï¿½Ñ§ï¿½Ú§ï¿½ï¿½Ó§Ñ§ï¿½ï¿½ ï¿½Õ§Ú§Ñ§Ý§ï¿½Ô§ï¿½, ï¿½ï¿½ï¿½Ù§Õ§Ñ§ß§ß§ï¿½ï¿½ RimTalk (ï¿½ï¿½ï¿½Ö§Ò§ï¿½Ö§ï¿½ï¿½ï¿½ ï¿½Ú§ß§ï¿½Ö§Ô§ï¿½Ñ§ï¿½Ú§ï¿½ ï¿½ï¿½ RimTalk)</RimTalk_EnableConversationMemoryDesc>
+    <RimTalk_EnableObservationMemory>ï¿½ï¿½ï¿½Ü§Ý§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½ ï¿½ß§Ñ§Ò§Ý§ï¿½Õ§Ö§ß§Ú§ï¿½</RimTalk_EnableObservationMemory>
+    <RimTalk_EnableObservationMemoryDesc>ï¿½ï¿½ï¿½Ñ§ï¿½Ú§ï¿½ï¿½Ó§Ñ§ï¿½ï¿½ ï¿½ß§Ñ§Ò§Ý§ï¿½Õ§Ñ§Ö§Þ§ï¿½ï¿½ ï¿½ï¿½ï¿½Ò§ï¿½ï¿½Ú§ï¿½</RimTalk_EnableObservationMemoryDesc>
+    <RimTalk_EnableEventMemory>ï¿½ï¿½ï¿½Ü§Ý§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ò§ï¿½ï¿½Ú§ï¿½</RimTalk_EnableEventMemory>
+    <RimTalk_EnableEventMemoryDesc>ï¿½ï¿½ï¿½Ñ§ï¿½Ú§ï¿½ï¿½Ó§Ñ§ï¿½ï¿½ ï¿½Ó§Ñ§Ø§ß§ï¿½ï¿½ ï¿½ï¿½ï¿½Ò§ï¿½ï¿½Ú§ï¿½ (ï¿½ï¿½Ö§Û§Õ§ï¿½, ï¿½ï¿½Þ§Ö§ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½.ï¿½ï¿½.)</RimTalk_EnableEventMemoryDesc>
+    <RimTalk_EnableEmotionMemory>ï¿½ï¿½ï¿½Ü§Ý§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½ ï¿½ï¿½Þ§ï¿½ï¿½Ú§ï¿½</RimTalk_EnableEmotionMemory>
+    <RimTalk_EnableEmotionMemoryDesc>ï¿½ï¿½ï¿½Ñ§ï¿½Ú§ï¿½ï¿½Ó§Ñ§ï¿½ï¿½ ï¿½ï¿½Þ§ï¿½ï¿½Ú§ï¿½ß§Ñ§Ý§ï¿½ß§ï¿½ï¿½ ï¿½Ú§Ù§Þ§Ö§ß§Ö§ß§Ú§ï¿½</RimTalk_EnableEmotionMemoryDesc>
+    <RimTalk_EnableRelationshipMemory>ï¿½ï¿½ï¿½Ü§Ý§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ß§ï¿½ï¿½Ö§ß§Ú§ï¿½</RimTalk_EnableRelationshipMemory>
+    <RimTalk_EnableRelationshipMemoryDesc>ï¿½ï¿½ï¿½Ñ§ï¿½Ú§ï¿½ï¿½Ó§Ñ§ï¿½ï¿½ ï¿½Ú§Ù§Þ§Ö§ß§Ö§ß§Ú§ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ß§ï¿½ï¿½Ö§ß§Ú§ï¿½ï¿½ (ï¿½ï¿½ï¿½Þ§Ñ§ß§ï¿½Ú§Ü§ï¿½, ï¿½Ü§ï¿½ß§ï¿½Ý§Ú§Ü§ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½.ï¿½ï¿½.)</RimTalk_EnableRelationshipMemoryDesc>
     
     <!-- Memory Edit Dialog -->
-    <RimTalk_EditMemory>§²§Ö§Õ§Ñ§Ü§ä§Ú§â§à§Ó§Ñ§ä§î §Ó§à§ã§á§à§Þ§Ú§ß§Ñ§ß§Ú§Ö</RimTalk_EditMemory>
-    <RimTalk_DeleteMemory>§µ§Õ§Ñ§Ý§Ú§ä§î §Ó§à§ã§á§à§Þ§Ú§ß§Ñ§ß§Ú§Ö</RimTalk_DeleteMemory>
-    <RimTalk_PinMemory>§©§Ñ§Ü§â§Ö§á§Ú§ä§î §Ó§à§ã§á§à§Þ§Ú§ß§Ñ§ß§Ú§Ö</RimTalk_PinMemory>
-    <RimTalk_UnpinMemory>§°§ä§Ü§â§Ö§á§Ú§ä§î §Ó§à§ã§á§à§Þ§Ú§ß§Ñ§ß§Ú§Ö</RimTalk_UnpinMemory>
-    <RimTalk_MemoryContent>§³§à§Õ§Ö§â§Ø§Ñ§ß§Ú§Ö</RimTalk_MemoryContent>
-    <RimTalk_MemoryNotes>§©§Ñ§Þ§Ö§ä§Ü§Ú</RimTalk_MemoryNotes>
-    <RimTalk_MemoryTags>§´§Ö§Ô§Ú</RimTalk_MemoryTags>
-    <RimTalk_AddTag>§¥§à§Ò§Ñ§Ó§Ú§ä§î §ä§Ö§Ô</RimTalk_AddTag>
-    <RimTalk_RemoveTag>§µ§Õ§Ñ§Ý§Ú§ä§î §ä§Ö§Ô</RimTalk_RemoveTag>
-    <RimTalk_CustomTag>§±§à§Ý§î§Ù§à§Ó§Ñ§ä§Ö§Ý§î§ã§Ü§Ú§Û §ä§Ö§Ô</RimTalk_CustomTag>
-    <RimTalk_Save>§³§à§ç§â§Ñ§ß§Ú§ä§î</RimTalk_Save>
-    <RimTalk_Cancel>§°§ä§Þ§Ö§ß§Ñ</RimTalk_Cancel>
-    <RimTalk_ConfirmDelete>§±§à§Õ§ä§Ó§Ö§â§Õ§Ú§ä§î §å§Õ§Ñ§Ý§Ö§ß§Ú§Ö §ï§ä§à§Ô§à §Ó§à§ã§á§à§Þ§Ú§ß§Ñ§ß§Ú§ñ?</RimTalk_ConfirmDelete>
-    <RimTalk_MemoryUpdated>§£§à§ã§á§à§Þ§Ú§ß§Ñ§ß§Ú§Ö §à§Ò§ß§à§Ó§Ý§Ö§ß§à</RimTalk_MemoryUpdated>
-    <RimTalk_MemoryDeleted>§£§à§ã§á§à§Þ§Ú§ß§Ñ§ß§Ú§Ö §å§Õ§Ñ§Ý§Ö§ß§à</RimTalk_MemoryDeleted>
+    <RimTalk_EditMemory>ï¿½ï¿½ï¿½Ö§Õ§Ñ§Ü§ï¿½Ú§ï¿½ï¿½Ó§Ñ§ï¿½ï¿½ ï¿½Ó§ï¿½ï¿½ï¿½ï¿½Þ§Ú§ß§Ñ§ß§Ú§ï¿½</RimTalk_EditMemory>
+    <RimTalk_DeleteMemory>ï¿½ï¿½ï¿½Õ§Ñ§Ý§Ú§ï¿½ï¿½ ï¿½Ó§ï¿½ï¿½ï¿½ï¿½Þ§Ú§ß§Ñ§ß§Ú§ï¿½</RimTalk_DeleteMemory>
+    <RimTalk_PinMemory>ï¿½ï¿½ï¿½Ñ§Ü§ï¿½Ö§ï¿½Ú§ï¿½ï¿½ ï¿½Ó§ï¿½ï¿½ï¿½ï¿½Þ§Ú§ß§Ñ§ß§Ú§ï¿½</RimTalk_PinMemory>
+    <RimTalk_UnpinMemory>ï¿½ï¿½ï¿½ï¿½Ü§ï¿½Ö§ï¿½Ú§ï¿½ï¿½ ï¿½Ó§ï¿½ï¿½ï¿½ï¿½Þ§Ú§ß§Ñ§ß§Ú§ï¿½</RimTalk_UnpinMemory>
+    <RimTalk_MemoryContent>ï¿½ï¿½ï¿½ï¿½Õ§Ö§ï¿½Ø§Ñ§ß§Ú§ï¿½</RimTalk_MemoryContent>
+    <RimTalk_MemoryNotes>ï¿½ï¿½ï¿½Ñ§Þ§Ö§ï¿½Ü§ï¿½</RimTalk_MemoryNotes>
+    <RimTalk_MemoryTags>ï¿½ï¿½ï¿½Ö§Ô§ï¿½</RimTalk_MemoryTags>
+    <RimTalk_AddTag>ï¿½ï¿½ï¿½ï¿½Ò§Ñ§Ó§Ú§ï¿½ï¿½ ï¿½ï¿½Ö§ï¿½</RimTalk_AddTag>
+    <RimTalk_RemoveTag>ï¿½ï¿½ï¿½Õ§Ñ§Ý§Ú§ï¿½ï¿½ ï¿½ï¿½Ö§ï¿½</RimTalk_RemoveTag>
+    <RimTalk_CustomTag>ï¿½ï¿½ï¿½ï¿½Ý§ï¿½Ù§ï¿½Ó§Ñ§ï¿½Ö§Ý§ï¿½ï¿½Ü§Ú§ï¿½ ï¿½ï¿½Ö§ï¿½</RimTalk_CustomTag>
+    <RimTalk_Save>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ§ß§Ú§ï¿½ï¿½</RimTalk_Save>
+    <RimTalk_Cancel>ï¿½ï¿½ï¿½ï¿½Þ§Ö§ß§ï¿½</RimTalk_Cancel>
+    <RimTalk_ConfirmDelete>ï¿½ï¿½ï¿½ï¿½Õ§ï¿½Ó§Ö§ï¿½Õ§Ú§ï¿½ï¿½ ï¿½ï¿½Õ§Ñ§Ý§Ö§ß§Ú§ï¿½ ï¿½ï¿½ï¿½ï¿½Ô§ï¿½ ï¿½Ó§ï¿½ï¿½ï¿½ï¿½Þ§Ú§ß§Ñ§ß§Ú§ï¿½?</RimTalk_ConfirmDelete>
+    <RimTalk_MemoryUpdated>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ§Ú§ß§Ñ§ß§Ú§ï¿½ ï¿½ï¿½Ò§ß§ï¿½Ó§Ý§Ö§ß§ï¿½</RimTalk_MemoryUpdated>
+    <RimTalk_MemoryDeleted>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ§Ú§ß§Ñ§ß§Ú§ï¿½ ï¿½ï¿½Õ§Ñ§Ý§Ö§ß§ï¿½</RimTalk_MemoryDeleted>
     
     <!-- Memory Actions -->
-    <RimTalk_ClearAll>§°§é§Ú§ã§ä§Ú§ä§î §Ó§ã§Ö</RimTalk_ClearAll>
-    <RimTalk_ClearShortTerm>§°§é§Ú§ã§ä§Ú§ä§î §Ü§â§Ñ§ä§Ü§à§Ó§â§Ö§Þ§Ö§ß§ß§å§ð</RimTalk_ClearShortTerm>
-    <RimTalk_ClearLongTerm>§°§é§Ú§ã§ä§Ú§ä§î §Õ§à§Ý§Ô§à§Ó§â§Ö§Þ§Ö§ß§ß§å§ð</RimTalk_ClearLongTerm>
-    <RimTalk_ConfirmClearAll>§±§à§Õ§ä§Ó§Ö§â§Õ§Ú§ä§î §à§é§Ú§ã§ä§Ü§å §Ó§ã§Ö§ç §Ó§à§ã§á§à§Þ§Ú§ß§Ñ§ß§Ú§Û?</RimTalk_ConfirmClearAll>
-    <RimTalk_ConfirmClearShortTerm>§±§à§Õ§ä§Ó§Ö§â§Õ§Ú§ä§î §à§é§Ú§ã§ä§Ü§å §Ü§â§Ñ§ä§Ü§à§Ó§â§Ö§Þ§Ö§ß§ß§à§Û §á§Ñ§Þ§ñ§ä§Ú?</RimTalk_ConfirmClearShortTerm>
-    <RimTalk_ConfirmClearLongTerm>§±§à§Õ§ä§Ó§Ö§â§Õ§Ú§ä§î §à§é§Ú§ã§ä§Ü§å §Õ§à§Ý§Ô§à§Ó§â§Ö§Þ§Ö§ß§ß§à§Û §á§Ñ§Þ§ñ§ä§Ú?</RimTalk_ConfirmClearLongTerm>
+    <RimTalk_ClearAll>ï¿½ï¿½ï¿½ï¿½Ú§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½Ó§ï¿½ï¿½</RimTalk_ClearAll>
+    <RimTalk_ClearShortTerm>ï¿½ï¿½ï¿½ï¿½Ú§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½Ü§ï¿½Ñ§ï¿½Ü§ï¿½Ó§ï¿½Ö§Þ§Ö§ß§ß§ï¿½ï¿½</RimTalk_ClearShortTerm>
+    <RimTalk_ClearLongTerm>ï¿½ï¿½ï¿½ï¿½Ú§ï¿½ï¿½Ú§ï¿½ï¿½ ï¿½Õ§ï¿½Ý§Ô§ï¿½Ó§ï¿½Ö§Þ§Ö§ß§ß§ï¿½ï¿½</RimTalk_ClearLongTerm>
+    <RimTalk_ConfirmClearAll>ï¿½ï¿½ï¿½ï¿½Õ§ï¿½Ó§Ö§ï¿½Õ§Ú§ï¿½ï¿½ ï¿½ï¿½ï¿½Ú§ï¿½ï¿½Ü§ï¿½ ï¿½Ó§ï¿½Ö§ï¿½ ï¿½Ó§ï¿½ï¿½ï¿½ï¿½Þ§Ú§ß§Ñ§ß§Ú§ï¿½?</RimTalk_ConfirmClearAll>
+    <RimTalk_ConfirmClearShortTerm>ï¿½ï¿½ï¿½ï¿½Õ§ï¿½Ó§Ö§ï¿½Õ§Ú§ï¿½ï¿½ ï¿½ï¿½ï¿½Ú§ï¿½ï¿½Ü§ï¿½ ï¿½Ü§ï¿½Ñ§ï¿½Ü§ï¿½Ó§ï¿½Ö§Þ§Ö§ß§ß§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½?</RimTalk_ConfirmClearShortTerm>
+    <RimTalk_ConfirmClearLongTerm>ï¿½ï¿½ï¿½ï¿½Õ§ï¿½Ó§Ö§ï¿½Õ§Ú§ï¿½ï¿½ ï¿½ï¿½ï¿½Ú§ï¿½ï¿½Ü§ï¿½ ï¿½Õ§ï¿½Ý§Ô§ï¿½Ó§ï¿½Ö§Þ§Ö§ß§ß§ï¿½ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½?</RimTalk_ConfirmClearLongTerm>
     
     <!-- Other -->
-    <RimTalk_With>§ã</RimTalk_With>
-    <RimTalk_ObservationPlaceholder>(§©§Ñ§á§à§Ý§ß§Ú§ä§Ö§Ý§î §á§Ñ§Þ§ñ§ä§Ú §ß§Ñ§Ò§Ý§ð§Õ§Ö§ß§Ú§Û - §Ö§ë§Ö §ß§Ö §â§Ö§Ñ§Ý§Ú§Ù§à§Ó§Ñ§ß§à)</RimTalk_ObservationPlaceholder>
+    <RimTalk_With>ï¿½ï¿½</RimTalk_With>
+    <RimTalk_ObservationPlaceholder>(ï¿½ï¿½ï¿½Ñ§ï¿½ï¿½Ý§ß§Ú§ï¿½Ö§Ý§ï¿½ ï¿½ï¿½Ñ§Þ§ï¿½ï¿½ï¿½ ï¿½ß§Ñ§Ò§Ý§ï¿½Õ§Ö§ß§Ú§ï¿½ - ï¿½Ö§ï¿½ï¿½ ï¿½ß§ï¿½ ï¿½ï¿½Ö§Ñ§Ý§Ú§Ù§ï¿½Ó§Ñ§ß§ï¿½)</RimTalk_ObservationPlaceholder>
 </LanguageData>

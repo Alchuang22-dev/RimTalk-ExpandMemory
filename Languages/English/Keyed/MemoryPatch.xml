@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
     <!-- RimTalk Memory Patch - English translations -->
     
@@ -113,4 +113,78 @@
     <!-- Other -->
     <RimTalk_With>with</RimTalk_With>
     <RimTalk_ObservationPlaceholder>(Observation memory placeholder - not yet implemented)</RimTalk_ObservationPlaceholder>
+    
+    <!-- ==================== Settings UI Translations ==================== -->
+    
+    <!-- Knowledge Library Management -->
+    <RimTalk_Settings_KnowledgeLibraryTitle>Knowledge Library Management</RimTalk_Settings_KnowledgeLibraryTitle>
+    <RimTalk_Settings_KnowledgeLibraryDesc>Manage global knowledge library for dynamic injection into conversations</RimTalk_Settings_KnowledgeLibraryDesc>
+    <RimTalk_Settings_OpenKnowledgeLibrary>Open Knowledge Library</RimTalk_Settings_OpenKnowledgeLibrary>
+    <RimTalk_Settings_MustEnterGame>Must enter game first</RimTalk_Settings_MustEnterGame>
+    <RimTalk_Settings_CannotFindManager>Cannot find memory manager</RimTalk_Settings_CannotFindManager>
+    
+    <!-- Dynamic Injection Settings -->
+    <RimTalk_Settings_DynamicInjectionTitle>Dynamic Injection Settings</RimTalk_Settings_DynamicInjectionTitle>
+    <RimTalk_Settings_EnableDynamicInjection>Enable Dynamic Injection</RimTalk_Settings_EnableDynamicInjection>
+    <RimTalk_Settings_DynamicInjectionDesc>Automatically select relevant memories and knowledge based on context</RimTalk_Settings_DynamicInjectionDesc>
+    <RimTalk_Settings_StaticInjectionNote>Use static injection (fixed order)</RimTalk_Settings_StaticInjectionNote>
+    <RimTalk_Settings_MaxInjectedMemories>Max Injected Memories</RimTalk_Settings_MaxInjectedMemories>
+    <RimTalk_Settings_MaxInjectedKnowledge>Max Injected Knowledge</RimTalk_Settings_MaxInjectedKnowledge>
+    
+    <!-- Weight Configuration -->
+    <RimTalk_Settings_MemoryWeights>Memory Weights</RimTalk_Settings_MemoryWeights>
+    <RimTalk_Settings_KnowledgeWeights>Knowledge Weights</RimTalk_Settings_KnowledgeWeights>
+    <RimTalk_Settings_TimeDecay>Time Decay</RimTalk_Settings_TimeDecay>
+    <RimTalk_Settings_Importance>Importance</RimTalk_Settings_Importance>
+    <RimTalk_Settings_KeywordMatch>Keyword Match</RimTalk_Settings_KeywordMatch>
+    <RimTalk_Settings_KeywordMatchAuto>Keyword Match (Auto)</RimTalk_Settings_KeywordMatchAuto>
+    <RimTalk_Settings_TagMatch>Tag Match</RimTalk_Settings_TagMatch>
+    
+    <!-- Score Threshold -->
+    <RimTalk_Settings_ScoreThresholdTitle>Score Threshold Configuration</RimTalk_Settings_ScoreThresholdTitle>
+    <RimTalk_Settings_MemoryScoreThreshold>Memory Score Threshold</RimTalk_Settings_MemoryScoreThreshold>
+    <RimTalk_Settings_KnowledgeScoreThreshold>Knowledge Score Threshold</RimTalk_Settings_KnowledgeScoreThreshold>
+    
+    <!-- Memory Capacity Settings -->
+    <RimTalk_Settings_MemoryCapacityTitle>Memory Capacity Settings</RimTalk_Settings_MemoryCapacityTitle>
+    <RimTalk_Settings_ABMCapacity>ABM Capacity: 6 (Fixed)</RimTalk_Settings_ABMCapacity>
+    <RimTalk_Settings_SCMCapacity>SCM Capacity: {0}</RimTalk_Settings_SCMCapacity>
+    <RimTalk_Settings_ELSCapacity>ELS Capacity: {0}</RimTalk_Settings_ELSCapacity>
+    <RimTalk_Settings_CLPACapacity>CLPA Capacity: Unlimited</RimTalk_Settings_CLPACapacity>
+    
+    <!-- Decay Rate Settings -->
+    <RimTalk_Settings_DecayRatesTitle>Memory Decay Rates</RimTalk_Settings_DecayRatesTitle>
+    <RimTalk_Settings_SCMDecay>SCM Decay Rate</RimTalk_Settings_SCMDecay>
+    <RimTalk_Settings_ELSDecay>ELS Decay Rate</RimTalk_Settings_ELSDecay>
+    <RimTalk_Settings_CLPADecay>CLPA Decay Rate</RimTalk_Settings_CLPADecay>
+    
+    <!-- Summarization Settings -->
+    <RimTalk_Settings_SummarizationTitle>Memory Summarization Settings</RimTalk_Settings_SummarizationTitle>
+    <RimTalk_Settings_EnableELSSummarization>Enable ELS Auto-Summarization</RimTalk_Settings_EnableELSSummarization>
+    <RimTalk_Settings_TriggerTime>Trigger Time: Game Hour {0}</RimTalk_Settings_TriggerTime>
+    <RimTalk_Settings_MaxSummaryLength>Max Summary Length: {0} chars</RimTalk_Settings_MaxSummaryLength>
+    <RimTalk_Settings_EnableCLPAArchive>Enable CLPA Auto-Archive</RimTalk_Settings_EnableCLPAArchive>
+    <RimTalk_Settings_ArchiveInterval>Archive Interval: Every {0} days</RimTalk_Settings_ArchiveInterval>
+    
+    <!-- AI Configuration -->
+    <RimTalk_Settings_AIConfigTitle>AI Configuration</RimTalk_Settings_AIConfigTitle>
+    <RimTalk_Settings_PreferRimTalkAI>Prefer RimTalk's AI Configuration</RimTalk_Settings_PreferRimTalkAI>
+    <RimTalk_Settings_WillUseRimTalkConfig>Will use RimTalk's AI configuration</RimTalk_Settings_WillUseRimTalkConfig>
+    <RimTalk_Settings_FallbackToIndependent>Fallback to independent config if RimTalk AI is not configured</RimTalk_Settings_FallbackToIndependent>
+    <RimTalk_Settings_UseIndependentConfig>Use independent AI configuration</RimTalk_Settings_UseIndependentConfig>
+    <RimTalk_Settings_IndependentAIConfig>Independent AI Configuration</RimTalk_Settings_IndependentAIConfig>
+    <RimTalk_Settings_Provider>Provider</RimTalk_Settings_Provider>
+    <RimTalk_Settings_APIKey>API Key</RimTalk_Settings_APIKey>
+    <RimTalk_Settings_APIURL>API URL</RimTalk_Settings_APIURL>
+    <RimTalk_Settings_ModelName>Model Name</RimTalk_Settings_ModelName>
+    
+    <!-- Memory Type Settings -->
+    <RimTalk_Settings_MemoryTypesTitle>Memory Type Toggles</RimTalk_Settings_MemoryTypesTitle>
+    <RimTalk_Settings_ActionMemory>Action Memory</RimTalk_Settings_ActionMemory>
+    <RimTalk_Settings_ConversationMemory>Conversation Memory</RimTalk_Settings_ConversationMemory>
+    
+    <!-- Debug Tools -->
+    <RimTalk_Settings_DebugToolsTitle>Debug Tools</RimTalk_Settings_DebugToolsTitle>
+    <RimTalk_Settings_OpenInjectionPreviewer>Open Injection Previewer</RimTalk_Settings_OpenInjectionPreviewer>
+    <RimTalk_Settings_PreviewerDesc>Preview real-time dynamic injection of memories and knowledge</RimTalk_Settings_PreviewerDesc>
 </LanguageData>

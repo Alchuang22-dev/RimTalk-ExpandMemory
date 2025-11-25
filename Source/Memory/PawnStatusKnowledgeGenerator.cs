@@ -3,42 +3,57 @@ using System.Collections.Generic;
 using System.Linq;
 using Verse;
 using RimWorld;
+using RimTalk.MemoryPatch;
 
 namespace RimTalk.Memory
 {
     /// <summary>
     /// 自动生成Pawn状态常识（新人/老人标识）
+    /// 每24小时更新一次，保留玩家手动修改
     /// </summary>
     public static class PawnStatusKnowledgeGenerator
     {
+        // 记录每个Pawn上次更新时间
+        private static Dictionary<int, int> lastUpdateTicks = new Dictionary<int, int>();
+        private const int UPDATE_INTERVAL_TICKS = 60000; // 24小时 = 60000 ticks
+        
         /// <summary>
-        /// 更新所有殖民者的状态常识
-        /// 增加防护：避免重复处理同名Pawn
+        /// 更新所有殖民者的状态常识（每小时调用一次）
+        /// 只更新距离上次更新>=24小时的Pawn
         /// </summary>
         public static void UpdateAllColonistStatus()
         {
+            if (!RimTalkMemoryPatchMod.Settings.enablePawnStatusKnowledge)
+                return;
+            
             var library = MemoryManager.GetCommonKnowledge();
             if (library == null) return;
 
             int currentTick = Find.TickManager.TicksGame;
+            int updatedCount = 0;
             
-            // 使用HashSet防止处理同名Pawn
-            var processedNames = new HashSet<string>();
-
             foreach (var map in Find.Maps)
             {
                 foreach (var pawn in map.mapPawns.FreeColonists)
                 {
-                    // 跳过已处理的同名Pawn
-                    string uniqueKey = $"{pawn.LabelShort}_{pawn.thingIDNumber}";
-                    if (processedNames.Contains(uniqueKey))
-                        continue;
-                    
-                    processedNames.Add(uniqueKey);
-                    
                     try
                     {
-                        UpdatePawnStatusKnowledge(pawn, library, currentTick);
+                        // 检查是否需要更新（24小时间隔）
+                        int pawnID = pawn.thingIDNumber;
+                        
+                        if (!lastUpdateTicks.TryGetValue(pawnID, out int lastUpdate))
+                        {
+                            lastUpdate = 0; // 首次更新
+                        }
+                        
+                        int ticksSinceUpdate = currentTick - lastUpdate;
+                        
+                        if (ticksSinceUpdate >= UPDATE_INTERVAL_TICKS)
+                        {
+                            UpdatePawnStatusKnowledge(pawn, library, currentTick);
+                            lastUpdateTicks[pawnID] = currentTick;
+                            updatedCount++;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -46,12 +61,16 @@ namespace RimTalk.Memory
                     }
                 }
             }
+            
+            if (updatedCount > 0 && Prefs.DevMode)
+            {
+                Log.Message($"[PawnStatus] Updated {updatedCount} colonist status knowledge entries");
+            }
         }
 
         /// <summary>
         /// 为单个Pawn更新状态常识
-        /// 增强版：使用唯一ID避免同名冲突
-        /// 跳过婴幼儿（不会说话的年龄段）
+        /// 保留玩家的手动修改（重要性、自定义内容等）
         /// </summary>
         public static void UpdatePawnStatusKnowledge(Pawn pawn, CommonKnowledgeLibrary library, int currentTick)
         {
@@ -59,57 +78,73 @@ namespace RimTalk.Memory
 
             try
             {
-                // 跳过婴幼儿（3岁以下，不会说话）
+                // 婴儿阶段（<3岁）不生成状态
                 if (pawn.RaceProps != null && pawn.RaceProps.Humanlike)
                 {
                     float ageYears = pawn.ageTracker.AgeBiologicalYearsFloat;
                     if (ageYears < 3f)
                     {
-                        // 婴幼儿不生成状态常识，但需要清理可能存在的旧常识
                         CleanupPawnStatusKnowledge(pawn);
                         return;
                     }
                 }
                 
-                // 计算在殖民地的时间
+                // 计算入殖时长
                 int joinTick = pawn.records.GetAsInt(RecordDefOf.TimeAsColonistOrColonyAnimal);
-                int daysInColony = joinTick / GenDate.TicksPerDay;
+                int ticksInColony = currentTick - joinTick;
+                int daysInColony = ticksInColony / GenDate.TicksPerDay;
 
-                // 使用唯一标识避免同名冲突
-                string statusTag = $"{pawn.LabelShort},状态";
-                var existingEntry = library.Entries.FirstOrDefault(e => e.tag == statusTag);
+                // 使用唯一标签
+                string statusTag = $"殖民者,{pawn.LabelShort}";
+                var existingEntry = library.Entries.FirstOrDefault(e => 
+                    e.tag.Contains(pawn.LabelShort) && 
+                    e.tag.Contains("殖民者")
+                );
 
-                string content = GenerateStatusContent(pawn, daysInColony);
-                float importance = GetStatusImportance(daysInColony);
+                string newContent = GenerateStatusContent(pawn, daysInColony);
+                float defaultImportance = GetStatusImportance(daysInColony);
 
                 if (existingEntry != null)
                 {
-                    // 更新现有常识（只在内容变化时更新）
-                    if (existingEntry.content != content || Math.Abs(existingEntry.importance - importance) > 0.01f)
+                    // 检查是否为自动生成的内容（没有被玩家编辑）
+                    bool isAutoGenerated = !existingEntry.isUserEdited && 
+                                          IsAutoGeneratedContent(existingEntry.content);
+                    
+                    if (isAutoGenerated)
                     {
-                        existingEntry.content = content;
-                        existingEntry.importance = importance;
+                        // 只更新自动生成的内容
+                        existingEntry.content = newContent;
+                        existingEntry.importance = defaultImportance;
                         
                         if (Prefs.DevMode)
                         {
-                            Log.Message($"[PawnStatus] Updated status for {pawn.LabelShort} (importance: {importance:F2}): {content.Substring(0, Math.Min(50, content.Length))}...");
+                            Log.Message($"[PawnStatus] Auto-updated: {pawn.LabelShort} -> {newContent.Substring(0, Math.Min(50, newContent.Length))}...");
+                        }
+                    }
+                    else
+                    {
+                        // 保留玩家的手动修改
+                        if (Prefs.DevMode)
+                        {
+                            Log.Message($"[PawnStatus] Preserved user edits for {pawn.LabelShort}");
                         }
                     }
                 }
                 else
                 {
                     // 创建新常识
-                    var newEntry = new CommonKnowledgeEntry(statusTag, content)
+                    var newEntry = new CommonKnowledgeEntry(statusTag, newContent)
                     {
-                        importance = importance,
-                        isEnabled = true
+                        importance = defaultImportance,
+                        isEnabled = true,
+                        isUserEdited = false
                     };
                     
                     library.AddEntry(newEntry);
                     
                     if (Prefs.DevMode)
                     {
-                        Log.Message($"[PawnStatus] Created status for {pawn.LabelShort} (importance: {importance:F2})");
+                        Log.Message($"[PawnStatus] Created: {pawn.LabelShort} (importance: {defaultImportance:F2})");
                     }
                 }
             }
@@ -120,76 +155,83 @@ namespace RimTalk.Memory
         }
 
         /// <summary>
-        /// 生成状态描述文本
-        /// 增强版：自动包含种族信息，可部分取代成员名单
+        /// 生成状态内容文本
         /// </summary>
         private static string GenerateStatusContent(Pawn pawn, int daysInColony)
         {
             string name = pawn.LabelShort;
             string race = pawn.def?.label ?? "未知种族";
             
+            // 根据时长生成不同的描述
             if (daysInColony < 1)
             {
-                // 刚加入（不到1天）
                 return $"{name}({race})是今天刚加入殖民地的新成员，对这里还很陌生，不了解殖民地的历史";
             }
             else if (daysInColony < 3)
             {
-                // 1-3天
-                return $"{name}({race})是{daysInColony}天前加入的新成员，刚开始熟悉殖民地，不了解之前的事情";
+                return $"{name}({race})在{daysInColony}天前成为殖民者，刚开始熟悉殖民地，不了解之前发生的事";
             }
             else if (daysInColony < 7)
             {
-                // 3-7天
-                return $"{name}({race})加入殖民地已经{daysInColony}天，还在适应期，对殖民地的过往不太了解";
+                return $"{name}({race})来到殖民地已经{daysInColony}天，正在适应中，对殖民地的过去不太了解";
             }
             else if (daysInColony < 15)
             {
-                // 1-2周
-                return $"{name}({race})已经在殖民地生活了{daysInColony}天，开始融入集体，但对更早的历史还不清楚";
+                return $"{name}({race})已经在殖民地生活了{daysInColony}天，开始融入集体，可能略知一些历史事件";
             }
             else if (daysInColony < 30)
             {
-                // 2-4周
-                return $"{name}({race})已经是殖民地的一员（{daysInColony}天），熟悉最近的事情，但对更早的历史了解有限";
+                return $"{name}({race})已经是殖民地的一员（{daysInColony}天），熟悉日常事务，可能略知一些历史但了解有限";
             }
             else if (daysInColony < 60)
             {
-                // 1-2个月
-                return $"{name}({race})已经在殖民地生活了{daysInColony}天，是正式成员，了解最近一个月的事件";
+                return $"{name}({race})已经在殖民地生活了{daysInColony}天，正式成员，了解近一两个月的事件";
             }
             else
             {
-                // 2个月以上 - 老成员
                 return $"{name}({race})是殖民地的老成员（{daysInColony}天），见证了殖民地的发展历程";
             }
         }
 
         /// <summary>
-        /// 根据在殖民地的时间计算重要性
-        /// 修复：婴幼儿问题 - 3岁以下已被跳过，不会调用此方法
+        /// 根据入殖时长计算重要性
         /// </summary>
         private static float GetStatusImportance(int daysInColony)
         {
-            // 新成员（7天内）：最高重要性，需要强调
             if (daysInColony < 7)
             {
-                return 1.0f;  // 修复：从0.95改为1.0
+                return 1.0f;  // 新成员，非常重要
             }
-            // 适应期（7-30天）：高重要性
             else if (daysInColony < 30)
             {
-                return 0.85f;  // 修复：从0.80改为0.85
+                return 0.85f;  // 适应期，较高重要性
             }
-            // 老成员（30天以上）：中等重要性
             else
             {
-                return 0.70f;  // 修复：从0.60改为0.70
+                return 0.70f;  // 老成员，中等重要性
             }
         }
 
         /// <summary>
-        /// 清理过期的状态常识（当Pawn离开或死亡）
+        /// 检查内容是否为自动生成的（没有被玩家编辑）
+        /// </summary>
+        private static bool IsAutoGeneratedContent(string content)
+        {
+            if (string.IsNullOrEmpty(content))
+                return false;
+            
+            // 检查是否包含自动生成的特征词
+            var autoKeywords = new[] 
+            { 
+                "刚加入", "成为殖民者", "来到殖民地", "生活了", 
+                "是殖民地的", "见证了", "天前", "老成员", "新成员"
+            };
+            
+            return autoKeywords.Any(k => content.Contains(k));
+        }
+
+        /// <summary>
+        /// 清除过期的状态常识（Pawn离开或死亡）
         /// </summary>
         public static void CleanupPawnStatusKnowledge(Pawn pawn)
         {
@@ -198,17 +240,45 @@ namespace RimTalk.Memory
             var library = MemoryManager.GetCommonKnowledge();
             if (library == null) return;
 
-            string statusTag = $"{pawn.LabelShort},状态";
-            var entry = library.Entries.FirstOrDefault(e => e.tag == statusTag);
+            var entry = library.Entries.FirstOrDefault(e => 
+                e.tag.Contains(pawn.LabelShort) && 
+                e.tag.Contains("殖民者")
+            );
             
             if (entry != null)
             {
                 library.RemoveEntry(entry);
                 
+                // 清除更新记录
+                lastUpdateTicks.Remove(pawn.thingIDNumber);
+                
                 if (Prefs.DevMode)
                 {
                     Log.Message($"[PawnStatus] Removed status for {pawn.LabelShort}");
                 }
+            }
+        }
+        
+        /// <summary>
+        /// 清理更新记录（用于保存/加载）
+        /// </summary>
+        public static void CleanupUpdateRecords()
+        {
+            // 移除不存在的Pawn记录
+            var allColonistIDs = new HashSet<int>();
+            
+            foreach (var map in Find.Maps)
+            {
+                foreach (var pawn in map.mapPawns.FreeColonists)
+                {
+                    allColonistIDs.Add(pawn.thingIDNumber);
+                }
+            }
+            
+            var toRemove = lastUpdateTicks.Keys.Where(id => !allColonistIDs.Contains(id)).ToList();
+            foreach (var id in toRemove)
+            {
+                lastUpdateTicks.Remove(id);
             }
         }
     }

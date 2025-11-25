@@ -19,6 +19,7 @@ namespace RimTalk.Memory.Debug
         private string cachedPreview = "";
         private int cachedMemoryCount = 0;
         private int cachedKnowledgeCount = 0;
+        private string contextInput = "";  // ⭐ 新增：上下文输入
 
         public override Vector2 InitialSize => new Vector2(1000f, 750f);
 
@@ -49,7 +50,7 @@ namespace RimTalk.Memory.Debug
             yPos += 40f;
 
             // 殖民者选择器（当前角色 + 目标角色）
-            DrawPawnSelectors(new Rect(0f, yPos, inRect.width, 80f));  // ⬅️ 增加高度
+            DrawPawnSelectors(new Rect(0f, yPos, inRect.width, 80f));
             yPos += 85f;
 
             if (selectedPawn == null)
@@ -62,6 +63,10 @@ namespace RimTalk.Memory.Debug
                 Text.Anchor = TextAnchor.UpperLeft;
                 return;
             }
+
+            // ⭐ 新增：上下文输入框
+            DrawContextInput(new Rect(0f, yPos, inRect.width, 80f));
+            yPos += 85f;
 
             // 统计信息
             DrawStats(new Rect(0f, yPos, inRect.width, 80f));
@@ -322,8 +327,22 @@ namespace RimTalk.Memory.Debug
                 preview.AppendLine();
                 
                 preview.AppendLine($"殖民者: {selectedPawn.LabelShort}");
+                if (targetPawn != null)
+                {
+                    preview.AppendLine($"目标角色: {targetPawn.LabelShort}");
+                }
                 preview.AppendLine($"时间: {Find.TickManager.TicksGame.ToStringTicksToPeriod()}");
                 preview.AppendLine($"注入模式: {(settings.useDynamicInjection ? "动态评分" : "静态顺序")}");
+                
+                // ⭐ 显示上下文输入状态
+                if (string.IsNullOrEmpty(contextInput))
+                {
+                    preview.AppendLine($"上下文: 空（基于重要性+层级评分）");
+                }
+                else
+                {
+                    preview.AppendLine($"上下文: \"{contextInput.Substring(0, Math.Min(50, contextInput.Length))}...\"");
+                }
                 preview.AppendLine();
                 
                 // 先获取记忆和常识内容
@@ -334,9 +353,12 @@ namespace RimTalk.Memory.Debug
 
                 if (settings.useDynamicInjection)
                 {
+                    // ⭐ 使用用户输入的上下文
+                    string actualContext = string.IsNullOrEmpty(contextInput) ? "" : contextInput;
+                    
                     memoryInjection = DynamicMemoryInjection.InjectMemoriesWithDetails(
                         memoryComp, 
-                        "", 
+                        actualContext,  // ⬅️ 使用实际上下文
                         settings.maxInjectedMemories,
                         out memoryScores
                     );
@@ -345,21 +367,25 @@ namespace RimTalk.Memory.Debug
                 var library = MemoryManager.GetCommonKnowledge();
                 KeywordExtractionInfo keywordInfo;
                 
-                // 构造测试上下文：使用角色名作为种子，这样可以触发关键词匹配
-                string testContext = selectedPawn != null ? selectedPawn.LabelShort : "";
-                if (targetPawn != null)
+                // ⭐ 使用实际上下文（如果为空，则使用角色名作为种子）
+                string testContext = string.IsNullOrEmpty(contextInput) ? "" : contextInput;
+                if (string.IsNullOrEmpty(testContext))
                 {
-                    testContext += " " + targetPawn.LabelShort;
+                    testContext = selectedPawn != null ? selectedPawn.LabelShort : "";
+                    if (targetPawn != null)
+                    {
+                        testContext += " " + targetPawn.LabelShort;
+                    }
                 }
                 
-                // 传递targetPawn参数 ⭐
+                // 传递targetPawn参数
                 knowledgeInjection = library.InjectKnowledgeWithDetails(
-                    testContext,  // 传递角色名作为上下文，触发关键词匹配
+                    testContext,  // ⬅️ 使用实际上下文
                     settings.maxInjectedKnowledge,
                     out knowledgeScores,
                     out keywordInfo,
-                    selectedPawn,  // 传递当前Pawn以提取角色关键词
-                    targetPawn     // 传递目标Pawn ⭐
+                    selectedPawn,
+                    targetPawn
                 );
 
                 cachedMemoryCount = memoryScores?.Count ?? 0;
@@ -660,6 +686,93 @@ namespace RimTalk.Memory.Debug
             }
         }
 
+        /// <summary>
+        /// ⭐ 新增：绘制上下文输入框
+        /// </summary>
+        private void DrawContextInput(Rect rect)
+        {
+            // 标签
+            GUI.color = new Color(1f, 0.9f, 0.8f);
+            Widgets.Label(new Rect(rect.x, rect.y, 120f, 30f), "上下文输入：");
+            GUI.color = Color.white;
+            
+            // ⭐ 新增：读取上次RimTalk输入按钮
+            Rect loadButtonRect = new Rect(rect.x + rect.width - 150f, rect.y, 140f, 30f);
+            if (Widgets.ButtonText(loadButtonRect, "读取上次输入 📥"))
+            {
+                LoadLastRimTalkContext();
+            }
+            TooltipHandler.TipRegion(loadButtonRect, "从RimTalk读取最后一次发送给AI的对话内容\n（仅当RimTalk已安装且有对话记录时可用）");
+            
+            // 输入框 - 使用TextArea支持多行
+            Rect textFieldRect = new Rect(rect.x + 130f, rect.y, rect.width - 290f, 60f);
+            
+            string newInput = Widgets.TextArea(textFieldRect, contextInput);
+            if (newInput != contextInput)
+            {
+                contextInput = newInput;
+                cachedPreview = ""; // 清空缓存，标记需要刷新
+            }
+            
+            // 提示文字（如果为空）
+            if (string.IsNullOrEmpty(contextInput))
+            {
+                GUI.color = Color.gray;
+                Widgets.Label(new Rect(textFieldRect.x + 5f, textFieldRect.y + 5f, textFieldRect.width - 10f, 40f), 
+                    "输入对话上下文（例如：最近的对话内容、话题等）\n留空则仅基于重要性和层级评分");
+                GUI.color = Color.white;
+            }
+        }
+
+        /// <summary>
+        /// ⭐ 新增：从RimTalk加载最后一次请求的上下文
+        /// </summary>
+        private void LoadLastRimTalkContext()
+        {
+            try
+            {
+                // 尝试通过API获取最后一次请求
+                string lastContext = RimTalk.Memory.Patches.RimTalkMemoryAPI.GetLastRimTalkContext(
+                    out Pawn lastPawn, 
+                    out int lastTick
+                );
+                
+                if (string.IsNullOrEmpty(lastContext))
+                {
+                    Messages.Message("未找到RimTalk的最近对话记录", MessageTypeDefOf.RejectInput, false);
+                    return;
+                }
+                
+                // 计算距离上次请求的时间
+                int currentTick = Find.TickManager.TicksGame;
+                int ticksAgo = currentTick - lastTick;
+                string timeAgo = ticksAgo < 60 ? "刚刚" : 
+                                ticksAgo < 2500 ? $"{ticksAgo / 60}分钟前" : 
+                                ticksAgo < 60000 ? $"{ticksAgo / 2500}小时前" : 
+                                $"{ticksAgo / 60000}天前";
+                
+                // 设置上下文
+                contextInput = lastContext;
+                
+                // 如果殖民者不同，也切换殖民者
+                if (lastPawn != null && lastPawn != selectedPawn)
+                {
+                    selectedPawn = lastPawn;
+                }
+                
+                // 清空缓存，标记需要刷新
+                cachedPreview = "";
+                
+                // 显示成功消息
+                string pawnName = lastPawn != null ? lastPawn.LabelShort : "未知";
+                Messages.Message($"已加载 {pawnName} 的最后一次对话（{timeAgo}）", MessageTypeDefOf.PositiveEvent, false);
+            }
+            catch (Exception ex)
+            {
+                Messages.Message("读取失败：" + ex.Message, MessageTypeDefOf.RejectInput, false);
+            }
+        }
+        
         private string GetMemorySourceTag(MemoryLayer layer)
         {
             switch (layer)

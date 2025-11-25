@@ -46,6 +46,9 @@ namespace RimTalk.MemoryPatch
         
         // === Pawn状态常识自动生成 ===
         public bool enablePawnStatusKnowledge = true;  // 自动生成新人/老人状态常识
+        
+        // === 事件记录常识自动生成 ===
+        public bool enableEventRecordKnowledge = false; // 自动生成事件记录常识（默认关闭）
 
         // === 对话缓存设置 ===
         public bool enableConversationCache = true;   // 启用对话缓存
@@ -121,6 +124,9 @@ namespace RimTalk.MemoryPatch
         
         // Pawn状态常识
         Scribe_Values.Look(ref enablePawnStatusKnowledge, "pawnStatus_enablePawnStatusKnowledge", true);
+        
+        // 事件记录常识
+        Scribe_Values.Look(ref enableEventRecordKnowledge, "eventRecord_enableEventRecordKnowledge", false);
 
         // 对话缓存设置
         Scribe_Values.Look(ref enableConversationCache, "cache_enableConversationCache", true);
@@ -567,25 +573,6 @@ namespace RimTalk.MemoryPatch
         {
             listing.CheckboxLabeled("RimTalk_Settings_ActionMemory".Translate(), ref enableActionMemory);
             listing.CheckboxLabeled("RimTalk_Settings_ConversationMemory".Translate(), ref enableConversationMemory);
-            
-            listing.Gap();
-            listing.GapLine();
-            
-            listing.CheckboxLabeled("RimTalk_Settings_PawnStatusKnowledge".Translate(), ref enablePawnStatusKnowledge);
-            
-            if (enablePawnStatusKnowledge)
-            {
-                GUI.color = new Color(0.8f, 1f, 0.8f);
-                listing.Label("  " + "RimTalk_Settings_PawnStatusDesc".Translate());
-                listing.Label("  " + "RimTalk_Settings_PawnStatusExample".Translate());
-                GUI.color = Color.white;
-            }
-            else
-            {
-                GUI.color = Color.gray;
-                listing.Label("  " + "RimTalk_Settings_PawnStatusWarning".Translate());
-                GUI.color = Color.white;
-            }
         }
         
         private void OpenCommonKnowledgeDialog()

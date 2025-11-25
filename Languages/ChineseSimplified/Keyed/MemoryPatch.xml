@@ -111,4 +111,78 @@
     <!-- Other -->
     <RimTalk_With>与</RimTalk_With>
     <RimTalk_ObservationPlaceholder>（观察记忆占位，尚未实现）</RimTalk_ObservationPlaceholder>
+    
+    <!-- ==================== 设置界面翻译 ==================== -->
+    
+    <!-- 常识库管理 -->
+    <RimTalk_Settings_KnowledgeLibraryTitle>常识库管理</RimTalk_Settings_KnowledgeLibraryTitle>
+    <RimTalk_Settings_KnowledgeLibraryDesc>管理全局常识库，用于动态注入到对话中</RimTalk_Settings_KnowledgeLibraryDesc>
+    <RimTalk_Settings_OpenKnowledgeLibrary>打开常识库管理</RimTalk_Settings_OpenKnowledgeLibrary>
+    <RimTalk_Settings_MustEnterGame>必须先进入游戏</RimTalk_Settings_MustEnterGame>
+    <RimTalk_Settings_CannotFindManager>无法找到记忆管理器</RimTalk_Settings_CannotFindManager>
+    
+    <!-- 动态注入设置 -->
+    <RimTalk_Settings_DynamicInjectionTitle>动态注入设置</RimTalk_Settings_DynamicInjectionTitle>
+    <RimTalk_Settings_EnableDynamicInjection>启用动态注入</RimTalk_Settings_EnableDynamicInjection>
+    <RimTalk_Settings_DynamicInjectionDesc>根据上下文自动选择相关记忆和常识注入</RimTalk_Settings_DynamicInjectionDesc>
+    <RimTalk_Settings_StaticInjectionNote>使用静态注入（固定顺序）</RimTalk_Settings_StaticInjectionNote>
+    <RimTalk_Settings_MaxInjectedMemories>最大注入记忆数量</RimTalk_Settings_MaxInjectedMemories>
+    <RimTalk_Settings_MaxInjectedKnowledge>最大注入常识数量</RimTalk_Settings_MaxInjectedKnowledge>
+    
+    <!-- 权重配置 -->
+    <RimTalk_Settings_MemoryWeights>记忆权重配置</RimTalk_Settings_MemoryWeights>
+    <RimTalk_Settings_KnowledgeWeights>常识权重配置</RimTalk_Settings_KnowledgeWeights>
+    <RimTalk_Settings_TimeDecay>时间衰减</RimTalk_Settings_TimeDecay>
+    <RimTalk_Settings_Importance>重要性</RimTalk_Settings_Importance>
+    <RimTalk_Settings_KeywordMatch>关键词匹配</RimTalk_Settings_KeywordMatch>
+    <RimTalk_Settings_KeywordMatchAuto>关键词匹配（自动）</RimTalk_Settings_KeywordMatchAuto>
+    <RimTalk_Settings_TagMatch>标签匹配</RimTalk_Settings_TagMatch>
+    
+    <!-- 评分阈值 -->
+    <RimTalk_Settings_ScoreThresholdTitle>评分阈值配置</RimTalk_Settings_ScoreThresholdTitle>
+    <RimTalk_Settings_MemoryScoreThreshold>记忆评分阈值</RimTalk_Settings_MemoryScoreThreshold>
+    <RimTalk_Settings_KnowledgeScoreThreshold>常识评分阈值</RimTalk_Settings_KnowledgeScoreThreshold>
+    
+    <!-- 记忆容量设置 -->
+    <RimTalk_Settings_MemoryCapacityTitle>记忆容量设置</RimTalk_Settings_MemoryCapacityTitle>
+    <RimTalk_Settings_ABMCapacity>ABM 容量：6（固定）</RimTalk_Settings_ABMCapacity>
+    <RimTalk_Settings_SCMCapacity>SCM 容量：{0}</RimTalk_Settings_SCMCapacity>
+    <RimTalk_Settings_ELSCapacity>ELS 容量：{0}</RimTalk_Settings_ELSCapacity>
+    <RimTalk_Settings_CLPACapacity>CLPA 容量：无限制</RimTalk_Settings_CLPACapacity>
+    
+    <!-- 衰减速率设置 -->
+    <RimTalk_Settings_DecayRatesTitle>记忆衰减速率</RimTalk_Settings_DecayRatesTitle>
+    <RimTalk_Settings_SCMDecay>SCM 衰减率</RimTalk_Settings_SCMDecay>
+    <RimTalk_Settings_ELSDecay>ELS 衰减率</RimTalk_Settings_ELSDecay>
+    <RimTalk_Settings_CLPADecay>CLPA 衰减率</RimTalk_Settings_CLPADecay>
+    
+    <!-- 总结设置 -->
+    <RimTalk_Settings_SummarizationTitle>记忆总结设置</RimTalk_Settings_SummarizationTitle>
+    <RimTalk_Settings_EnableELSSummarization>启用 ELS 自动总结</RimTalk_Settings_EnableELSSummarization>
+    <RimTalk_Settings_TriggerTime>触发时间：游戏时间 {0} 点</RimTalk_Settings_TriggerTime>
+    <RimTalk_Settings_MaxSummaryLength>最大总结长度：{0} 字符</RimTalk_Settings_MaxSummaryLength>
+    <RimTalk_Settings_EnableCLPAArchive>启用 CLPA 自动归档</RimTalk_Settings_EnableCLPAArchive>
+    <RimTalk_Settings_ArchiveInterval>归档间隔：每 {0} 天</RimTalk_Settings_ArchiveInterval>
+    
+    <!-- AI 配置 -->
+    <RimTalk_Settings_AIConfigTitle>AI 配置</RimTalk_Settings_AIConfigTitle>
+    <RimTalk_Settings_PreferRimTalkAI>优先使用 RimTalk 的 AI 配置</RimTalk_Settings_PreferRimTalkAI>
+    <RimTalk_Settings_WillUseRimTalkConfig>将使用 RimTalk 的 AI 配置</RimTalk_Settings_WillUseRimTalkConfig>
+    <RimTalk_Settings_FallbackToIndependent>如果 RimTalk AI 未配置，则回退到独立配置</RimTalk_Settings_FallbackToIndependent>
+    <RimTalk_Settings_UseIndependentConfig>使用独立 AI 配置</RimTalk_Settings_UseIndependentConfig>
+    <RimTalk_Settings_IndependentAIConfig>独立 AI 配置</RimTalk_Settings_IndependentAIConfig>
+    <RimTalk_Settings_Provider>供应商</RimTalk_Settings_Provider>
+    <RimTalk_Settings_APIKey>API 密钥</RimTalk_Settings_APIKey>
+    <RimTalk_Settings_APIURL>API URL</RimTalk_Settings_APIURL>
+    <RimTalk_Settings_ModelName>模型名称</RimTalk_Settings_ModelName>
+    
+    <!-- 记忆类型设置 -->
+    <RimTalk_Settings_MemoryTypesTitle>记忆类型开关</RimTalk_Settings_MemoryTypesTitle>
+    <RimTalk_Settings_ActionMemory>行动记忆</RimTalk_Settings_ActionMemory>
+    <RimTalk_Settings_ConversationMemory>对话记忆</RimTalk_Settings_ConversationMemory>
+    
+    <!-- 调试工具 -->
+    <RimTalk_Settings_DebugToolsTitle>调试工具</RimTalk_Settings_DebugToolsTitle>
+    <RimTalk_Settings_OpenInjectionPreviewer>打开注入预览器</RimTalk_Settings_OpenInjectionPreviewer>
+    <RimTalk_Settings_PreviewerDesc>实时预览记忆和常识的动态注入效果</RimTalk_Settings_PreviewerDesc>
 </LanguageData>

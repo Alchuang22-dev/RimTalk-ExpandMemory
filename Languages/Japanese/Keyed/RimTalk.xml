@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
     <!-- BioTabPersonalityPatch.cs -->
     <RimTalk.BioTab.RimTalkPersona>ペルソナ</RimTalk.BioTab.RimTalkPersona>
@@ -193,4 +193,176 @@
 
     <!-- CustomDialogueService.cs -->
     <RimTalk.CustomDialogue.Player>プレイヤー</RimTalk.CustomDialogue.Player>
+    
+    <!-- Settings UI Translations - v2.4.2新增 日語翻譯 -->
+    <!-- 知識ライブラリ管理 -->
+    <RimTalk_Settings_KnowledgeLibraryTitle>知識ライブラリ管理</RimTalk_Settings_KnowledgeLibraryTitle>
+    <RimTalk_Settings_KnowledgeLibraryDesc>知識ライブラリは、世界観や背景知識などの一般情報をAIに注入するために使用できます</RimTalk_Settings_KnowledgeLibraryDesc>
+    <RimTalk_Settings_OpenKnowledgeLibrary>知識ライブラリ管理を開く</RimTalk_Settings_OpenKnowledgeLibrary>
+    
+    <!-- 動的注入システム -->
+    <RimTalk_Settings_DynamicInjectionTitle>動的注入システム</RimTalk_Settings_DynamicInjectionTitle>
+    <RimTalk_Settings_EnableDynamicInjection>動的メモリ注入を有効化（推奨）</RimTalk_Settings_EnableDynamicInjection>
+    <RimTalk_Settings_DynamicInjectionDesc>時間、重要性、キーワードマッチングに基づいて、最も関連性の高いメモリと知識を動的に選択</RimTalk_Settings_DynamicInjectionDesc>
+    <RimTalk_Settings_StaticInjectionNote>静的注入を使用します（レイヤー順）</RimTalk_Settings_StaticInjectionNote>
+    <RimTalk_Settings_MaxInjectedMemories>最大注入メモリ数</RimTalk_Settings_MaxInjectedMemories>
+    <RimTalk_Settings_MaxInjectedKnowledge>最大注入知識数</RimTalk_Settings_MaxInjectedKnowledge>
+    <RimTalk_Settings_ScoreThresholdTitle>スコア閾値（この値未満は注入しません）:</RimTalk_Settings_ScoreThresholdTitle>
+    <RimTalk_Settings_MemoryScoreThreshold>メモリスコア閾値</RimTalk_Settings_MemoryScoreThreshold>
+    <RimTalk_Settings_KnowledgeScoreThreshold>知識スコア閾値</RimTalk_Settings_KnowledgeScoreThreshold>
+    
+    <!-- ウェイト設定 -->
+    <RimTalk_Settings_MemoryWeights>📝 メモリウェイト</RimTalk_Settings_MemoryWeights>
+    <RimTalk_Settings_KnowledgeWeights>📘 知識ウェイト</RimTalk_Settings_KnowledgeWeights>
+    <RimTalk_Settings_TimeDecay>時間減衰</RimTalk_Settings_TimeDecay>
+    <RimTalk_Settings_Importance>重要度</RimTalk_Settings_Importance>
+    <RimTalk_Settings_KeywordMatch>キーワードマッチング</RimTalk_Settings_KeywordMatch>
+    <RimTalk_Settings_TagMatch>タグマッチング</RimTalk_Settings_TagMatch>
+    <RimTalk_Settings_KeywordMatchAuto>キーワードマッチング: 自動</RimTalk_Settings_KeywordMatchAuto>
+    
+    <!-- 4層メモリ容量 -->
+    <RimTalk_Settings_MemoryCapacityTitle>4層メモリ容量</RimTalk_Settings_MemoryCapacityTitle>
+    <RimTalk_Settings_ABMCapacity>ABM（超短期）: 6件（固定、調整不可）</RimTalk_Settings_ABMCapacity>
+    <RimTalk_Settings_SCMCapacity>SCM（短期）: {0}件</RimTalk_Settings_SCMCapacity>
+    <RimTalk_Settings_ELSCapacity>ELS（中期）: {0}件</RimTalk_Settings_ELSCapacity>
+    <RimTalk_Settings_CLPACapacity>CLPA（長期）: 無制限</RimTalk_Settings_CLPACapacity>
+    <RimTalk_Settings_Entries>件</RimTalk_Settings_Entries>
+    
+    <!-- メモリ減衰率 -->
+    <RimTalk_Settings_DecayRatesTitle>メモリ減衰率</RimTalk_Settings_DecayRatesTitle>
+    <RimTalk_Settings_SCMDecay>SCM（毎時）</RimTalk_Settings_SCMDecay>
+    <RimTalk_Settings_ELSDecay>ELS（毎時）</RimTalk_Settings_ELSDecay>
+    <RimTalk_Settings_CLPADecay>CLPA（毎時）</RimTalk_Settings_CLPADecay>
+    
+    <!-- AI自動要約 -->
+    <RimTalk_Settings_SummarizationTitle>AI自動要約</RimTalk_Settings_SummarizationTitle>
+    <RimTalk_Settings_EnableELSSummarization>ELS要約を有効化（SCM → ELS）</RimTalk_Settings_EnableELSSummarization>
+    <RimTalk_Settings_TriggerTime>トリガー時間：毎日{0}:00（ゲーム時間）</RimTalk_Settings_TriggerTime>
+    <RimTalk_Settings_MaxSummaryLength>最大要約長: {0}文字</RimTalk_Settings_MaxSummaryLength>
+    <RimTalk_Settings_Characters>文字</RimTalk_Settings_Characters>
+    <RimTalk_Settings_EnableCLPAArchive>CLPA自動アーカイブを有効化</RimTalk_Settings_EnableCLPAArchive>
+    <RimTalk_Settings_ArchiveInterval>アーカイブ間隔：{0}日ごと</RimTalk_Settings_ArchiveInterval>
+    
+    <!-- AI API設定 -->
+    <RimTalk_Settings_AIConfigTitle>AI API設定</RimTalk_Settings_AIConfigTitle>
+    <RimTalk_Settings_PreferRimTalkAI>RimTalkのAI設定を優先</RimTalk_Settings_PreferRimTalkAI>
+    <RimTalk_Settings_WillUseRimTalkConfig>RimTalk ModのAPI設定を読み取ります</RimTalk_Settings_WillUseRimTalkConfig>
+    <RimTalk_Settings_FallbackToIndependent>RimTalkが未インストールまたは未設定の場合、以下の独立設定を使用</RimTalk_Settings_FallbackToIndependent>
+    <RimTalk_Settings_UseIndependentConfig>以下の独立設定を使用（RimTalkに依存しません）</RimTalk_Settings_UseIndependentConfig>
+    <RimTalk_Settings_IndependentAIConfig>=== 独立AI設定 ===</RimTalk_Settings_IndependentAIConfig>
+    <RimTalk_Settings_Provider>プロバイダー:</RimTalk_Settings_Provider>
+    <RimTalk_Settings_APIKey>APIキー:</RimTalk_Settings_APIKey>
+    <RimTalk_Settings_APIURL>API URL:</RimTalk_Settings_APIURL>
+    <RimTalk_Settings_ModelName>モデル名:</RimTalk_Settings_ModelName>
+    
+    <!-- メモリタイプ -->
+    <RimTalk_Settings_MemoryTypesTitle>メモリタイプ</RimTalk_Settings_MemoryTypesTitle>
+    <RimTalk_Settings_ActionMemory>行動メモリ（作業、戦闘）</RimTalk_Settings_ActionMemory>
+    <RimTalk_Settings_ConversationMemory>会話メモリ（RimTalk対話）</RimTalk_Settings_ConversationMemory>
+    <RimTalk_Settings_PawnStatusKnowledge>新人/古参の状態知識を自動生成</RimTalk_Settings_PawnStatusKnowledge>
+    <RimTalk_Settings_PawnStatusDesc>入植者の加入時期に基づいて状態知識を自動生成</RimTalk_Settings_PawnStatusDesc>
+    <RimTalk_Settings_PawnStatusExample>例：Aliceは3日前に加入した新メンバーで、コロニーの歴史を知りません</RimTalk_Settings_PawnStatusExample>
+    <RimTalk_Settings_PawnStatusWarning>無効にすると、新メンバーが経験していない出来事を誤って話す可能性があります</RimTalk_Settings_PawnStatusWarning>
+    
+    <!-- デバッグツール -->
+    <RimTalk_Settings_DebugToolsTitle>デバッグツール:</RimTalk_Settings_DebugToolsTitle>
+    <RimTalk_Settings_OpenInjectionPreviewer>注入コンテンツプレビューアを開く</RimTalk_Settings_OpenInjectionPreviewer>
+    <RimTalk_Settings_PreviewerDesc>AIに注入されるメモリと知識をリアルタイムで表示（ゲーム起動後）</RimTalk_Settings_PreviewerDesc>
+    
+    <!-- エラーメッセージ -->
+    <RimTalk_Settings_MustEnterGame>知識ライブラリを管理するにはゲームに入る必要があります</RimTalk_Settings_MustEnterGame>
+    <RimTalk_Settings_CannotFindManager>メモリマネージャーが見つかりません</RimTalk_Settings_CannotFindManager>
+    
+    <!-- メインUIボタン - 手動要約/アーカイブ -->
+    <RimTalk_UI_ImmediateSummarize>即時要約 (SCM→ELS)</RimTalk_UI_ImmediateSummarize>
+    <RimTalk_UI_ImmediateSummarizeNoMemory>即時要約 (SCMメモリなし)</RimTalk_UI_ImmediateSummarizeNoMemory>
+    <RimTalk_UI_SummarizeAll>全入植者を要約</RimTalk_UI_SummarizeAll>
+    <RimTalk_UI_ImmediateArchive>即時アーカイブ (ELS→CLPA)</RimTalk_UI_ImmediateArchive>
+    <RimTalk_UI_ImmediateArchiveNoMemory>即時アーカイブ (ELSメモリなし)</RimTalk_UI_ImmediateArchiveNoMemory>
+    <RimTalk_UI_ArchiveAll>全入植者をアーカイブ</RimTalk_UI_ArchiveAll>
+    <RimTalk_UI_MemorySummarized>{0}の短期メモリが中期メモリに要約されました</RimTalk_UI_MemorySummarized>
+    <RimTalk_UI_MemoriesSummarizedCount>{0}名の入植者のメモリを要約しました</RimTalk_UI_MemoriesSummarizedCount>
+    <RimTalk_UI_MemoryArchived>{0}の中期メモリが長期メモリにアーカイブされました</RimTalk_UI_MemoryArchived>
+    <RimTalk_UI_MemoriesArchivedCount>{0}名の入植者のメモリをアーカイブしました</RimTalk_UI_MemoriesArchivedCount>
+    
+    <!-- 知識ライブラリ管理UI -->
+    <RimTalk_Knowledge_New>新規</RimTalk_Knowledge_New>
+    <RimTalk_Knowledge_Import>インポート</RimTalk_Knowledge_Import>
+    <RimTalk_Knowledge_Export>エクスポート</RimTalk_Knowledge_Export>
+    <RimTalk_Knowledge_Delete>削除</RimTalk_Knowledge_Delete>
+    <RimTalk_Knowledge_ClearAll>すべてクリア</RimTalk_Knowledge_ClearAll>
+    <RimTalk_Knowledge_Tag>タグ:</RimTalk_Knowledge_Tag>
+    <RimTalk_Knowledge_Importance>重要度:</RimTalk_Knowledge_Importance>
+    <RimTalk_Knowledge_Status>状態:</RimTalk_Knowledge_Status>
+    <RimTalk_Knowledge_Enabled>有効</RimTalk_Knowledge_Enabled>
+    <RimTalk_Knowledge_Disabled>無効</RimTalk_Knowledge_Disabled>
+    <RimTalk_Knowledge_Keywords>キーワード:</RimTalk_Knowledge_Keywords>
+    <RimTalk_Knowledge_Content>内容:</RimTalk_Knowledge_Content>
+    <RimTalk_Knowledge_Edit>編集</RimTalk_Knowledge_Edit>
+    <RimTalk_Knowledge_Save>保存</RimTalk_Knowledge_Save>
+    <RimTalk_Knowledge_Cancel>キャンセル</RimTalk_Knowledge_Cancel>
+    <RimTalk_Knowledge_SelectEntry>知識エントリを選択してください</RimTalk_Knowledge_SelectEntry>
+    <RimTalk_Knowledge_NewTag>新しいタグ</RimTalk_Knowledge_NewTag>
+    <RimTalk_Knowledge_ContentRequired>内容は空にできません</RimTalk_Knowledge_ContentRequired>
+    <RimTalk_Knowledge_SaveSuccess>保存しました</RimTalk_Knowledge_SaveSuccess>
+    <RimTalk_Knowledge_DeleteConfirm>この知識を削除してもよろしいですか？</RimTalk_Knowledge_DeleteConfirm>
+    <RimTalk_Knowledge_Deleted>削除しました</RimTalk_Knowledge_Deleted>
+    <RimTalk_Knowledge_ClearAllConfirm>全{0}件の知識をクリアしてもよろしいですか？この操作は元に戻せません！</RimTalk_Knowledge_ClearAllConfirm>
+    <RimTalk_Knowledge_Cleared>知識ライブラリをクリアしました</RimTalk_Knowledge_Cleared>
+    <RimTalk_Knowledge_ImportTitle>知識をインポート</RimTalk_Knowledge_ImportTitle>
+    <RimTalk_Knowledge_ImportDesc>知識テキストを入力または貼り付けてください\n形式: [タグ]内容\n1行に1件</RimTalk_Knowledge_ImportDesc>
+    <RimTalk_Knowledge_ImportSuccess>{0}件の知識をインポートしました</RimTalk_Knowledge_ImportSuccess>
+    <RimTalk_Knowledge_NoContent>エクスポートするコンテンツがありません</RimTalk_Knowledge_NoContent>
+    <RimTalk_Knowledge_ExportSuccess>エクスポートしました: {0}</RimTalk_Knowledge_ExportSuccess>
+    <RimTalk_Knowledge_ExportFailed>エクスポート失敗: {0}</RimTalk_Knowledge_ExportFailed>
+    <RimTalk_Knowledge_TotalAndEnabled>合計: {0} | 有効: {1}</RimTalk_Knowledge_TotalAndEnabled>
+    <RimTalk_Knowledge_KeywordsHint>キーワード（カンマ区切り、空欄で自動抽出）:</RimTalk_Knowledge_KeywordsHint>
+    
+    <!-- 注入プレビューアUI -->
+    <RimTalk_Preview_Title>注入コンテンツプレビューア</RimTalk_Preview_Title>
+    <RimTalk_Preview_SelectPawn>ポーンを選択:</RimTalk_Pレビュー_SelectPawn>
+    <RimTalk_Preview_ChoosePawn>ポーンを選択</RimTalk_Preview_ChoosePawn>
+    <RimTalk_Preview_TargetPawn>ターゲットポーン（オプション）:</RimTalk_Pレビュー_TargetPawn>
+    <RimTalk_Preview_ContextInput>コンテキスト入力:</RimTalk_Pレビュー_ContextInput>
+    <RimTalk_Pレビュー_ContextPlaceholder>コンテキストを入力（例：会話トピック、最近のイベント）...</RimTalk_Pレビュー_ContextPlaceholder>
+    <RimTalk_Pレビュー_RefreshPreview>プレビューを更新</RimTalk_Pレビュー_RefreshPreview>
+    <RimTalk_Pレビュー_MemoriesTab>メモリ</RimTalk_Pレビュー_MemoriesTab>
+    <RimTalk_Pレビュー_KnowledgeTab>知識</RimTalk_Pレビュー_KnowledgeTab>
+    <RimTalk_Pレビュー_FinalOutputTab>最終出力</RimTalk_Pレビュー_FinalOutputTab>
+    <RimTalk_Pレビュー_NoColonists>入植者がいません</RimTalk_Pレビュー_NoColonists>
+    <RimTalk_Pレビュー_NoPawnSelected>プレビューするポーンを選択してください</RimTalk_Pレビュー_NoPawnSelected>
+    <RimTalk_Pレビュー_NoMemories>表示するメモリがありません</RimTalk_Pレビュー_NoMemories>
+    <RimTalk_Pレビュー_NoKnowledge>表示する知識がありません</RimTalk_Pレビュー_NoKnowledge>
+    <RimTalk_Pレビュー_MemoryScores>メモリ注入（上位{0}件）:</RimTalk_Pレビュー_MemoryScores>
+    <RimTalk_Pレビュー_KnowledgeScores>知識注入（上位{0}件）:</RimTalk_Pレビュー_KnowledgeScores>
+    <RimTalk_Pレビュー_Score>スコア</RimTalk_Pレビュー_Score>
+    <RimTalk_Pレビュー_Time>時間</RimTalk_Pレビュー_Time>
+    <RimTalk_Pレビュー_Importance>重要度</RimTalk_Pレビュー_Importance>
+    <RimTalk_Pレビュー_Keyword>キーワード</RimTalk_Pレビュー_Keyword>
+    <RimTalk_Pレビュー_Bonus>ボーナス</RimTalk_Pレビュー_Bonus>
+    <RimTalk_Pレビュー_ContextKeywords>コンテキストキーワード（{0}）:</RimTalk_Pレビュー_ContextKeywords>
+    <RimTalk_Pレビュー_PawnKeywords>ポーンキーワード（{0}）:</RimTalk_Pレビュー_PawnKeywords>
+    <RimTalk_Pレビュー_InjectedContent>最終注入コンテンツ:</RimTalk_Pレビュー_InjectedContent>
+    <RimTalk_Pレビュー_CopyToClipboard>クリップボードにコピー</RimTalk_Pレビュー_CopyToClipboard>
+    <RimTalk_Pレビュー_Copied>クリップボードにコピーしました</RimTalk_Pレビュー_Copied>
+    
+    <!-- メモリタブUI -->
+    <RimTalk_SelectColonist>入植者を選択</RimTalk_SelectColonist>
+    <RimTalk_ChooseColonist>入植者を選択</RimTalk_ChooseColonist>
+    <RimTalk_NoColonists>入植者がいません</RimTalk_NoColonists>
+    <RimTalk_NoMemoryComponent>メモリコンポーネントが見つかりません</RimTalk_NoMemoryComponent>
+    <RimTalk_Filter_All>すべて</RimTalk_Filter_All>
+    <RimTalk_Filter_Conversation>会話</RimTalk_Filter_Conversation>
+    <RimTalk_Filter_Action>行動</RimTalk_Filter_Action>
+    <RimTalk_Filter_Event>イベント</RimTalk_Filter_Event>
+    <RimTalk_Filter_Emotion>感情</RimTalk_Filter_Emotion>
+    <RimTalk_Filter_Relationship>関係</RimTalk_Filter_Relationship>
+    <RimTalk_MemoryType_Conversation>会話</RimTalk_MemoryType_Conversation>
+    <RimTalk_MemoryType_Action>行動</RimTalk_MemoryType_Action>
+    <RimTalk_MemoryType_Event>イベント</RimTalk_MemoryType_Event>
+    <RimTalk_MemoryType_Emotion>感情</RimTalk_MemoryType_Emotion>
+    <RimTalk_MemoryType_Relationship>関係</RimTalk_MemoryType_Relationship>
+    <RimTalk_With>と</RimTalk_With>
+    <RimTalk_ShortTermMemories>短期メモリ</RimTalk_ShortTermMemories>
+    <RimTalk_LongTermMemories>長期メモリ</RimTalk_LongTermMemories>
 </LanguageData>

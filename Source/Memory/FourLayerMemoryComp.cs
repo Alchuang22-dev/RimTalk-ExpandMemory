@@ -165,6 +165,61 @@ namespace RimTalk.Memory
             TrimEventLog();
         }
 
+        public void ManualSummarization()
+        {
+            // 手动总结：与DailySummarization相同，也使用AI（如果启用）
+            if (situationalMemories.Count == 0) return;
+
+            var pawn = parent as Pawn;
+            if (pawn == null) return;
+
+            var byType = situationalMemories.GroupBy(m => m.type);
+            
+            foreach (var typeGroup in byType)
+            {
+                var memories = typeGroup.ToList();
+                string simpleSummary = CreateSimpleSummary(memories, typeGroup.Key);
+
+                var summaryEntry = new MemoryEntry(
+                    content: simpleSummary,
+                    type: typeGroup.Key,
+                    layer: MemoryLayer.EventLog,
+                    importance: memories.Average(m => m.importance) + 0.2f
+                );
+
+                summaryEntry.keywords.AddRange(memories.SelectMany(m => m.keywords).Distinct());
+                summaryEntry.tags.AddRange(memories.SelectMany(m => m.tags).Distinct());
+                summaryEntry.AddTag("手动总结");
+
+                // ⭐ 修改：手动总结也使用AI（如果启用）
+                if (RimTalkMemoryPatchMod.Settings.useAISummarization && AI.IndependentAISummarizer.IsAvailable())
+                {
+                    string cacheKey = AI.IndependentAISummarizer.ComputeCacheKey(pawn, memories);
+                    
+                    AI.IndependentAISummarizer.RegisterCallback(cacheKey, (aiSummary) =>
+                    {
+                        if (!string.IsNullOrEmpty(aiSummary))
+                        {
+                            summaryEntry.content = aiSummary;
+                            summaryEntry.RemoveTag("简单总结");
+                            summaryEntry.AddTag("AI总结");
+                            summaryEntry.notes = "AI 总结已于后台完成并自动更新。";
+                        }
+                    });
+
+                    AI.IndependentAISummarizer.SummarizeMemories(pawn, memories, "daily_summary");
+                    
+                    summaryEntry.AddTag("待AI更新");
+                    summaryEntry.notes = "AI 总结正在后台处理中...";
+                }
+
+                eventLogMemories.Insert(0, summaryEntry);
+            }
+
+            situationalMemories.Clear();
+            TrimEventLog();
+        }
+
         private string CreateSimpleSummary(List<MemoryEntry> memories, MemoryType type)
         {
             if (memories == null || memories.Count == 0)

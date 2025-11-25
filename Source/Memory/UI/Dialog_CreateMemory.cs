@@ -23,7 +23,7 @@ namespace RimTalk.Memory.UI
         
         private Vector2 scrollPosition = Vector2.zero;
 
-        public override Vector2 InitialSize => new Vector2(600f, 500f);
+        public override Vector2 InitialSize => new Vector2(600f, 450f);
 
         public Dialog_CreateMemory(Pawn pawn, FourLayerMemoryComp memoryComp, MemoryLayer targetLayer, MemoryType memoryType)
         {
@@ -32,72 +32,84 @@ namespace RimTalk.Memory.UI
             this.targetLayer = targetLayer;
             this.memoryType = memoryType;
             
-            this.doCloseButton = true;
+            this.doCloseButton = false; // ⭐ 禁用默认关闭按钮，使用自定义按钮
             this.doCloseX = true;
             this.forcePause = true;
             this.absorbInputAroundWindow = true;
+            this.closeOnClickedOutside = false;
         }
 
         public override void DoWindowContents(Rect inRect)
         {
-            Listing_Standard listing = new Listing_Standard();
-            listing.Begin(inRect);
-
+            float yPos = 0f;
+            
             // 标题
             Text.Font = GameFont.Medium;
             string layerName = GetLayerDisplayName(targetLayer);
             string typeName = GetTypeDisplayName(memoryType);
-            listing.Label($"为 {pawn.LabelShort} 添加{typeName}到{layerName}");
+            Rect titleRect = new Rect(0f, yPos, inRect.width, 35f);
+            Widgets.Label(titleRect, "RimTalk_Memory_AddToLayer".Translate(typeName, layerName, pawn.LabelShort));
             Text.Font = GameFont.Small;
             
-            listing.Gap();
-            listing.GapLine();
-            listing.Gap();
+            yPos += 40f;
+            Widgets.DrawLineHorizontal(0f, yPos, inRect.width);
+            yPos += 10f;
 
             // 记忆内容
-            Rect contentLabelRect = listing.GetRect(24f);
-            Widgets.Label(contentLabelRect, "记忆内容：");
+            Rect contentLabelRect = new Rect(0f, yPos, inRect.width, 24f);
+            Widgets.Label(contentLabelRect, "RimTalk_Memory_Content".Translate());
+            yPos += 26f;
             
-            Rect contentRect = listing.GetRect(120f);
+            Rect contentRect = new Rect(0f, yPos, inRect.width, 100f);
             contentText = GUI.TextArea(contentRect, contentText);
-            
-            listing.Gap();
+            yPos += 105f;
 
             // 标签（可选）
-            listing.Label("标签（用逗号分隔，可选）：");
-            tagsText = listing.TextEntry(tagsText);
+            Rect tagsLabelRect = new Rect(0f, yPos, inRect.width, 24f);
+            Widgets.Label(tagsLabelRect, "RimTalk_Memory_TagsOptional".Translate());
+            yPos += 26f;
             
-            listing.Gap();
+            Rect tagsRect = new Rect(0f, yPos, inRect.width, 30f);
+            tagsText = Widgets.TextField(tagsRect, tagsText);
+            yPos += 35f;
 
             // 备注（可选）
-            listing.Label("备注（可选）：");
-            notesText = listing.TextEntry(notesText);
+            Rect notesLabelRect = new Rect(0f, yPos, inRect.width, 24f);
+            Widgets.Label(notesLabelRect, "RimTalk_Memory_NotesOptional".Translate());
+            yPos += 26f;
             
-            listing.Gap();
+            Rect notesRect = new Rect(0f, yPos, inRect.width, 30f);
+            notesText = Widgets.TextField(notesRect, notesText);
+            yPos += 35f;
 
             // 重要性滑块
-            listing.Label($"重要性：{importance:F2}");
-            importance = listing.Slider(importance, 0.1f, 1.0f);
+            Rect importanceLabelRect = new Rect(0f, yPos, inRect.width, 24f);
+            Widgets.Label(importanceLabelRect, "RimTalk_Memory_ImportanceLabel".Translate(importance.ToString("F2")));
+            yPos += 26f;
             
-            listing.Gap();
+            Rect importanceRect = new Rect(0f, yPos, inRect.width, 25f);
+            importance = Widgets.HorizontalSlider(importanceRect, importance, 0.1f, 1.0f, true);
+            yPos += 30f;
 
             // 固定复选框
-            listing.CheckboxLabeled("固定此记忆（不会被自动删除或衰减）", ref isPinned);
+            Rect pinnedRect = new Rect(0f, yPos, inRect.width, 30f);
+            Widgets.CheckboxLabeled(pinnedRect, "RimTalk_Memory_PinMemory".Translate(), ref isPinned);
+            yPos += 35f;
             
-            listing.Gap();
-            listing.GapLine();
-            listing.Gap();
+            Widgets.DrawLineHorizontal(0f, yPos, inRect.width);
+            yPos += 10f;
 
-            // 操作按钮
-            Rect buttonRect = listing.GetRect(35f);
-            float buttonWidth = (buttonRect.width - 10f) / 2f;
+            // ⭐ 操作按钮 - 确保在底部可见
+            float buttonWidth = (inRect.width - 10f) / 2f;
+            float buttonY = inRect.height - 40f; // 固定在底部
             
             // 保存按钮
-            if (Widgets.ButtonText(new Rect(buttonRect.x, buttonRect.y, buttonWidth, buttonRect.height), "保存"))
+            Rect saveButtonRect = new Rect(0f, buttonY, buttonWidth, 35f);
+            if (Widgets.ButtonText(saveButtonRect, "RimTalk_Knowledge_Save".Translate()))
             {
                 if (string.IsNullOrWhiteSpace(contentText))
                 {
-                    Messages.Message("记忆内容不能为空", MessageTypeDefOf.RejectInput);
+                    Messages.Message("RimTalk_Memory_ContentRequired".Translate(), MessageTypeDefOf.RejectInput);
                 }
                 else
                 {
@@ -107,12 +119,11 @@ namespace RimTalk.Memory.UI
             }
             
             // 取消按钮
-            if (Widgets.ButtonText(new Rect(buttonRect.x + buttonWidth + 10f, buttonRect.y, buttonWidth, buttonRect.height), "取消"))
+            Rect cancelButtonRect = new Rect(buttonWidth + 10f, buttonY, buttonWidth, 35f);
+            if (Widgets.ButtonText(cancelButtonRect, "RimTalk_Knowledge_Cancel".Translate()))
             {
                 Close();
             }
-
-            listing.End();
         }
 
         private void SaveMemory()
@@ -157,12 +168,12 @@ namespace RimTalk.Memory.UI
             {
                 case MemoryLayer.EventLog:
                     memoryComp.EventLogMemories.Insert(0, newMemory);
-                    Messages.Message($"已将记忆添加到 {pawn.LabelShort} 的 ELS（中期记忆）", MessageTypeDefOf.TaskCompletion);
+                    Messages.Message("RimTalk_Memory_AddedToELS".Translate(pawn.LabelShort), MessageTypeDefOf.TaskCompletion);
                     break;
                     
                 case MemoryLayer.Archive:
                     memoryComp.ArchiveMemories.Insert(0, newMemory);
-                    Messages.Message($"已将记忆添加到 {pawn.LabelShort} 的 CLPA（长期记忆）", MessageTypeDefOf.TaskCompletion);
+                    Messages.Message("RimTalk_Memory_AddedToCLPA".Translate(pawn.LabelShort), MessageTypeDefOf.TaskCompletion);
                     break;
                     
                 default:
@@ -176,9 +187,9 @@ namespace RimTalk.Memory.UI
             switch (layer)
             {
                 case MemoryLayer.EventLog:
-                    return "ELS（中期记忆）";
+                    return "RimTalk_Layer_ELS".Translate();
                 case MemoryLayer.Archive:
-                    return "CLPA（长期记忆）";
+                    return "RimTalk_Layer_CLPA".Translate();
                 default:
                     return layer.ToString();
             }
@@ -189,9 +200,9 @@ namespace RimTalk.Memory.UI
             switch (type)
             {
                 case MemoryType.Action:
-                    return "行动记忆";
+                    return "RimTalk_Type_Action".Translate();
                 case MemoryType.Conversation:
-                    return "对话记忆";
+                    return "RimTalk_Type_Conversation".Translate();
                 default:
                     return type.ToString();
             }

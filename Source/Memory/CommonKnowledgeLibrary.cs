@@ -17,6 +17,7 @@ namespace RimTalk.Memory
         public float importance;    // 重要性
         public List<string> keywords; // 关键词（可选，用户手动设置，不导出导入）
         public bool isEnabled;      // 是否启用
+        public bool isUserEdited;   // 是否被用户编辑过（用于保护手动修改）
         
         private List<string> cachedTags; // 缓存分割后的标签列表
 
@@ -41,6 +42,7 @@ namespace RimTalk.Memory
             Scribe_Values.Look(ref content, "content");
             Scribe_Values.Look(ref importance, "importance", 0.5f);
             Scribe_Values.Look(ref isEnabled, "isEnabled", true);
+            Scribe_Values.Look(ref isUserEdited, "isUserEdited", false);
             Scribe_Collections.Look(ref keywords, "keywords", LookMode.Value);
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
@@ -458,12 +460,6 @@ namespace RimTalk.Memory
             if (currentPawn != null)
             {
                 int beforeCount = contextKeywords.Count;
-                
-                if (Prefs.DevMode)
-                {
-                    Log.Message($"[Knowledge] Extracting keywords for current pawn: {currentPawn.LabelShort}");
-                }
-                
                 keywordInfo.PawnInfo = ExtractPawnKeywordsWithDetails(contextKeywords, currentPawn);
                 totalPawnKeywords += contextKeywords.Count - beforeCount;
             }
@@ -472,20 +468,8 @@ namespace RimTalk.Memory
             if (targetPawn != null && targetPawn != currentPawn)
             {
                 int beforeCount = contextKeywords.Count;
-                
-                if (Prefs.DevMode)
-                {
-                    Log.Message($"[Knowledge] Extracting keywords for target pawn: {targetPawn.LabelShort}");
-                }
-                
-                // 提取目标关键词，但不记录到PawnInfo（避免混淆）
                 ExtractPawnKeywordsWithDetails(contextKeywords, targetPawn);
                 totalPawnKeywords += contextKeywords.Count - beforeCount;
-                
-                if (Prefs.DevMode)
-                {
-                    Log.Message($"[Knowledge] Extracted {contextKeywords.Count - beforeCount} keywords from target: {targetPawn.LabelShort}");
-                }
             }
             
             keywordInfo.TotalKeywords = contextKeywords.Count;
@@ -517,10 +501,6 @@ namespace RimTalk.Memory
             // 如果没有常识达到阈值，返回null
             if (scoredEntries.Count == 0)
             {
-                if (Prefs.DevMode)
-                {
-                    Log.Message($"[Knowledge Injection] No knowledge met threshold ({threshold:F2}), returning null");
-                }
                 return null;
             }
 
@@ -922,11 +902,6 @@ namespace RimTalk.Memory
             JaccardWeight = settings.knowledgeJaccardWeight;
             TagWeight = settings.knowledgeTagWeight;
             MatchCountBonus = settings.knowledgeMatchBonus;
-            
-            if (Prefs.DevMode)
-            {
-                Log.Message($"[Knowledge Weights] Loaded: Base={BaseScore:F2}, Jaccard={JaccardWeight:P0}, Tag={TagWeight:P0}, Bonus={MatchCountBonus:F2}");
-            }
         }
         
         /// <summary>

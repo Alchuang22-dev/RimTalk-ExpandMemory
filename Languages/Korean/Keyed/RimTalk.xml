@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
     <!-- BioTabPersonalityPatch.cs -->
     <RimTalk.BioTab.RimTalkPersona>페르소나</RimTalk.BioTab.RimTalkPersona>
@@ -193,4 +193,71 @@
 
     <!-- CustomDialogueService.cs -->
     <RimTalk.CustomDialogue.Player>플레이어</RimTalk.CustomDialogue.Player>
+    <!-- Settings UI Translations - v2.4.2 Korean -->
+    <RimTalk_Settings_KnowledgeLibraryTitle>?? ????? ??</RimTalk_Settings_KnowledgeLibraryTitle>
+    <RimTalk_Settings_KnowledgeLibraryDesc>?? ?????? ???? AI? ???, ?? ?? ? ?? ??? ??? ? ????</RimTalk_Settings_KnowledgeLibraryDesc>
+    <RimTalk_Settings_OpenKnowledgeLibrary>?? ????? ?? ??</RimTalk_Settings_OpenKnowledgeLibrary>
+    
+    <RimTalk_Settings_DynamicInjectionTitle>?? ?? ???</RimTalk_Settings_DynamicInjectionTitle>
+    <RimTalk_Settings_EnableDynamicInjection>?? ??? ?? ??? (??)</RimTalk_Settings_EnableDynamicInjection>
+    <RimTalk_Settings_DynamicInjectionDesc>??, ???, ??? ??? ???? ?? ??? ?? ??? ??? ???? ??</RimTalk_Settings_DynamicInjectionDesc>
+    <RimTalk_Settings_StaticInjectionNote>?? ?? ?? (??? ??)</RimTalk_Settings_StaticInjectionNote>
+    <RimTalk_Settings_MaxInjectedMemories>?? ?? ??? ?</RimTalk_Settings_MaxInjectedMemories>
+    <RimTalk_Settings_MaxInjectedKnowledge>?? ?? ?? ?</RimTalk_Settings_MaxInjectedKnowledge>
+    <RimTalk_Settings_ScoreThresholdTitle>?? ??? (? ? ??? ?? ??):</RimTalk_Settings_ScoreThresholdTitle>
+    <RimTalk_Settings_MemoryScoreThreshold>??? ?? ???</RimTalk_Settings_MemoryScoreThreshold>
+    <RimTalk_Settings_KnowledgeScoreThreshold>?? ?? ???</RimTalk_Settings_KnowledgeScoreThreshold>
+    
+    <RimTalk_Settings_MemoryWeights>?? ??? ???</RimTalk_Settings_MemoryWeights>
+    <RimTalk_Settings_KnowledgeWeights>?? ?? ???</RimTalk_Settings_KnowledgeWeights>
+    <RimTalk_Settings_TimeDecay>?? ??</RimTalk_Settings_TimeDecay>
+    <RimTalk_Settings_Importance>???</RimTalk_Settings_Importance>
+    <RimTalk_Settings_KeywordMatch>??? ??</RimTalk_Settings_KeywordMatch>
+    <RimTalk_Settings_TagMatch>?? ??</RimTalk_Settings_TagMatch>
+    <RimTalk_Settings_KeywordMatchAuto>??? ??: ??</RimTalk_Settings_KeywordMatchAuto>
+    
+    <RimTalk_Settings_MemoryCapacityTitle>4?? ??? ??</RimTalk_Settings_MemoryCapacityTitle>
+    <RimTalk_Settings_ABMCapacity>ABM (???): 6? (??, ?? ??)</RimTalk_Settings_ABMCapacity>
+    <RimTalk_Settings_SCMCapacity>SCM (??): {0}?</RimTalk_Settings_SCMCapacity>
+    <RimTalk_Settings_ELSCapacity>ELS (??): {0}?</RimTalk_Settings_ELSCapacity>
+    <RimTalk_Settings_CLPACapacity>CLPA (??): ???</RimTalk_Settings_CLPACapacity>
+    
+    <RimTalk_Settings_DecayRatesTitle>??? ???</RimTalk_Settings_DecayRatesTitle>
+    <RimTalk_Settings_SCMDecay>SCM (???)</RimTalk_Settings_SCMDecay>
+    <RimTalk_Settings_ELSDecay>ELS (???)</RimTalk_Settings_ELSDecay>
+    <RimTalk_Settings_CLPADecay>CLPA (???)</RimTalk_Settings_CLPADecay>
+    
+    <RimTalk_Settings_SummarizationTitle>AI ?? ??</RimTalk_Settings_SummarizationTitle>
+    <RimTalk_Settings_EnableELSSummarization>ELS ?? ??? (SCM �� ELS)</RimTalk_Settings_EnableELSSummarization>
+    <RimTalk_Settings_TriggerTime>??? ??: ?? {0}:00 (?? ??)</RimTalk_Settings_TriggerTime>
+    <RimTalk_Settings_MaxSummaryLength>?? ?? ??: {0}?</RimTalk_Settings_MaxSummaryLength>
+    <RimTalk_Settings_EnableCLPAArchive>CLPA ?? ???? ???</RimTalk_Settings_EnableCLPAArchive>
+    <RimTalk_Settings_ArchiveInterval>???? ??: {0}???</RimTalk_Settings_ArchiveInterval>
+    
+    <RimTalk_Settings_AIConfigTitle>AI API ??</RimTalk_Settings_AIConfigTitle>
+    <RimTalk_Settings_PreferRimTalkAI>RimTalk? AI ?? ??</RimTalk_Settings_PreferRimTalkAI>
+    <RimTalk_Settings_WillUseRimTalkConfig>RimTalk Mod? API ??? ????</RimTalk_Settings_WillUseRimTalkConfig>
+    <RimTalk_Settings_FallbackToIndependent>RimTalk? ??? ?? ???? ?? ?? ?? ?? ??</RimTalk_Settings_FallbackToIndependent>
+    <RimTalk_Settings_UseIndependentConfig>?? ?? ?? ?? (RimTalk ?? ??)</RimTalk_Settings_UseIndependentConfig>
+    <RimTalk_Settings_IndependentAIConfig>=== ?? AI ?? ===</RimTalk_Settings_IndependentAIConfig>
+    <RimTalk_Settings_Provider>???:</RimTalk_Settings_Provider>
+    <RimTalk_Settings_APIKey>API ?:</RimTalk_Settings_APIKey>
+    <RimTalk_Settings_APIURL>API URL:</RimTalk_Settings_APIURL>
+    <RimTalk_Settings_ModelName>?? ??:</RimTalk_Settings_ModelName>
+    
+    <RimTalk_Settings_MemoryTypesTitle>??? ??</RimTalk_Settings_MemoryTypesTitle>
+    <RimTalk_Settings_ActionMemory>?? ??? (??, ??)</RimTalk_Settings_ActionMemory>
+    <RimTalk_Settings_ConversationMemory>?? ??? (RimTalk ??)</RimTalk_Settings_ConversationMemory>
+    <RimTalk_Settings_PawnStatusKnowledge>??/?? ?? ?? ?? ??</RimTalk_Settings_PawnStatusKnowledge>
+    <RimTalk_Settings_PawnStatusDesc>??? ?? ??? ?? ?? ?? ?? ??</RimTalk_Settings_PawnStatusDesc>
+    <RimTalk_Settings_PawnStatusExample>?: Alice? 3? ?? ??? ?? ??? ??? ??? ????</RimTalk_Settings_PawnStatusExample>
+    <RimTalk_Settings_PawnStatusWarning>???? ? ?? ??? ???? ?? ???? ?? ??? ? ????</RimTalk_Settings_PawnStatusWarning>
+    
+    <RimTalk_Settings_DebugToolsTitle>??? ??:</RimTalk_Settings_DebugToolsTitle>
+    <RimTalk_Settings_OpenInjectionPreviewer>?? ??? ???? ??</RimTalk_Settings_OpenInjectionPreviewer>
+    <RimTalk_Settings_PreviewerDesc>AI? ??? ???? ??? ????? ?? (?? ?? ?)</RimTalk_Settings_PreviewerDesc>
+    
+    <RimTalk_Settings_MustEnterGame>?? ?????? ????? ??? ???? ???</RimTalk_Settings_MustEnterGame>
+    <RimTalk_Settings_CannotFindManager>??? ???? ?? ? ????</RimTalk_Settings_CannotFindManager>
+
 </LanguageData>
