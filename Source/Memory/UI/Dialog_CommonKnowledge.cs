@@ -266,8 +266,10 @@ namespace RimTalk.Memory.UI
                     try
                     {
                         // 计算入殖时长
-                        int ticksSinceJoin = currentTick - pawn.records.GetAsInt(RecordDefOf.TimeAsColonistOrColonyAnimal);
-                        int daysSinceJoin = ticksSinceJoin / GenDate.TicksPerDay;
+                        // 注意：TimeAsColonistOrColonyAnimal 记录的是累计在殖民地的时间（ticks）
+                        // 不是加入时的tick，所以直接使用这个值即可
+                        int ticksInColony = pawn.records.GetAsInt(RecordDefOf.TimeAsColonistOrColonyAnimal);
+                        int daysInColony = ticksInColony / GenDate.TicksPerDay;
                         
                         // 生成标签
                         string tag = $"殖民者,{pawn.LabelShort}";
@@ -277,22 +279,22 @@ namespace RimTalk.Memory.UI
                         sb.Append($"{pawn.LabelShort}");
                         
                         // 入殖时长
-                        if (daysSinceJoin < 5)
+                        if (daysInColony < 5)
                         {
                             sb.Append("刚加入殖民地不久");
                         }
-                        else if (daysSinceJoin < 15)
+                        else if (daysInColony < 15)
                         {
-                            sb.Append($"加入殖民地约{daysSinceJoin}天");
+                            sb.Append($"加入殖民地约{daysInColony}天");
                         }
-                        else if (daysSinceJoin < 60)
+                        else if (daysInColony < 60)
                         {
-                            sb.Append($"是殖民地的老成员（{daysSinceJoin}天）");
+                            sb.Append($"是殖民地的老成员（{daysInColony}天）");
                         }
                         else
                         {
-                            int years = daysSinceJoin / 60;
-                            sb.Append($"是殖民地的元老（{years}年{daysSinceJoin % 60}天）");
+                            int years = daysInColony / 60;
+                            sb.Append($"是殖民地的元老（{years}年{daysInColony % 60}天）");
                         }
                         
                         // 添加重要关系

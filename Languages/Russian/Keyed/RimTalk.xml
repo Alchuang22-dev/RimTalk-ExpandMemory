@@ -142,7 +142,7 @@
     <RimTalk.Settings.BaseUrlLabel>URL:</RimTalk.Settings.BaseUrlLabel>
     <RimTalk.Settings.ModelLabel>Модель:</RimTalk.Settings.ModelLabel>
     <RimTalk.Settings.EnterApiKey>(введите действительный ключ API для получения моделей)</RimTalk.Settings.EnterApiKey>
-    <RimTalk_Settings_Api_BaseUrlInfo>Если вы укажете только базу (например, http://localhost:1234), /v1/chat/completions будет добавлено автоматически. Если вы введете полный путь, он будет использован в точности как введен.</RimTalk_Settings_Api_BaseUrlInfo>
+    <RimTalk_settings_Api_BaseUrlInfo>Если вы укажете только базу (например, http://localhost:1234), /v1/chat/completions будет добавлено автоматически. Если вы введете полный путь, он будет использован в точности как введен.</RimTalk_settings_Api_BaseUrlInfo>
 
     <!-- DebugWindow.cs -->
     <RimTalk.DebugWindow.Generating>[Генерация...]</RimTalk.DebugWindow.Generating>
@@ -193,4 +193,68 @@
 
     <!-- CustomDialogueService.cs -->
     <RimTalk.CustomDialogue.Player>Игрок</RimTalk.CustomDialogue.Player>
+    
+    <!-- Settings UI Translations - v2.4.3 Russian (Machine Translated) -->
+    <RimTalk_Settings_KnowledgeLibraryTitle>Управление библиотекой знаний</RimTalk_Settings_KnowledgeLibraryTitle>
+    <RimTalk_Settings_KnowledgeLibraryDesc>Библиотека знаний используется для внедрения общей информации о мире, предыстории и т.д. в ИИ</RimTalk_Settings_KnowledgeLibraryDesc>
+    <RimTalk_Settings_OpenKnowledgeLibrary>Открыть управление библиотекой знаний</RimTalk_Settings_OpenKnowledgeLibrary>
+    <RimTalk_Settings_MustEnterGame>Сначала необходимо войти в игру</RimTalk_Settings_MustEnterGame>
+    <RimTalk_Settings_CannotFindManager>Невозможно найти менеджер памяти</RimTalk_Settings_CannotFindManager>
+    
+    <RimTalk_Settings_DynamicInjectionTitle>Настройки динамического внедрения</RimTalk_Settings_DynamicInjectionTitle>
+    <RimTalk_Settings_EnableDynamicInjection>Включить динамическое внедрение (рекомендуется)</RimTalk_Settings_EnableDynamicInjection>
+    <RimTalk_Settings_DynamicInjectionDesc>Автоматически выбирать наиболее релевантные воспоминания и знания на основе времени, важности и совпадения ключевых слов</RimTalk_Settings_DynamicInjectionDesc>
+    <RimTalk_Settings_StaticInjectionNote>Использовать статическое внедрение (фиксированный порядок)</RimTalk_Settings_StaticInjectionNote>
+    <RimTalk_Settings_MaxInjectedMemories>Макс. количество внедряемых воспоминаний</RimTalk_Settings_MaxInjectedMemories>
+    <RimTalk_Settings_MaxInjectedKnowledge>Макс. количество внедряемых знаний</RimTalk_Settings_MaxInjectedKnowledge>
+    
+    <RimTalk_Settings_MemoryWeights>Конфигурация весов воспоминаний</RimTalk_Settings_MemoryWeights>
+    <RimTalk_Settings_KnowledgeWeights>Конфигурация весов знаний</RimTalk_Settings_KnowledgeWeights>
+    <RimTalk_Settings_TimeDecay>Временное затухание</RimTalk_Settings_TimeDecay>
+    <RimTalk_Settings_Importance>Важность</RimTalk_Settings_Importance>
+    <RimTalk_Settings_KeywordMatch>Совпадение ключевых слов</RimTalk_Settings_KeywordMatch>
+    <RimTalk_Settings_TagMatch>Совпадение тегов</RimTalk_Settings_TagMatch>
+    <RimTalk_Settings_KeywordMatchAuto>Совпадение ключевых слов: автоматическое</RimTalk_Settings_KeywordMatchAuto>
+    
+    <RimTalk_Settings_ScoreThresholdTitle>Конфигурация порога оценки</RimTalk_Settings_ScoreThresholdTitle>
+    <RimTalk_Settings_MemoryScoreThreshold>Порог оценки воспоминаний</RimTalk_Settings_MemoryScoreThreshold>
+    <RimTalk_Settings_KnowledgeScoreThreshold>Порог оценки знаний</RimTalk_Settings_KnowledgeScoreThreshold>
+    
+    <RimTalk_Settings_MemoryCapacityTitle>Емкость 4-слойной памяти</RimTalk_Settings_MemoryCapacityTitle>
+    <RimTalk_Settings_ABMCapacity>ABM (сверхкратковременная): 6 (фиксировано, не настраивается)</RimTalk_Settings_ABMCapacity>
+    <RimTalk_Settings_SCMCapacity>SCM (кратковременная): {0}</RimTalk_Settings_SCMCapacity>
+    <RimTalk_Settings_ELSCapacity>ELS (средневременная): {0}</RimTalk_Settings_ELSCapacity>
+    <RimTalk_Settings_CLPACapacity>CLPA (долговременная): неограничено</RimTalk_Settings_CLPACapacity>
+    
+    <RimTalk_Settings_DecayRatesTitle>Скорости затухания памяти</RimTalk_Settings_DecayRatesTitle>
+    <RimTalk_Settings_SCMDecay>SCM (в час)</RimTalk_Settings_SCMDecay>
+    <RimTalk_Settings_ELSDecay>ELS (в час)</RimTalk_Settings_ELSDecay>
+    <RimTalk_Settings_CLPADecay>CLPA (в час)</RimTalk_Settings_CLPADecay>
+    
+    <RimTalk_Settings_SummarizationTitle>Настройки суммаризации ИИ</RimTalk_Settings_SummarizationTitle>
+    <RimTalk_Settings_EnableELSSummarization>Включить автосуммаризацию ELS (SCM → ELS)</RimTalk_Settings_EnableELSSummarization>
+    <RimTalk_Settings_TriggerTime>Время активации: каждый день в {0}:00 (игровое время)</RimTalk_Settings_TriggerTime>
+    <RimTalk_Settings_MaxSummaryLength>Макс. длина резюме: {0} символов</RimTalk_Settings_MaxSummaryLength>
+    <RimTalk_Settings_EnableCLPAArchive>Включить автоархивацию CLPA</RimTalk_Settings_EnableCLPAArchive>
+    <RimTalk_Settings_ArchiveInterval>Интервал архивации: каждые {0} дней</RimTalk_Settings_ArchiveInterval>
+    
+    <RimTalk_Settings_AIConfigTitle>Конфигурация ИИ API</RimTalk_Settings_AIConfigTitle>
+    <RimTalk_Settings_PreferRimTalkAI>Приоритет настройкам ИИ из RimTalk</RimTalk_Settings_PreferRimTalkAI>
+    <RimTalk_Settings_WillUseRimTalkConfig>Будет использовать настройки API из RimTalk Mod</RimTalk_Settings_WillUseRimTalkConfig>
+    <RimTalk_Settings_FallbackToIndependent>Если RimTalk не настроен или не удается, откатиться к независимым настройкам</RimTalk_Settings_FallbackToIndependent>
+    <RimTalk_Settings_UseIndependentConfig>Использовать независимую конфигурацию ИИ (не связанную с RimTalk)</RimTalk_Settings_UseIndependentConfig>
+    <RimTalk_Settings_IndependentAIConfig>=== Независимая конфигурация ИИ ===</RimTalk_Settings_IndependentAIConfig>
+    <RimTalk_Settings_Provider>Провайдер:</RimTalk_Settings_Provider>
+    <RimTalk_Settings_APIKey>Ключ API:</RimTalk_Settings_APIKey>
+    <RimTalk_Settings_APIURL>URL API:</RimTalk_Settings_APIURL>
+    <RimTalk_Settings_ModelName>Имя модели:</RimTalk_Settings_ModelName>
+    
+    <RimTalk_Settings_MemoryTypesTitle>Переключатели типов памяти</RimTalk_Settings_MemoryTypesTitle>
+    <RimTalk_Settings_ActionMemory>Память действий (работа, бой)</RimTalk_Settings_ActionMemory>
+    <RimTalk_Settings_ConversationMemory>Память разговоров (диалоги RimTalk)</RimTalk_Settings_ConversationMemory>
+    
+    <RimTalk_Settings_DebugToolsTitle>Инструменты отладки:</RimTalk_Settings_DebugToolsTitle>
+    <RimTalk_Settings_OpenInjectionPreviewer>Открыть предпросмотр внедрения</RimTalk_Settings_OpenInjectionPreviewer>
+    <RimTalk_Settings_PreviewerDesc>Предпросмотр в реальном времени воспоминаний и знаний, которые будут переданы ИИ (в игре)</RimTalk_Settings_PreviewerDesc>
+
 </LanguageData>

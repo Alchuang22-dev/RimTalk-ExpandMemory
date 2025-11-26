@@ -90,8 +90,9 @@ namespace RimTalk.Memory
                 }
                 
                 // 计算入殖时长
-                int joinTick = pawn.records.GetAsInt(RecordDefOf.TimeAsColonistOrColonyAnimal);
-                int ticksInColony = currentTick - joinTick;
+                // 注意：TimeAsColonistOrColonyAnimal 记录的是累计在殖民地的时间（ticks）
+                // 不是加入时的tick，所以直接使用这个值即可
+                int ticksInColony = pawn.records.GetAsInt(RecordDefOf.TimeAsColonistOrColonyAnimal);
                 int daysInColony = ticksInColony / GenDate.TicksPerDay;
 
                 // 使用唯一标签
