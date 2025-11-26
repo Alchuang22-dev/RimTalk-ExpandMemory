@@ -193,71 +193,68 @@
 
     <!-- CustomDialogueService.cs -->
     <RimTalk.CustomDialogue.Player>플레이어</RimTalk.CustomDialogue.Player>
-    <!-- Settings UI Translations - v2.4.2 Korean -->
-    <RimTalk_Settings_KnowledgeLibraryTitle>?? ????? ??</RimTalk_Settings_KnowledgeLibraryTitle>
-    <RimTalk_Settings_KnowledgeLibraryDesc>?? ?????? ???? AI? ???, ?? ?? ? ?? ??? ??? ? ????</RimTalk_Settings_KnowledgeLibraryDesc>
-    <RimTalk_Settings_OpenKnowledgeLibrary>?? ????? ?? ??</RimTalk_Settings_OpenKnowledgeLibrary>
     
-    <RimTalk_Settings_DynamicInjectionTitle>?? ?? ???</RimTalk_Settings_DynamicInjectionTitle>
-    <RimTalk_Settings_EnableDynamicInjection>?? ??? ?? ??? (??)</RimTalk_Settings_EnableDynamicInjection>
-    <RimTalk_Settings_DynamicInjectionDesc>??, ???, ??? ??? ???? ?? ??? ?? ??? ??? ???? ??</RimTalk_Settings_DynamicInjectionDesc>
-    <RimTalk_Settings_StaticInjectionNote>?? ?? ?? (??? ??)</RimTalk_Settings_StaticInjectionNote>
-    <RimTalk_Settings_MaxInjectedMemories>?? ?? ??? ?</RimTalk_Settings_MaxInjectedMemories>
-    <RimTalk_Settings_MaxInjectedKnowledge>?? ?? ?? ?</RimTalk_Settings_MaxInjectedKnowledge>
-    <RimTalk_Settings_ScoreThresholdTitle>?? ??? (? ? ??? ?? ??):</RimTalk_Settings_ScoreThresholdTitle>
-    <RimTalk_Settings_MemoryScoreThreshold>??? ?? ???</RimTalk_Settings_MemoryScoreThreshold>
-    <RimTalk_Settings_KnowledgeScoreThreshold>?? ?? ???</RimTalk_Settings_KnowledgeScoreThreshold>
+    <!-- Settings UI Translations - v2.4.3 Korean (Machine Translated) -->
+    <RimTalk_Settings_KnowledgeLibraryTitle>지식 라이브러리 관리</RimTalk_Settings_KnowledgeLibraryTitle>
+    <RimTalk_Settings_KnowledgeLibraryDesc>지식 라이브러리는 AI 대화, 세계관 등에 주입할 정보 관리</RimTalk_Settings_KnowledgeLibraryDesc>
+    <RimTalk_Settings_OpenKnowledgeLibrary>지식 라이브러리 관리 열기</RimTalk_Settings_OpenKnowledgeLibrary>
+    <RimTalk_Settings_MustEnterGame>먼저 게임에 입장해야 합니다</RimTalk_Settings_MustEnterGame>
+    <RimTalk_Settings_CannotFindManager>메모리 관리자를 찾을 수 없습니다</RimTalk_Settings_CannotFindManager>
     
-    <RimTalk_Settings_MemoryWeights>?? ??? ???</RimTalk_Settings_MemoryWeights>
-    <RimTalk_Settings_KnowledgeWeights>?? ?? ???</RimTalk_Settings_KnowledgeWeights>
-    <RimTalk_Settings_TimeDecay>?? ??</RimTalk_Settings_TimeDecay>
-    <RimTalk_Settings_Importance>???</RimTalk_Settings_Importance>
-    <RimTalk_Settings_KeywordMatch>??? ??</RimTalk_Settings_KeywordMatch>
-    <RimTalk_Settings_TagMatch>?? ??</RimTalk_Settings_TagMatch>
-    <RimTalk_Settings_KeywordMatchAuto>??? ??: ??</RimTalk_Settings_KeywordMatchAuto>
+    <RimTalk_Settings_DynamicInjectionTitle>동적 주입 설정</RimTalk_Settings_DynamicInjectionTitle>
+    <RimTalk_Settings_EnableDynamicInjection>동적 주입 활성화 (권장)</RimTalk_Settings_EnableDynamicInjection>
+    <RimTalk_Settings_DynamicInjectionDesc>시간, 중요도, 키워드 일치를 기반으로 가장 관련성 높은 기억과 지식을 자동 선택</RimTalk_Settings_DynamicInjectionDesc>
+    <RimTalk_Settings_StaticInjectionNote>정적 주입 사용 (고정 순서)</RimTalk_Settings_StaticInjectionNote>
+    <RimTalk_Settings_MaxInjectedMemories>최대 주입 기억 수</RimTalk_Settings_MaxInjectedMemories>
+    <RimTalk_Settings_MaxInjectedKnowledge>최대 주입 지식 수</RimTalk_Settings_MaxInjectedKnowledge>
     
-    <RimTalk_Settings_MemoryCapacityTitle>4?? ??? ??</RimTalk_Settings_MemoryCapacityTitle>
-    <RimTalk_Settings_ABMCapacity>ABM (???): 6? (??, ?? ??)</RimTalk_Settings_ABMCapacity>
-    <RimTalk_Settings_SCMCapacity>SCM (??): {0}?</RimTalk_Settings_SCMCapacity>
-    <RimTalk_Settings_ELSCapacity>ELS (??): {0}?</RimTalk_Settings_ELSCapacity>
-    <RimTalk_Settings_CLPACapacity>CLPA (??): ???</RimTalk_Settings_CLPACapacity>
+    <RimTalk_Settings_MemoryWeights>기억 가중치 구성</RimTalk_Settings_MemoryWeights>
+    <RimTalk_Settings_KnowledgeWeights>지식 가중치 구성</RimTalk_Settings_KnowledgeWeights>
+    <RimTalk_Settings_TimeDecay>시간 감쇠</RimTalk_Settings_TimeDecay>
+    <RimTalk_Settings_Importance>중요도</RimTalk_Settings_Importance>
+    <RimTalk_Settings_KeywordMatch>키워드 일치</RimTalk_Settings_KeywordMatch>
+    <RimTalk_Settings_TagMatch>태그 일치</RimTalk_Settings_TagMatch>
+    <RimTalk_Settings_KeywordMatchAuto>키워드 일치: 자동</RimTalk_Settings_KeywordMatchAuto>
     
-    <RimTalk_Settings_DecayRatesTitle>??? ???</RimTalk_Settings_DecayRatesTitle>
-    <RimTalk_Settings_SCMDecay>SCM (???)</RimTalk_Settings_SCMDecay>
-    <RimTalk_Settings_ELSDecay>ELS (???)</RimTalk_Settings_ELSDecay>
-    <RimTalk_Settings_CLPADecay>CLPA (???)</RimTalk_Settings_CLPADecay>
+    <RimTalk_Settings_ScoreThresholdTitle>점수 임계값 구성</RimTalk_Settings_ScoreThresholdTitle>
+    <RimTalk_Settings_MemoryScoreThreshold>기억 점수 임계값</RimTalk_Settings_MemoryScoreThreshold>
+    <RimTalk_Settings_KnowledgeScoreThreshold>지식 점수 임계값</RimTalk_Settings_KnowledgeScoreThreshold>
     
-    <RimTalk_Settings_SummarizationTitle>AI ?? ??</RimTalk_Settings_SummarizationTitle>
-    <RimTalk_Settings_EnableELSSummarization>ELS ?? ??? (SCM �� ELS)</RimTalk_Settings_EnableELSSummarization>
-    <RimTalk_Settings_TriggerTime>??? ??: ?? {0}:00 (?? ??)</RimTalk_Settings_TriggerTime>
-    <RimTalk_Settings_MaxSummaryLength>?? ?? ??: {0}?</RimTalk_Settings_MaxSummaryLength>
-    <RimTalk_Settings_EnableCLPAArchive>CLPA ?? ???? ???</RimTalk_Settings_EnableCLPAArchive>
-    <RimTalk_Settings_ArchiveInterval>???? ??: {0}???</RimTalk_Settings_ArchiveInterval>
+    <RimTalk_Settings_MemoryCapacityTitle>4계층 메모리 용량</RimTalk_Settings_MemoryCapacityTitle>
+    <RimTalk_Settings_ABMCapacity>ABM (초단기): 6개 (고정, 조정 불가)</RimTalk_Settings_ABMCapacity>
+    <RimTalk_Settings_SCMCapacity>SCM (단기): {0}개</RimTalk_Settings_SCMCapacity>
+    <RimTalk_Settings_ELSCapacity>ELS (중기): {0}개</RimTalk_Settings_ELSCapacity>
+    <RimTalk_Settings_CLPACapacity>CLPA (장기): 무제한</RimTalk_Settings_CLPACapacity>
     
-    <RimTalk_Settings_AIConfigTitle>AI API ??</RimTalk_Settings_AIConfigTitle>
-    <RimTalk_Settings_PreferRimTalkAI>RimTalk? AI ?? ??</RimTalk_Settings_PreferRimTalkAI>
-    <RimTalk_Settings_WillUseRimTalkConfig>RimTalk Mod? API ??? ????</RimTalk_Settings_WillUseRimTalkConfig>
-    <RimTalk_Settings_FallbackToIndependent>RimTalk? ??? ?? ???? ?? ?? ?? ?? ??</RimTalk_Settings_FallbackToIndependent>
-    <RimTalk_Settings_UseIndependentConfig>?? ?? ?? ?? (RimTalk ?? ??)</RimTalk_Settings_UseIndependentConfig>
-    <RimTalk_Settings_IndependentAIConfig>=== ?? AI ?? ===</RimTalk_Settings_IndependentAIConfig>
-    <RimTalk_Settings_Provider>???:</RimTalk_Settings_Provider>
-    <RimTalk_Settings_APIKey>API ?:</RimTalk_Settings_APIKey>
+    <RimTalk_Settings_DecayRatesTitle>메모리 감쇠율</RimTalk_Settings_DecayRatesTitle>
+    <RimTalk_Settings_SCMDecay>SCM (시간당)</RimTalk_Settings_SCMDecay>
+    <RimTalk_Settings_ELSDecay>ELS (시간당)</RimTalk_Settings_ELSDecay>
+    <RimTalk_Settings_CLPADecay>CLPA (시간당)</RimTalk_Settings_CLPADecay>
+    
+    <RimTalk_Settings_SummarizationTitle>AI 요약 설정</RimTalk_Settings_SummarizationTitle>
+    <RimTalk_Settings_EnableELSSummarization>ELS 자동 요약 활성화 (SCM → ELS)</RimTalk_Settings_EnableELSSummarization>
+    <RimTalk_Settings_TriggerTime>트리거 시간: 매일 {0}:00 (게임 시간)</RimTalk_Settings_TriggerTime>
+    <RimTalk_Settings_MaxSummaryLength>최대 요약 길이: {0}자</RimTalk_Settings_MaxSummaryLength>
+    <RimTalk_Settings_EnableCLPAArchive>CLPA 자동 아카이브 활성화</RimTalk_Settings_EnableCLPAArchive>
+    <RimTalk_Settings_ArchiveInterval>아카이브 간격: {0}일마다</RimTalk_Settings_ArchiveInterval>
+    
+    <RimTalk_Settings_AIConfigTitle>AI API 구성</RimTalk_Settings_AIConfigTitle>
+    <RimTalk_Settings_PreferRimTalkAI>RimTalk의 AI 설정 우선</RimTalk_Settings_PreferRimTalkAI>
+    <RimTalk_Settings_WillUseRimTalkConfig>RimTalk Mod의 API 설정을 사용합니다</RimTalk_Settings_WillUseRimTalkConfig>
+    <RimTalk_Settings_FallbackToIndependent>RimTalk이 설정되지 않았거나 실패하면 독립 설정으로 폴백</RimTalk_Settings_FallbackToIndependent>
+    <RimTalk_Settings_UseIndependentConfig>독립 AI 설정 사용 (RimTalk과 무관)</RimTalk_Settings_UseIndependentConfig>
+    <RimTalk_Settings_IndependentAIConfig>=== 독립 AI 구성 ===</RimTalk_Settings_IndependentAIConfig>
+    <RimTalk_Settings_Provider>제공자:</RimTalk_Settings_Provider>
+    <RimTalk_Settings_APIKey>API 키:</RimTalk_Settings_APIKey>
     <RimTalk_Settings_APIURL>API URL:</RimTalk_Settings_APIURL>
-    <RimTalk_Settings_ModelName>?? ??:</RimTalk_Settings_ModelName>
+    <RimTalk_Settings_ModelName>모델 이름:</RimTalk_Settings_ModelName>
     
-    <RimTalk_Settings_MemoryTypesTitle>??? ??</RimTalk_Settings_MemoryTypesTitle>
-    <RimTalk_Settings_ActionMemory>?? ??? (??, ??)</RimTalk_Settings_ActionMemory>
-    <RimTalk_Settings_ConversationMemory>?? ??? (RimTalk ??)</RimTalk_Settings_ConversationMemory>
-    <RimTalk_Settings_PawnStatusKnowledge>??/?? ?? ?? ?? ??</RimTalk_Settings_PawnStatusKnowledge>
-    <RimTalk_Settings_PawnStatusDesc>??? ?? ??? ?? ?? ?? ?? ??</RimTalk_Settings_PawnStatusDesc>
-    <RimTalk_Settings_PawnStatusExample>?: Alice? 3? ?? ??? ?? ??? ??? ??? ????</RimTalk_Settings_PawnStatusExample>
-    <RimTalk_Settings_PawnStatusWarning>???? ? ?? ??? ???? ?? ???? ?? ??? ? ????</RimTalk_Settings_PawnStatusWarning>
+    <RimTalk_Settings_MemoryTypesTitle>메모리 유형 토글</RimTalk_Settings_MemoryTypesTitle>
+    <RimTalk_Settings_ActionMemory>행동 메모리 (작업, 전투)</RimTalk_Settings_ActionMemory>
+    <RimTalk_Settings_ConversationMemory>대화 메모리 (RimTalk 대화)</RimTalk_Settings_ConversationMemory>
     
-    <RimTalk_Settings_DebugToolsTitle>??? ??:</RimTalk_Settings_DebugToolsTitle>
-    <RimTalk_Settings_OpenInjectionPreviewer>?? ??? ???? ??</RimTalk_Settings_OpenInjectionPreviewer>
-    <RimTalk_Settings_PreviewerDesc>AI? ??? ???? ??? ????? ?? (?? ?? ?)</RimTalk_Settings_PreviewerDesc>
-    
-    <RimTalk_Settings_MustEnterGame>?? ?????? ????? ??? ???? ???</RimTalk_Settings_MustEnterGame>
-    <RimTalk_Settings_CannotFindManager>??? ???? ?? ? ????</RimTalk_Settings_CannotFindManager>
+    <RimTalk_Settings_DebugToolsTitle>디버그 도구:</RimTalk_Settings_DebugToolsTitle>
+    <RimTalk_Settings_OpenInjectionPreviewer>주입 미리보기 열기</RimTalk_Settings_OpenInjectionPreviewer>
+    <RimTalk_Settings_PreviewerDesc>AI에 전달될 기억과 지식을 실시간 미리보기 (게임 내에서)</RimTalk_Settings_PreviewerDesc>
 
 </LanguageData>
