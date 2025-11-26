@@ -8,6 +8,7 @@
         <RootNamespace>RimTalk.MemoryPatch</RootNamespace>
         <AssemblyName>RimTalkMemoryPatch</AssemblyName>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
 
         <RimWorldDir Condition=" '$(RimWorldDir)' == '' ">$(RIMWORLD_DIR)</RimWorldDir>
 
@@ -20,6 +21,9 @@
         <UseSharedCompilation>false</UseSharedCompilation>
         <Deterministic>false</Deterministic>
         <Platforms>AnyCPU;x64</Platforms>
+        
+        <!-- Enable long path support to bypass Windows 260 character limit -->
+        <LongPathsEnabled>true</LongPathsEnabled>
         
         <!-- 禁用自动添加引用，避免 SDK 项目的引用处理问题 -->
         <DisableImplicitFrameworkReferences>false</DisableImplicitFrameworkReferences>
