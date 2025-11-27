@@ -10,11 +10,12 @@ namespace RimTalk.Memory.Patches
 {
     /// <summary>
     /// 针对 RimTalk 的精确补丁 - 基于实际代码结构
+    /// ⭐ v3.0: 集成高级评分系统（不修改RimTalk代码）
     /// </summary>
     [StaticConstructorOnStartup]
     public static class RimTalkPrecisePatcher
     {
-        private const string VERSION = "v7.FINAL"; // <-- 新增版本标记
+        private const string VERSION = "v3.0.SMART"; // <-- 版本标记
 
         static RimTalkPrecisePatcher()
         {
@@ -33,9 +34,13 @@ namespace RimTalk.Memory.Patches
                     }
                 }
                 
-                if (rimTalkAssembly == null) return;
+                if (rimTalkAssembly == null)
+                {
+                    Log.Warning("[RimTalk Memory] RimTalk not found, memory injection disabled");
+                    return;
+                }
                 
-                // 应用补丁
+                // 应用补丁（Harmony不修改原代码，只是拦截调用）
                 bool patchedBuildContext = PatchBuildContext(harmony, rimTalkAssembly);
                 bool patchedDecoratePrompt = PatchDecoratePrompt(harmony, rimTalkAssembly);
                 bool patchedGenerateTalk = PatchGenerateTalk(harmony, rimTalkAssembly);
@@ -44,14 +49,18 @@ namespace RimTalk.Memory.Patches
                                   (patchedDecoratePrompt ? 1 : 0) + 
                                   (patchedGenerateTalk ? 1 : 0);
                 
-                if (successCount == 0)
+                if (successCount > 0)
                 {
-                    Log.Error($"[RimTalk Patcher] Failed to patch any methods");
+                    Log.Message($"[RimTalk Memory Patch v{VERSION}] Successfully patched {successCount}/3 methods");
+                }
+                else
+                {
+                    Log.Error($"[RimTalk Memory Patch] Failed to patch any methods");
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"[RimTalk Patcher] Exception: {ex}");
+                Log.Error($"[RimTalk Memory Patch] Exception: {ex}");
             }
         }
         
@@ -79,11 +88,12 @@ namespace RimTalk.Memory.Patches
                 
                 harmony.Patch(buildContextMethod, postfix: new HarmonyMethod(postfixMethod));
                 
+                Log.Message("[RimTalk Memory Patch] ✓ Patched BuildContext");
                 return true;
             }
             catch (Exception ex)
             {
-                Log.Warning($"[RimTalk Patcher] Failed to patch BuildContext: {ex.Message}");
+                Log.Warning($"[RimTalk Memory Patch] Failed to patch BuildContext: {ex.Message}");
                 return false;
             }
         }
@@ -104,7 +114,7 @@ namespace RimTalk.Memory.Patches
                 
                 if (decoratePromptMethod == null)
                 {
-                    Log.Warning("[RimTalk Precise Patcher] DecoratePrompt method not found");
+                    Log.Warning("[RimTalk Memory Patch] DecoratePrompt method not found");
                     return false;
                 }
                 
@@ -115,11 +125,12 @@ namespace RimTalk.Memory.Patches
                 
                 harmony.Patch(decoratePromptMethod, postfix: new HarmonyMethod(postfixMethod));
                 
+                Log.Message("[RimTalk Memory Patch] ✓ Patched DecoratePrompt");
                 return true;
             }
             catch (Exception ex)
             {
-                Log.Warning($"[RimTalk Patcher] Failed to patch DecoratePrompt: {ex.Message}");
+                Log.Warning($"[RimTalk Memory Patch] Failed to patch DecoratePrompt: {ex.Message}");
                 return false;
             }
         }
@@ -147,17 +158,19 @@ namespace RimTalk.Memory.Patches
                 
                 harmony.Patch(generateTalkMethod, prefix: new HarmonyMethod(prefixMethod));
                 
+                Log.Message("[RimTalk Memory Patch] ✓ Patched GenerateTalk");
                 return true;
             }
             catch (Exception ex)
             {
-                Log.Warning($"[RimTalk Patcher] Failed to patch GenerateTalk: {ex.Message}");
+                Log.Warning($"[RimTalk Memory Patch] Failed to patch GenerateTalk: {ex.Message}");
                 return false;
             }
         }
         
         /// <summary>
         /// Postfix for BuildContext - 在构建上下文后添加记忆
+        /// ⭐ v3.0: 使用智能注入管理器（高级评分系统）
         /// </summary>
         private static void BuildContext_Postfix(ref string __result, List<Pawn> pawns)
         {
@@ -167,65 +180,39 @@ namespace RimTalk.Memory.Patches
                     return;
                 
                 Pawn mainPawn = pawns[0];
-                var memoryComp = mainPawn?.TryGetComp<FourLayerMemoryComp>();
-                
-                if (memoryComp == null)
-                    return;
+                Pawn targetPawn = pawns.Count > 1 ? pawns[1] : null;
                 
                 // 缓存上下文到API（用于预览器）
                 RimTalkMemoryAPI.CacheContext(mainPawn, __result);
                 
-                string memoryContext = "";
+                // ⭐ 使用智能注入管理器（新系统）
+                string injectedContext = SmartInjectionManager.InjectSmartContext(
+                    speaker: mainPawn,
+                    listener: targetPawn,
+                    context: __result,
+                    maxMemories: RimTalkMemoryPatchMod.Settings.maxInjectedMemories,
+                    maxKnowledge: RimTalkMemoryPatchMod.Settings.maxInjectedKnowledge
+                );
                 
-                // 使用动态注入或静态注入
-                if (RimTalkMemoryPatchMod.Settings.useDynamicInjection)
+                if (!string.IsNullOrEmpty(injectedContext))
                 {
-                    memoryContext = DynamicMemoryInjection.InjectMemories(
-                        mainPawn, 
-                        __result, 
-                        RimTalkMemoryPatchMod.Settings.maxInjectedMemories
-                    );
+                    __result = __result + "\n\n" + injectedContext;
                     
-                    // 注入常识库
-                    var memoryManager = Find.World?.GetComponent<MemoryManager>();
-                    if (memoryManager != null)
+                    if (Prefs.DevMode)
                     {
-                        string knowledgeContext = memoryManager.CommonKnowledge.InjectKnowledgeWithDetails(
-                            __result,
-                            RimTalkMemoryPatchMod.Settings.maxInjectedKnowledge,
-                            out _,
-                            mainPawn,
-                            pawns.Count > 1 ? pawns[1] : null
-                        );
-                        
-                        if (!string.IsNullOrEmpty(knowledgeContext))
-                        {
-                            memoryContext = memoryContext + "\n\n" + knowledgeContext;
-                        }
+                        Log.Message($"[Smart Injection] Injected context for {mainPawn.LabelShort}");
                     }
-                }
-                else
-                {
-                    var pawnMemoryComp = mainPawn.TryGetComp<PawnMemoryComp>();
-                    if (pawnMemoryComp != null)
-                    {
-                        memoryContext = pawnMemoryComp.GetMemoryContext();
-                    }
-                }
-                
-                if (!string.IsNullOrEmpty(memoryContext))
-                {
-                    __result = __result + "\n\n" + memoryContext;
                 }
             }
             catch (Exception ex)
             {
-                Log.Warning($"[RimTalk Patcher] Error in BuildContext_Postfix: {ex.Message}");
+                Log.Warning($"[RimTalk Memory Patch] Error in BuildContext_Postfix: {ex.Message}");
             }
         }
         
         /// <summary>
         /// Postfix for DecoratePrompt - 在装饰提示词后添加记忆
+        /// ⭐ v3.0: 使用智能注入管理器（高级评分系统）
         /// </summary>
         private static void DecoratePrompt_Postfix(object talkRequest, List<Pawn> pawns)
         {
@@ -245,73 +232,37 @@ namespace RimTalk.Memory.Patches
                 if (string.IsNullOrEmpty(currentPrompt))
                     return;
                 
-                // 获取主要 Pawn 的记忆
+                // 获取主要 Pawn 和目标 Pawn
                 Pawn mainPawn = pawns[0];
-                var memoryComp = mainPawn?.TryGetComp<FourLayerMemoryComp>();
-                
-                if (memoryComp == null)
-                    return;
+                Pawn targetPawn = pawns.Count > 1 ? pawns[1] : null;
                 
                 // 缓存上下文到API（用于预览器）
                 RimTalkMemoryAPI.CacheContext(mainPawn, currentPrompt);
                 
-                string memoryContext = "";
+                // ⭐ 使用智能注入管理器（新系统）
+                string injectedContext = SmartInjectionManager.InjectSmartContext(
+                    speaker: mainPawn,
+                    listener: targetPawn,
+                    context: currentPrompt,
+                    maxMemories: RimTalkMemoryPatchMod.Settings.maxInjectedMemories,
+                    maxKnowledge: RimTalkMemoryPatchMod.Settings.maxInjectedKnowledge
+                );
                 
-                // 使用动态注入或静态注入
-                if (RimTalkMemoryPatchMod.Settings.useDynamicInjection)
-                {
-                    // 动态注入
-                    memoryContext = DynamicMemoryInjection.InjectMemories(
-                        mainPawn, 
-                        currentPrompt, 
-                        RimTalkMemoryPatchMod.Settings.maxInjectedMemories
-                    );
-                    
-                    // 注入常识库 - 传递当前Pawn以提取角色关键词
-                    var memoryManager = Find.World?.GetComponent<MemoryManager>();
-                    if (memoryManager != null)
-                    {
-                        // 尝试获取目标Pawn（如果有对话对象）
-                        Pawn targetPawn = null;
-                        if (pawns != null && pawns.Count > 1)
-                        {
-                            targetPawn = pawns[1];
-                        }
-                        
-                        string knowledgeContext = memoryManager.CommonKnowledge.InjectKnowledgeWithDetails(
-                            currentPrompt,
-                            RimTalkMemoryPatchMod.Settings.maxInjectedKnowledge,
-                            out _,
-                            mainPawn,     // 当前Pawn
-                            targetPawn    // 目标Pawn（可能为null）
-                        );
-                        
-                        if (!string.IsNullOrEmpty(knowledgeContext))
-                        {
-                            memoryContext = memoryContext + "\n\n" + knowledgeContext;
-                        }
-                    }
-                }
-                else
-                {
-                    // 静态注入
-                    var pawnMemoryComp = mainPawn.TryGetComp<PawnMemoryComp>();
-                    if (pawnMemoryComp != null)
-                    {
-                        memoryContext = pawnMemoryComp.GetMemoryContext();
-                    }
-                }
-                
-                if (!string.IsNullOrEmpty(memoryContext))
+                if (!string.IsNullOrEmpty(injectedContext))
                 {
                     // 更新提示词
-                    string enhancedPrompt = currentPrompt + "\n\n" + memoryContext;
+                    string enhancedPrompt = currentPrompt + "\n\n" + injectedContext;
                     promptProperty.SetValue(talkRequest, enhancedPrompt);
+                    
+                    if (Prefs.DevMode)
+                    {
+                        Log.Message($"[Smart Injection] Enhanced prompt for {mainPawn.LabelShort}");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Log.Warning($"[RimTalk Patcher] Error in DecoratePrompt_Postfix: {ex.Message}");
+                Log.Warning($"[RimTalk Memory Patch] Error in DecoratePrompt_Postfix: {ex.Message}");
             }
         }
 
@@ -339,12 +290,12 @@ namespace RimTalk.Memory.Patches
                 var memoryComp = initiator.TryGetComp<PawnMemoryComp>();
                 if (memoryComp != null)
                 {
-                    // 备用方案，暂时不输出日志
+                    // 备用方案，目前不需要额外处理
                 }
             }
             catch (Exception ex)
             {
-                Log.Warning($"[RimTalk Precise Patcher] Error in GenerateTalk_Prefix: {ex.Message}");
+                Log.Warning($"[RimTalk Memory Patch] Error in GenerateTalk_Prefix: {ex.Message}");
             }
         }
     }

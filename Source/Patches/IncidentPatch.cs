@@ -326,6 +326,24 @@ namespace RimTalk.Memory.Patches
                 label.Contains("结婚") || label.Contains("婚"))
                 return 0.85f;
             
+            // ? 新增：葬礼相关（重要性0.9）
+            if (defName.Contains("Funeral") || defName.Contains("Burial") || 
+                label.Contains("葬礼") || label.Contains("葬") || label.Contains("埋葬"))
+                return 0.9f;
+            
+            // ? 新增：生日相关（重要性0.7）
+            if (defName.Contains("Birthday") || label.Contains("生日"))
+                return 0.7f;
+            
+            // ? 新增：研究突破（重要性0.8）
+            if (defName.Contains("Breakthrough") || defName.Contains("Research") && defName.Contains("Complete") ||
+                label.Contains("突破") || label.Contains("完成研究"))
+                return 0.8f;
+            
+            // ? 新增：周年纪念（重要性0.7）
+            if (defName.Contains("Anniversary") || label.Contains("周年"))
+                return 0.7f;
+            
             // 成员变动（重要性0.8）
             if (defName.Contains("Join") || defName.Contains("Refugee") || 
                 defName.Contains("WandererJoin") || 
@@ -375,6 +393,22 @@ namespace RimTalk.Memory.Patches
             if (defName.Contains("Marriage") || defName.Contains("Wedding"))
             {
                 return $"{timePrefix}举行了婚礼";
+            }
+            else if (defName.Contains("Funeral") || defName.Contains("Burial"))
+            {
+                return $"{timePrefix}举行了葬礼";
+            }
+            else if (defName.Contains("Birthday"))
+            {
+                return $"{timePrefix}庆祝了生日";
+            }
+            else if (defName.Contains("Breakthrough") || defName.Contains("Research") && defName.Contains("Complete"))
+            {
+                return $"{timePrefix}取得了研究突破";
+            }
+            else if (defName.Contains("Anniversary"))
+            {
+                return $"{timePrefix}庆祝了周年纪念";
             }
             else if (defName.Contains("WandererJoin") || defName.Contains("RefugeeJoin"))
             {

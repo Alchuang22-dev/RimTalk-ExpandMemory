@@ -24,23 +24,46 @@ namespace RimTalk.Memory
         {
             // 死亡相关（最重要1.0）
             { "死亡", 1.0f }, { "倒下", 1.0f }, { "被杀", 1.0f }, { "击杀", 1.0f }, { "牺牲", 1.0f },
-            { "died", 1.0f }, { "killed", 1.0f }, { "death", 1.0f },
+            { "died", 1.0f }, { "killed", 1.0f }, { "death", 1.0f }, { "dead", 1.0f },
             
             // 战斗相关（重要性0.9）
             { "袭击", 0.9f }, { "进攻", 0.9f }, { "防御", 0.9f }, { "raid", 0.9f }, { "attack", 0.9f },
             { "击退", 0.85f }, { "战胜", 0.85f }, { "defeated", 0.85f },
             
+            // ? 新增：葬礼相关（重要性0.9）
+            { "葬礼", 0.9f }, { "葬", 0.9f }, { "埋葬", 0.9f }, { "funeral", 0.9f }, { "burial", 0.9f },
+            { "举行葬礼", 0.9f }, { "安葬", 0.9f },
+            
             // 关系相关（重要性0.85）
             { "结婚", 0.85f }, { "订婚", 0.85f }, { "married", 0.85f }, { "engaged", 0.85f },
+            { "婚礼", 0.85f }, { "wedding", 0.85f }, { "举行婚礼", 0.85f },
             { "分手", 0.75f }, { "离婚", 0.75f }, { "breakup", 0.75f },
+            
+            // ? 新增：生日相关（重要性0.7）
+            { "生日", 0.7f }, { "birthday", 0.7f }, { "庆祝", 0.6f }, { "celebration", 0.6f },
+            { "过生日", 0.7f }, { "庆祝生日", 0.7f },
+            
+            // ? 新增：研究突破（重要性0.8）
+            { "突破", 0.8f }, { "breakthrough", 0.8f }, { "完成研究", 0.8f }, { "research complete", 0.8f },
+            { "研究完成", 0.8f }, { "发明", 0.8f }, { "invention", 0.8f },
+            
+            // ? 新增：周年纪念（重要性0.7）
+            { "周年", 0.7f }, { "anniversary", 0.7f }, { "周年纪念", 0.7f },
             
             // 成员变动（重要性0.8）
             { "加入", 0.8f }, { "逃跑", 0.8f }, { "离开", 0.8f }, { "joined", 0.8f }, { "fled", 0.8f },
-            { "招募", 0.75f }, { "recruited", 0.75f },
+            { "招募", 0.75f }, { "recruited", 0.75f }, { "新成员", 0.8f },
             
             // 灾难相关（重要性0.85）
             { "爆炸", 0.85f }, { "起火", 0.85f }, { "崩溃", 0.85f }, { "explosion", 0.85f }, { "fire", 0.85f },
-            { "饥荒", 0.85f }, { "饿死", 0.8f }, { "冻死", 0.8f },
+            { "火灾", 0.85f }, { "爆炸", 0.85f }, { "龙卷风", 0.85f }, { "tornado", 0.85f },
+            { "饥荒", 0.85f }, { "饿死", 0.8f }, { "冻死", 0.8f }, { "starvation", 0.8f },
+            
+            // ? 新增：其他重要事件
+            { "日食", 0.75f }, { "eclipse", 0.75f },
+            { "虫族", 0.85f }, { "infestation", 0.85f },
+            { "贸易", 0.6f }, { "caravan", 0.6f }, { "visitor", 0.6f },
+            { "任务", 0.65f }, { "quest", 0.65f },
         };
         
         /// <summary>
@@ -66,7 +89,7 @@ namespace RimTalk.Memory
                 int currentTick = Find.TickManager.TicksGame;
                 
                 // 只处理最近1小时的事件
-                int oneHourAgo = currentTick - 2500;
+                int oneHourAgo = currentTick - GenDate.TicksPerHour;
                 
                 var recentEntries = gameHistory.AllEntries
                     .Where(e => e != null && e.Age > oneHourAgo)
@@ -124,8 +147,17 @@ namespace RimTalk.Memory
                                 
                                 if (Prefs.DevMode)
                                 {
-                                    Log.Message($"[EventRecord] Created global event knowledge: {eventText.Substring(0, Math.Min(50, eventText.Length))}...");
+                                    Log.Message($"[EventRecord] ? Created global event knowledge: {eventText.Substring(0, Math.Min(50, eventText.Length))}...");
                                 }
+                            }
+                        }
+                        else if (Prefs.DevMode)
+                        {
+                            // ? 新增：调试日志，显示被过滤的事件
+                            string debugText = logEntry.ToGameStringFromPOV(null, false);
+                            if (!string.IsNullOrEmpty(debugText) && debugText.Length < 100)
+                            {
+                                Log.Message($"[EventRecord] ? Filtered event: {debugText} (Type: {logEntry.GetType().Name})");
                             }
                         }
                     }
@@ -162,11 +194,33 @@ namespace RimTalk.Memory
                     return null;
                 }
                 
-                // ? 跳过IncidentPatch已处理的事件类型
+                // ? 修改：允许处理一些重要的非Incident事件，特别是死亡和葬礼
                 if (logEntry.GetType().Name == "PlayLogEntry_Incident")
                 {
-                    // IncidentPatch会实时处理，无需重复
-                    return null;
+                    // 对于Incident事件，检查是否是需要补充的事件类型
+                    string previewText = logEntry.ToGameStringFromPOV(null, false);
+                    if (!string.IsNullOrEmpty(previewText))
+                    {
+                        // 允许处理：死亡、葬礼、结婚等重要事件（作为IncidentPatch的补充）
+                        bool isImportantEvent = 
+                            previewText.Contains("死亡") || previewText.Contains("died") || previewText.Contains("killed") || 
+                            previewText.Contains("dead") || previewText.Contains("death") ||
+                            previewText.Contains("葬礼") || previewText.Contains("葬") || previewText.Contains("埋葬") ||
+                            previewText.Contains("结婚") || previewText.Contains("婚礼") || previewText.Contains("married") ||
+                            previewText.Contains("生日") || previewText.Contains("birthday") ||
+                            previewText.Contains("突破") || previewText.Contains("breakthrough");
+                        
+                        if (!isImportantEvent)
+                        {
+                            // 其他Incident事件：跳过，避免重复（IncidentPatch已处理）
+                            return null;
+                        }
+                        // 重要事件：继续处理
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
                 
                 string text = logEntry.ToGameStringFromPOV(null, false);
@@ -182,10 +236,28 @@ namespace RimTalk.Memory
                 if (IsBoringMessage(text))
                     return null;
                 
-                // 检查是否包含重要关键词
+                // ? 增强关键词检测：检查是否包含重要关键词
                 bool hasImportantKeyword = ImportantKeywords.Keys.Any(k => text.Contains(k));
                 
                 if (!hasImportantKeyword)
+                {
+                    // ? 新增：如果没有匹配重要关键词，但这是Incident事件，也记录（宽松模式）
+                    if (logEntry.GetType().Name == "PlayLogEntry_Incident")
+                    {
+                        // 对于Incident事件，即使关键词不匹配也记录（但降低重要性）
+                        if (Prefs.DevMode)
+                        {
+                            Log.Message($"[EventRecord] ?? Recording Incident event without keyword match: {text.Substring(0, Math.Min(50, text.Length))}");
+                        }
+                    }
+                    else
+                    {
+                        return null; // 非Incident事件必须有关键词匹配
+                    }
+                }
+                
+                // ? 过滤对话内容：如果包含对话标记，跳过
+                if (IsConversationContent(text))
                     return null;
                 
                 // 添加时间前缀
@@ -220,6 +292,25 @@ namespace RimTalk.Memory
                 }
                 return null;
             }
+        }
+        
+        /// <summary>
+        /// ? 新增：检测是否是对话内容（避免记录对话）
+        /// </summary>
+        private static bool IsConversationContent(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return false;
+            
+            // 检测对话标记
+            string[] conversationMarkers = { 
+                "说:", "said:", "说：", "说道:", "说道：",
+                "问:", "asked:", "问：", "问道:", "问道：",
+                "回答:", "replied:", "回答：", "答道:", "答道：",
+                "叫道:", "shouted:", "叫道：", "喊道:", "喊道："
+            };
+            
+            return conversationMarkers.Any(marker => text.Contains(marker));
         }
         
         /// <summary>
@@ -258,7 +349,8 @@ namespace RimTalk.Memory
                 return matched.Value;
             }
             
-            return 0.6f; // 默认重要性
+            // ? 新增：没有关键词匹配但可能是Incident事件，给较低默认重要性
+            return 0.4f; // 比普通事件低，但仍会被记录
         }
         
         /// <summary>
