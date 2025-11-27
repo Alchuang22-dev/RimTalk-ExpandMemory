@@ -194,6 +194,10 @@ namespace RimTalk.Memory.Patches
                     maxKnowledge: RimTalkMemoryPatchMod.Settings.maxInjectedKnowledge
                 );
                 
+                // ⭐ v3.0: 主动记忆召回（实验性功能）
+                string proactiveRecall = ProactiveMemoryRecall.TryRecallMemory(mainPawn, __result, targetPawn);
+                
+                // 合并注入内容
                 if (!string.IsNullOrEmpty(injectedContext))
                 {
                     __result = __result + "\n\n" + injectedContext;
@@ -202,6 +206,12 @@ namespace RimTalk.Memory.Patches
                     {
                         Log.Message($"[Smart Injection] Injected context for {mainPawn.LabelShort}");
                     }
+                }
+                
+                // 如果触发主动召回，追加到末尾
+                if (!string.IsNullOrEmpty(proactiveRecall))
+                {
+                    __result = __result + "\n\n" + proactiveRecall;
                 }
             }
             catch (Exception ex)
@@ -248,10 +258,25 @@ namespace RimTalk.Memory.Patches
                     maxKnowledge: RimTalkMemoryPatchMod.Settings.maxInjectedKnowledge
                 );
                 
+                // ⭐ v3.0: 主动记忆召回（实验性功能）
+                string proactiveRecall = ProactiveMemoryRecall.TryRecallMemory(mainPawn, currentPrompt, targetPawn);
+                
+                // 合并注入内容
+                string enhancedPrompt = currentPrompt;
+                
                 if (!string.IsNullOrEmpty(injectedContext))
                 {
-                    // 更新提示词
-                    string enhancedPrompt = currentPrompt + "\n\n" + injectedContext;
+                    enhancedPrompt += "\n\n" + injectedContext;
+                }
+                
+                if (!string.IsNullOrEmpty(proactiveRecall))
+                {
+                    enhancedPrompt += "\n\n" + proactiveRecall;
+                }
+                
+                // 更新提示词
+                if (enhancedPrompt != currentPrompt)
+                {
                     promptProperty.SetValue(talkRequest, enhancedPrompt);
                     
                     if (Prefs.DevMode)

@@ -514,17 +514,7 @@ namespace RimTalk.Memory
             {
                 return null;
             }
-
-            // ⭐ 检查是否启用Token压缩
-            bool enableCompression = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings?.enableKnowledgeCompression ?? false;
             
-            if (enableCompression)
-            {
-                // 使用压缩模式 - 节省Token
-                var entries = scoredEntries.Select(s => s.Entry).ToList();
-                return KnowledgeCompressor.CompressKnowledge(entries, 300); // 限制300 tokens
-            }
-
             // 格式化为system rule的简洁格式
             var sb = new StringBuilder();
 

@@ -65,10 +65,6 @@ namespace RimTalk.MemoryPatch
         public int maxInjectedMemories = 10;          // 最大注入记忆数量
         public int maxInjectedKnowledge = 5;          // 最大注入常识数量
         
-        // ⭐ Token优化设置（新增）
-        public bool enableMemoryCompression = false;  // 启用记忆压缩（节省Token）
-        public bool enableKnowledgeCompression = false; // 启用常识压缩（节省Token）
-        
         // 动态注入权重配置
         public float weightTimeDecay = 0.3f;          // 时间衰减权重
         public float weightImportance = 0.3f;         // 重要性权重
@@ -78,6 +74,14 @@ namespace RimTalk.MemoryPatch
         public float memoryScoreThreshold = 0.15f;    // 记忆评分阈值（低于此分数不注入）
         public float knowledgeScoreThreshold = 0.1f;  // 常识评分阈值（低于此分数不注入）
         
+        // ⭐ 自适应阈值设置（v3.0新增）
+        public bool enableAdaptiveThreshold = false;  // 启用自适应阈值（实验性功能）
+        public bool autoApplyAdaptiveThreshold = false; // 自动应用推荐阈值
+        
+        // ⭐ 主动记忆召回（v3.0实验性功能）
+        public bool enableProactiveRecall = false;    // 启用主动记忆召回
+        public float recallTriggerChance = 0.15f;     // 基础触发概率（15%）
+
         // === 常识库权重配置 ===
         public float knowledgeBaseScore = 0.05f;      // 基础分系数（固定为0.05，不提供UI配置）
         public float knowledgeJaccardWeight = 0.7f;   // Jaccard相似度权重
@@ -152,9 +156,7 @@ namespace RimTalk.MemoryPatch
         Scribe_Values.Look(ref maxInjectedMemories, "dynamic_maxInjectedMemories", 10);
         Scribe_Values.Look(ref maxInjectedKnowledge, "dynamic_maxInjectedKnowledge", 5);
         
-        // Token优化设置（新增）
-        Scribe_Values.Look(ref enableMemoryCompression, "dynamic_enableMemoryCompression", false);
-        Scribe_Values.Look(ref enableKnowledgeCompression, "dynamic_enableKnowledgeCompression", false);
+        // Token压缩选项已移除（v3.0改用智能过滤）
         
         Scribe_Values.Look(ref weightTimeDecay, "dynamic_weightTimeDecay", 0.3f);
         Scribe_Values.Look(ref weightImportance, "dynamic_weightImportance", 0.3f);
@@ -162,6 +164,14 @@ namespace RimTalk.MemoryPatch
         Scribe_Values.Look(ref memoryScoreThreshold, "dynamic_memoryScoreThreshold", 0.15f);
         Scribe_Values.Look(ref knowledgeScoreThreshold, "dynamic_knowledgeScoreThreshold", 0.1f);
         
+        // ⭐ 自适应阈值设置（v3.0新增）
+        Scribe_Values.Look(ref enableAdaptiveThreshold, "adaptive_enableAdaptiveThreshold", false);
+        Scribe_Values.Look(ref autoApplyAdaptiveThreshold, "adaptive_autoApplyAdaptiveThreshold", false);
+        
+        // ⭐ 主动记忆召回（v3.0实验性功能）
+        Scribe_Values.Look(ref enableProactiveRecall, "recall_enableProactiveRecall", false);
+        Scribe_Values.Look(ref recallTriggerChance, "recall_triggerChance", 0.15f);
+
         // 常识库权重配置
         Scribe_Values.Look(ref knowledgeBaseScore, "knowledge_baseScore", 0.05f);
         Scribe_Values.Look(ref knowledgeJaccardWeight, "knowledge_jaccardWeight", 0.7f);
@@ -330,30 +340,6 @@ namespace RimTalk.MemoryPatch
                 
                 listing.Gap();
                 
-                // ⭐ Token优化选项（实验性功能）
-                GUI.color = new Color(1f, 1f, 0.8f);
-                listing.Label("⚠️ Token优化（实验性，可能影响质量）");
-                GUI.color = Color.white;
-                
-                listing.CheckboxLabeled("  启用记忆压缩（牺牲细节换取成本降低）", ref enableMemoryCompression);
-                if (enableMemoryCompression)
-                {
-                    GUI.color = new Color(1f, 0.7f, 0.7f);
-                    listing.Label("    ⚠️ 会合并/省略部分记忆内容");
-                    listing.Label("    💡 适用于：记忆数量多(>15条)且预算紧张时");
-                    GUI.color = Color.white;
-                }
-                
-                listing.CheckboxLabeled("  启用常识压缩（移除标签和格式）", ref enableKnowledgeCompression);
-                if (enableKnowledgeCompression)
-                {
-                    GUI.color = new Color(1f, 0.7f, 0.7f);
-                    listing.Label("    ⚠️ 会移除标签，内容更紧凑但可能降低AI理解");
-                    listing.Label("    💡 适用于：常识条目多(>8条)且对质量要求不高时");
-                    GUI.color = Color.white;
-                }
-                
-                listing.Gap();
                 listing.GapLine();
                 
                 // === 左右分栏布局：记忆权重 | 常识权重 ===
@@ -390,11 +376,75 @@ namespace RimTalk.MemoryPatch
             GUI.color = Color.white;
             Text.Font = GameFont.Small;
             
-            listing.Label($"  {"RimTalk_Settings_MemoryScoreThreshold".Translate()}: {memoryScoreThreshold:P0}");
-            memoryScoreThreshold = listing.Slider(memoryScoreThreshold, 0f, 1f);
+            // ⭐ 自适应阈值选项（实验性）
+            GUI.color = new Color(0.8f, 1f, 1f);
+            listing.CheckboxLabeled("  🧪 启用自适应阈值（实验性）", ref enableAdaptiveThreshold);
+            GUI.color = Color.white;
             
-            listing.Label($"  {"RimTalk_Settings_KnowledgeScoreThreshold".Translate()}: {knowledgeScoreThreshold:P0}");
-            knowledgeScoreThreshold = listing.Slider(knowledgeScoreThreshold, 0f, 1f);
+            if (enableAdaptiveThreshold)
+            {
+                GUI.color = Color.gray;
+                listing.Label("    自动根据评分分布调整阈值");
+                listing.Label("    基于统计学方法（百分位+均值）");
+                GUI.color = Color.white;
+                
+                listing.CheckboxLabeled("    自动应用推荐阈值", ref autoApplyAdaptiveThreshold);
+                
+                if (!autoApplyAdaptiveThreshold)
+                {
+                    GUI.color = Color.yellow;
+                    listing.Label("    当前使用手动阈值，查看日志获取推荐值");
+                    GUI.color = Color.white;
+                }
+                
+                listing.Gap();
+                
+                // 显示诊断信息（如果有数据）
+                var diagnostics = AdaptiveThresholdManager.GetDiagnostics();
+                if (diagnostics.MemorySampleCount > 0 || diagnostics.KnowledgeSampleCount > 0)
+                {
+                    GUI.color = new Color(0.7f, 0.9f, 1f);
+                    listing.Label($"    统计样本: 记忆={diagnostics.MemorySampleCount}, 常识={diagnostics.KnowledgeSampleCount}");
+                    
+                    if (diagnostics.MemorySampleCount >= 50)
+                    {
+                        listing.Label($"    推荐记忆阈值: {diagnostics.RecommendedMemoryThreshold:F3}");
+                    }
+                    
+                    if (diagnostics.KnowledgeSampleCount >= 50)
+                    {
+                        listing.Label($"    推荐常识阈值: {diagnostics.RecommendedKnowledgeThreshold:F3}");
+                    }
+                    
+                    GUI.color = Color.white;
+                }
+                else
+                {
+                    GUI.color = Color.gray;
+                    listing.Label("    (需要至少50个样本才能计算)");
+                    GUI.color = Color.white;
+                }
+                
+                listing.Gap();
+                listing.GapLine();
+            }
+            
+            // 手动阈值配置
+            GUI.color = enableAdaptiveThreshold && autoApplyAdaptiveThreshold ? Color.gray : Color.white;
+            listing.Label($"  {"RimTalk_Settings_MemoryScoreThreshold".Translate()}: {memoryScoreThreshold:P0}" + 
+                         (enableAdaptiveThreshold && !autoApplyAdaptiveThreshold ? " (手动)" : ""));
+            if (!enableAdaptiveThreshold || !autoApplyAdaptiveThreshold)
+            {
+                memoryScoreThreshold = listing.Slider(memoryScoreThreshold, 0f, 1f);
+            }
+            
+            listing.Label($"  {"RimTalk_Settings_KnowledgeScoreThreshold".Translate()}: {knowledgeScoreThreshold:P0}" +
+                         (enableAdaptiveThreshold && !autoApplyAdaptiveThreshold ? " (手动)" : ""));
+            if (!enableAdaptiveThreshold || !autoApplyAdaptiveThreshold)
+            {
+                knowledgeScoreThreshold = listing.Slider(knowledgeScoreThreshold, 0f, 1f);
+            }
+            GUI.color = Color.white;
         }
         
         /// <summary>

@@ -37,7 +37,7 @@ namespace RimTalk.Memory
             // 3. 零结果检查：如果都为空，直接返回空字符串（不注入任何内容）
             if (string.IsNullOrEmpty(memories) && string.IsNullOrEmpty(knowledge))
             {
-                Log.Message("[Smart Injection] No relevant memories or knowledge found - skipping injection to save tokens");
+                Log.Message("[Smart Injection] No relevant content - skipping injection to save tokens");
                 return string.Empty;
             }
 
@@ -71,7 +71,7 @@ namespace RimTalk.Memory
         }
 
         /// <summary>
-        /// 智能注入记忆
+        /// 智能注入记忆（带自适应阈值）
         /// </summary>
         public static string InjectSmartMemories(
             Pawn pawn,
@@ -118,8 +118,11 @@ namespace RimTalk.Memory
                 pawn,
                 listener);
 
-            // 5. 获取阈值并过滤
-            float threshold = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings?.memoryScoreThreshold ?? 0.15f;
+            // 4.1 记录评分到自适应阈值系统
+            AdaptiveThresholdManager.RecordScores(scored, null);
+
+            // 5. 获取自适应阈值（如果启用）
+            float threshold = GetAdaptiveMemoryThreshold();
 
             var selected = scored
                 .Where(s => s.Score >= threshold)
@@ -134,19 +137,11 @@ namespace RimTalk.Memory
             }
 
             // 7. 格式化输出
-            bool compress = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings?.enableMemoryCompression ?? false;
-            
-            if (compress)
-            {
-                var memories = selected.Select(s => s.Item).ToList();
-                return MemoryCompressor.CompressMemories(memories, 500);
-            }
-
             return FormatMemories(selected);
         }
 
         /// <summary>
-        /// 智能注入常识
+        /// 智能注入常识（带自适应阈值）
         /// </summary>
         public static string InjectSmartKnowledge(
             string context,
@@ -183,8 +178,11 @@ namespace RimTalk.Memory
                 speaker,
                 listener);
 
-            // 5. 获取阈值并过滤
-            float threshold = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings?.knowledgeScoreThreshold ?? 0.1f;
+            // 4.1 记录评分到自适应阈值系统
+            AdaptiveThresholdManager.RecordScores(null, scored);
+
+            // 5. 获取自适应阈值（如果启用）
+            float threshold = GetAdaptiveKnowledgeThreshold();
 
             var selected = scored
                 .Where(s => s.Score >= threshold)
@@ -199,14 +197,6 @@ namespace RimTalk.Memory
             }
 
             // 7. 格式化输出
-            bool compress = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings?.enableKnowledgeCompression ?? false;
-            
-            if (compress)
-            {
-                var entries = selected.Select(s => s.Item).ToList();
-                return KnowledgeCompressor.CompressKnowledge(entries, 300);
-            }
-
             return FormatKnowledge(selected);
         }
 
@@ -295,6 +285,42 @@ namespace RimTalk.Memory
             }
 
             return false;
+        }
+
+        #endregion
+
+        #region 自适应阈值辅助方法
+
+        /// <summary>
+        /// 获取自适应记忆阈值
+        /// </summary>
+        private static float GetAdaptiveMemoryThreshold()
+        {
+            var settings = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings;
+            
+            // 检查是否启用自适应阈值
+            if (settings?.enableAdaptiveThreshold ?? false)
+            {
+                return AdaptiveThresholdManager.GetRecommendedMemoryThreshold();
+            }
+            
+            // 使用手动设置的阈值
+            return settings?.memoryScoreThreshold ?? 0.20f;
+        }
+
+        /// <summary>
+        /// 获取自适应常识阈值
+        /// </summary>
+        private static float GetAdaptiveKnowledgeThreshold()
+        {
+            var settings = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings;
+            
+            if (settings?.enableAdaptiveThreshold ?? false)
+            {
+                return AdaptiveThresholdManager.GetRecommendedKnowledgeThreshold();
+            }
+            
+            return settings?.knowledgeScoreThreshold ?? 0.15f;
         }
 
         #endregion

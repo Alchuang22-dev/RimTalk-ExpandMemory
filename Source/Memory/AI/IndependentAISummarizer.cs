@@ -302,42 +302,42 @@ namespace RimTalk.Memory.AI
         {
             var sb = new StringBuilder();
             
-            // 根据模板类型生成不同的提示词
+            // 统一极简格式
             if (template == "deep_archive")
             {
-                // 深度归档：更加精炼，关注核心特征和里程碑事件
-                sb.AppendLine($"请为殖民者 {pawn.LabelShort} 进行深度记忆归档。");
-                sb.AppendLine("\n以下是已总结的中期记忆（ELS）：");
+                // 深度归档
+                sb.AppendLine($"殖民者{pawn.LabelShort}的记忆归档");
+                sb.AppendLine();
+                sb.AppendLine("记忆列表");
                 int i = 1;
                 foreach (var m in memories.Take(15))
                 {
-                    sb.AppendLine($"{i}. {m.content}");
+                    sb.AppendLine($"{i} {m.content}");
                     i++;
                 }
-                sb.AppendLine("\n归档要求：");
-                sb.AppendLine("1. 提炼核心人设特征和性格特点");
-                sb.AppendLine("2. 总结重要里程碑事件和转折点");
-                sb.AppendLine("3. 合并相似经历，突出长期趋势");
-                sb.AppendLine("4. 极简表达，不超过60字");
-                sb.AppendLine("5. 只输出归档总结，不要JSON或其他格式");
-                sb.AppendLine("\n示例：擅长建造和研究，是殖民地技术核心。在第2年成功击退机械族大规模袭击。与医生建立深厚友谊。");
+                sb.AppendLine();
+                sb.AppendLine("要求提炼核心特征和里程碑事件");
+                sb.AppendLine("合并相似经历突出长期趋势");
+                sb.AppendLine("极简表达不超过60字");
+                sb.AppendLine("只输出总结文字不要其他格式");
             }
-            else // daily_summary 或其他
+            else
             {
-                // 每日总结：常规总结，保留更多细节
-                sb.AppendLine($"请为殖民者 {pawn.LabelShort} 总结以下记忆。");
-                sb.AppendLine("\n记忆列表：");
+                // 每日总结
+                sb.AppendLine($"殖民者{pawn.LabelShort}的记忆总结");
+                sb.AppendLine();
+                sb.AppendLine("记忆列表");
                 int i = 1;
                 foreach (var m in memories.Take(20))
                 {
-                    sb.AppendLine($"{i}. {m.content}");
+                    sb.AppendLine($"{i} {m.content}");
                     i++;
                 }
-                sb.AppendLine("\n要求：");
-                sb.AppendLine("1. 提炼地点、人物、事件");
-                sb.AppendLine("2. 相似事件合并，标注频率（×N）");
-                sb.AppendLine("3. 极简表达，不超过80字");
-                sb.AppendLine("4. 只输出总结文字，不要JSON或其他格式");
+                sb.AppendLine();
+                sb.AppendLine("要求提炼地点人物事件");
+                sb.AppendLine("相似事件合并标注频率");
+                sb.AppendLine("极简表达不超过80字");
+                sb.AppendLine("只输出总结文字不要其他格式");
             }
             
             return sb.ToString();

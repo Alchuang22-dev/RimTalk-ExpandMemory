@@ -216,15 +216,16 @@ namespace RimTalk.Memory
         }
 
         /// <summary>
-        /// 生成状态描述文本（仅为新人生成）
+        /// 生成状态描述文本（优化为第三人称视角）
+        /// 其他Pawn看到这条常识时，会知道对方是新人
         /// </summary>
         private static string GenerateStatusContent(Pawn pawn)
         {
             string name = pawn.LabelShort;
-            string race = pawn.def?.label ?? "未知种族";
             
-            // 使用更中性的描述，避免AI重复强调
-            return $"{name}({race})最近刚加入殖民地，对这里的历史和其他成员还不太了解";
+            // 使用第三人称客观描述，适合全局常识库
+            // 任何Pawn看到这条信息时都能正确理解
+            return $"{name}是殖民地的新成员，刚加入不久，对殖民地的历史和成员关系还不熟悉";
         }
 
         /// <summary>
