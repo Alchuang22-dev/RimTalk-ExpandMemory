@@ -160,8 +160,8 @@ namespace RimTalk.Memory
                 }
 
                 // 未满7天：生成或更新"新成员"常识
-                string newContent = GenerateStatusContent(pawn);
-                float defaultImportance = 0.75f; // 降低重要性，避免AI过度强调
+                string newContent = GenerateStatusContent(pawn, daysInColony, joinTick);
+                float defaultImportance = 0.5f; // ? v2.4.7: 降低重要性到0.5，避免AI过度强调新人状态
 
                 if (existingEntry != null)
                 {
@@ -218,14 +218,34 @@ namespace RimTalk.Memory
         /// <summary>
         /// 生成状态描述文本（优化为第三人称视角）
         /// 其他Pawn看到这条常识时，会知道对方是新人
+        /// ? v2.4.6: 增加加入时间显示
         /// </summary>
-        private static string GenerateStatusContent(Pawn pawn)
+        private static string GenerateStatusContent(Pawn pawn, int daysInColony, int joinTick)
         {
             string name = pawn.LabelShort;
             
+            // 计算加入日期（游戏内日期）
+            int joinDay = GenDate.DayOfYear(joinTick, Find.WorldGrid.LongLatOf(Find.CurrentMap.Tile).x);
+            Quadrum joinQuadrum = GenDate.Quadrum(joinTick, Find.WorldGrid.LongLatOf(Find.CurrentMap.Tile).x);
+            int joinYear = GenDate.Year(joinTick, Find.WorldGrid.LongLatOf(Find.CurrentMap.Tile).x);
+            
+            // 格式化日期：季节 X日, 5500年
+            string joinDate = $"{joinQuadrum.Label()} {joinDay}日, {joinYear}年";
+            
             // 使用第三人称客观描述，适合全局常识库
             // 任何Pawn看到这条信息时都能正确理解
-            return $"{name}是殖民地的新成员，刚加入不久，对殖民地的历史和成员关系还不熟悉";
+            if (daysInColony == 0)
+            {
+                return $"{name}是殖民地的新成员，今天({joinDate})刚加入，对殖民地的历史和成员关系还不熟悉";
+            }
+            else if (daysInColony == 1)
+            {
+                return $"{name}是殖民地的新成员，昨天({joinDate})加入，对殖民地的历史和成员关系还不熟悉";
+            }
+            else
+            {
+                return $"{name}是殖民地的新成员，{daysInColony}天前({joinDate})加入，对殖民地的历史和成员关系还不熟悉";
+            }
         }
 
         /// <summary>

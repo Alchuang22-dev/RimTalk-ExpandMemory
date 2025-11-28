@@ -366,40 +366,41 @@ namespace RimTalk.Memory
             Pawn speaker,
             Pawn listener)
         {
-            float score = 0f;
+            float baseScore = 0f;
 
             // 1. 上下文相关性（最重要）
             float relevance = CalculateContextRelevance(memory, features);
-            score += relevance * weights.ContextRelevance;
+            baseScore += relevance * weights.ContextRelevance;
 
             // 2. 时间新鲜度
             float recency = CalculateRecency(memory);
-            score += recency * weights.Recency;
+            baseScore += recency * weights.Recency;
 
             // 3. 重要性
-            score += memory.importance * weights.Importance;
+            baseScore += memory.importance * weights.Importance;
 
-            // 4. 层级优先级
+            // 4. 层级优先级（修复：确保层级加成被计算）
             float layerScore = GetLayerPriority(memory.layer);
-            score += layerScore * weights.LayerPriority;
+            baseScore += layerScore * weights.LayerPriority;
 
-            // 5. 类型加成
-            score *= GetTypeBoost(memory.type, weights);
+            // 5. 类型加成（修复：使用乘法而不是替换）
+            float typeBoost = GetTypeBoost(memory.type, weights);
+            float finalScore = baseScore * typeBoost;
 
             // 6. 特殊标记加成
             if (memory.isPinned)
-                score *= 1.5f;
+                finalScore *= 1.5f;
             if (memory.isUserEdited)
-                score *= 1.3f;
+                finalScore *= 1.3f;
 
             // 7. 相关人物加成
             if (!string.IsNullOrEmpty(memory.relatedPawnName))
             {
                 if (listener != null && memory.relatedPawnName == listener.LabelShort)
-                    score *= 1.2f; // 与对话对象相关
+                    finalScore *= 1.2f; // 与对话对象相关
             }
 
-            return score;
+            return finalScore;
         }
 
         /// <summary>

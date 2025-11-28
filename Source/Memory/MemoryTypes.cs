@@ -28,7 +28,8 @@ namespace RimTalk.Memory
         Observation,    // 观察（未实现）
         Event,          // 事件
         Emotion,        // 情绪
-        Relationship    // 关系
+        Relationship,   // 关系
+        Internal        // ⭐ v3.3.2: 内部上下文（数据库查询结果，不显示给用户）
     }
 
     /// <summary>

@@ -89,8 +89,8 @@ namespace RimTalk.Memory
         {
             if (memoryScoreHistory.Count < MIN_SAMPLES)
             {
-                // 样本不足，使用默认值
-                return GetCurrentMemoryThreshold();
+                // 样本不足，返回固定的默认推荐值
+                return 0.20f; // 固定推荐值，不随用户调整变化
             }
 
             return CalculateAdaptiveThreshold(memoryScoreHistory, "Memory");
@@ -103,7 +103,8 @@ namespace RimTalk.Memory
         {
             if (knowledgeScoreHistory.Count < MIN_SAMPLES)
             {
-                return GetCurrentKnowledgeThreshold();
+                // 样本不足，返回固定的默认推荐值
+                return 0.15f; // 固定推荐值，不随用户调整变化
             }
 
             return CalculateAdaptiveThreshold(knowledgeScoreHistory, "Knowledge");

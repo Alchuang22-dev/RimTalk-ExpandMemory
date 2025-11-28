@@ -13,20 +13,160 @@ namespace RimTalk.Memory
     public static class SmartInjectionManager
     {
         /// <summary>
-        /// 智能注入记忆和常识（统一入口）
+        /// 智能注入上下文 - v3.0增强版
+        /// 使用RAG检索系统（v3.3）
         /// </summary>
-        /// <param name="speaker">说话者</param>
-        /// <param name="listener">听众</param>
-        /// <param name="context">对话上下文</param>
-        /// <param name="maxMemories">最大记忆数</param>
-        /// <param name="maxKnowledge">最大常识数</param>
-        /// <returns>格式化的注入文本（为空则返回空字符串）</returns>
         public static string InjectSmartContext(
             Pawn speaker,
             Pawn listener,
             string context,
-            int maxMemories = 8,
+            int maxMemories = 10,
             int maxKnowledge = 5)
+        {
+            if (speaker == null || string.IsNullOrEmpty(context))
+                return null;
+
+            try
+            {
+                // ? v3.3: 尝试使用RAG检索
+                if (RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings?.enableRAGRetrieval ?? false)
+                {
+                    return InjectWithRAG(speaker, listener, context, maxMemories, maxKnowledge);
+                }
+                
+                // 降级: 使用原有智能注入
+                return InjectWithLegacyMethod(speaker, listener, context, maxMemories, maxKnowledge);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[Smart Injection] Failed: {ex.Message}");
+                return null;
+            }
+        }
+        
+        /// <summary>
+        /// 使用RAG检索注入（v3.3新功能）
+        /// </summary>
+        private static string InjectWithRAG(
+            Pawn speaker,
+            Pawn listener,
+            string context,
+            int maxMemories,
+            int maxKnowledge)
+        {
+            try
+            {
+                var config = new RAG.RAGConfig
+                {
+                    TopK = maxMemories,
+                    MaxResults = maxMemories + maxKnowledge,
+                    UseSemanticScoring = AI.EmbeddingService.IsAvailable(),
+                    IncludeArchive = false
+                };
+                
+                // 异步检索（带超时）
+                var result = RAG.RAGManager.Retrieve(
+                    context,
+                    speaker,
+                    listener,
+                    config,
+                    timeoutMs: 300 // 300ms超时
+                );
+                
+                if (result != null && !string.IsNullOrEmpty(result.GeneratedContext))
+                {
+                    if (Prefs.DevMode)
+                    {
+                        Log.Message($"[Smart Injection] RAG: {result.TotalMatches} matches, " +
+                                  $"{result.RerankedMatches.Count} selected");
+                    }
+                    
+                    return FormatRAGContext(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[Smart Injection] RAG failed, falling back: {ex.Message}");
+            }
+            
+            // RAG失败，降级
+            return InjectWithLegacyMethod(speaker, listener, context, maxMemories, maxKnowledge);
+        }
+        
+        /// <summary>
+        /// 格式化RAG上下文
+        /// ? v3.3.1: 添加AI数据库使用提示
+        /// </summary>
+        private static string FormatRAGContext(RAG.RAGResult result)
+        {
+            if (result == null || result.RerankedMatches.Count == 0)
+                return null;
+            
+            var sb = new System.Text.StringBuilder();
+            
+            // ? 添加数据库使用提示（如果启用）
+            if (RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings?.enableVectorDatabase ?? false)
+            {
+                sb.AppendLine();
+                sb.AppendLine("【AI数据库命令】");
+                sb.AppendLine("你可以使用以下命令查询记忆：");
+                sb.AppendLine("  [DB:查询内容] - 查询相关记忆");
+                sb.AppendLine("  [RECALL:事件] - 回忆特定事件");
+                sb.AppendLine("  [SEARCH:关键词] - 搜索记忆");
+                sb.AppendLine();
+            }
+            
+            // 记忆部分（使用传统格式）
+            var memories = result.RerankedMatches
+                .Where(m => m.Memory != null)
+                .Take(10)
+                .ToList();
+            
+            if (memories.Count > 0)
+            {
+                sb.AppendLine("## Recent Memories"); // 改为传统标题
+                int index = 1;
+                foreach (var match in memories)
+                {
+                    var m = match.Memory;
+                    string typeTag = m.type.ToString();
+                    string timeAgo = m.TimeAgoString;
+                    sb.AppendLine($"{index}. [{typeTag}] {m.content} ({timeAgo})"); // 添加编号
+                    index++;
+                }
+                sb.AppendLine();
+            }
+            
+            // 常识部分（使用传统格式）
+            var knowledge = result.RerankedMatches
+                .Where(m => m.Knowledge != null)
+                .Take(5)
+                .ToList();
+            
+            if (knowledge.Count > 0)
+            {
+                sb.AppendLine("## Knowledge Base"); // 改为传统标题
+                int index = 1;
+                foreach (var match in knowledge)
+                {
+                    var k = match.Knowledge;
+                    sb.AppendLine($"{index}. [{k.tag}] {k.content}"); // 添加编号
+                    index++;
+                }
+            }
+            
+            return sb.ToString();
+        }
+        
+        /// <summary>
+        /// 原有注入方法（降级使用）
+        /// </summary>
+        private static string InjectWithLegacyMethod(
+            Pawn speaker,
+            Pawn listener,
+            string context,
+            int maxMemories,
+            int maxKnowledge)
         {
             // 1. 获取记忆内容
             string memories = InjectSmartMemories(speaker, context, maxMemories, listener);
@@ -65,7 +205,9 @@ namespace RimTalk.Memory
             // 5. 记录注入统计（用于调试）
             int memoryCount = string.IsNullOrEmpty(memories) ? 0 : memories.Split('\n').Length - 1;
             int knowledgeCount = string.IsNullOrEmpty(knowledge) ? 0 : knowledge.Split('\n').Length - 1;
-            Log.Message($"[Smart Injection] Injected {memoryCount} memories, {knowledgeCount} knowledge");
+            
+            if (Prefs.DevMode)
+                Log.Message($"[Smart Injection] Injected {memoryCount} memories, {knowledgeCount} knowledge");
 
             return result;
         }
