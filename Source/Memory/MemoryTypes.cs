@@ -150,6 +150,9 @@ namespace RimTalk.Memory
                 case MemoryType.Relationship:
                     AddTag("关系");
                     break;
+                case MemoryType.Internal:
+                    AddTag("内部上下文"); // ⭐ v3.3.2: 自动标记
+                    break;
             }
         }
 
@@ -185,17 +188,44 @@ namespace RimTalk.Memory
         public int Age => Find.TickManager.TicksGame - timestamp;
 
         /// <summary>
-        /// 获取记忆年龄描述
+        /// 获取记忆年龄描述（完全口语化）
+        /// ⭐ v3.3.2: 模糊时间感知，更自然
         /// </summary>
         public string TimeAgoString
         {
             get
             {
                 int age = Age;
+                
+                // 超短期（<1小时 = <2500 ticks）
                 if (age < 2500) return "刚才";
-                if (age < 60000) return $"{age / 2500}小时前";
-                if (age < 900000) return $"{age / 60000}天前";
-                return $"{age / 900000}年前";
+                
+                // 短期（1-6小时）
+                if (age < 15000) return "不久前";
+                
+                // 当天（6-24小时）
+                if (age < 60000) return "今天";
+                
+                // 昨天
+                if (age < 120000) return "昨天";
+                
+                // 前天
+                if (age < 180000) return "前天";
+                
+                // 前几天（3-7天）
+                if (age < 420000) return "前几天";
+                
+                // 上周（7-15天）
+                if (age < 900000) return "上周";
+                
+                // 最近（15-30天）
+                if (age < 1800000) return "最近";
+                
+                // 之前（30天-1年）
+                if (age < 3600000) return "之前";
+                
+                // 很久以前（>1年）
+                return "很久以前";
             }
         }
 
@@ -232,6 +262,7 @@ namespace RimTalk.Memory
                     case MemoryType.Event: return "事件";
                     case MemoryType.Emotion: return "情绪";
                     case MemoryType.Relationship: return "关系";
+                    case MemoryType.Internal: return "内部"; // ⭐ v3.3.2: 内部上下文
                     default: return "未知";
                 }
             }

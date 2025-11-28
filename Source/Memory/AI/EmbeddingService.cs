@@ -143,7 +143,7 @@ namespace RimTalk.Memory.AI
             {
                 if (embeddingCache.TryGetValue(cacheKey, out float[] cachedVector))
                 {
-                    // ? 只在DevMode下且随机1%概率输出，避免刷屏
+                    // ? v3.3.2: 只在DevMode下且随机1%概率输出，避免刷屏
                     if (Prefs.DevMode && UnityEngine.Random.value < 0.01f)
                     {
                         Log.Message($"[Embedding] Cache hit ({embeddingCache.Count}/{MAX_CACHE_SIZE})");
@@ -152,8 +152,8 @@ namespace RimTalk.Memory.AI
                 }
             }
             
-            // ? 只记录API调用，不记录每个缓存命中
-            if (Prefs.DevMode)
+            // ? v3.3.2: 降低API调用日志频率
+            if (Prefs.DevMode && UnityEngine.Random.value < 0.2f)
             {
                 Log.Message($"[Embedding] API call: {text.Substring(0, Math.Min(30, text.Length))}...");
             }
@@ -176,8 +176,8 @@ namespace RimTalk.Memory.AI
                             embeddingCache.Remove(key);
                         }
                         
-                        // ? 只在清理时输出一次
-                        if (Prefs.DevMode)
+                        // ? v3.3.2: 降低日志输出
+                        if (Prefs.DevMode && UnityEngine.Random.value < 0.1f)
                             Log.Message($"[Embedding] Cache cleanup: {toRemove.Count} removed, {embeddingCache.Count} remain");
                     }
                     

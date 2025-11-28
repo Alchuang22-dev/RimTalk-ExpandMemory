@@ -145,36 +145,44 @@ namespace RimTalk.Memory
                                 library.AddEntry(entry);
                                 processedCount++;
                                 
-                                if (Prefs.DevMode)
+                                // ? v3.3.2: 降低日志输出 - 仅DevMode且10%概率
+                                if (Prefs.DevMode && UnityEngine.Random.value < 0.1f)
                                 {
-                                    Log.Message($"[EventRecord] ? Created global event knowledge: {eventText.Substring(0, Math.Min(50, eventText.Length))}...");
+                                    Log.Message($"[EventRecord] Created global event knowledge: {eventText.Substring(0, Math.Min(50, eventText.Length))}...");
                                 }
                             }
                         }
+                        // ? v3.3.2: 移除调试日志
+                        /*
                         else if (Prefs.DevMode)
                         {
-                            // ? 新增：调试日志，显示被过滤的事件
-                            string debugText = logEntry.ToGameStringFromPOV(null, false);
-                            if (!string.IsNullOrEmpty(debugText) && debugText.Length < 100)
-                            {
-                                Log.Message($"[EventRecord] ? Filtered event: {debugText} (Type: {logEntry.GetType().Name})");
-                            }
+                            // 调试日志已移除
                         }
+                        */
                     }
                     catch (Exception ex)
                     {
-                        Log.Warning($"[EventRecord] Error processing log entry: {ex.Message}");
+                        // ? v3.3.2: 仅在DevMode下输出警告
+                        if (Prefs.DevMode && UnityEngine.Random.value < 0.2f)
+                        {
+                            Log.Warning($"[EventRecord] Error processing log entry: {ex.Message}");
+                        }
                     }
                 }
                 
-                if (processedCount > 0 && Prefs.DevMode)
+                // ? v3.3.2: 降低日志输出 - 仅DevMode且10%概率
+                if (processedCount > 0 && Prefs.DevMode && UnityEngine.Random.value < 0.1f)
                 {
                     Log.Message($"[EventRecord] Processed {processedCount} new PlayLog events");
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"[EventRecord] Error scanning PlayLog: {ex.Message}");
+                // ? v3.3.2: 错误日志保留但降低频率
+                if (Prefs.DevMode && UnityEngine.Random.value < 0.2f)
+                {
+                    Log.Error($"[EventRecord] Error scanning PlayLog: {ex.Message}");
+                }
             }
         }
         
@@ -244,11 +252,8 @@ namespace RimTalk.Memory
                     // ? 新增：如果没有匹配重要关键词，但这是Incident事件，也记录（宽松模式）
                     if (logEntry.GetType().Name == "PlayLogEntry_Incident")
                     {
+                        // 移除调试日志
                         // 对于Incident事件，即使关键词不匹配也记录（但降低重要性）
-                        if (Prefs.DevMode)
-                        {
-                            Log.Message($"[EventRecord] ?? Recording Incident event without keyword match: {text.Substring(0, Math.Min(50, text.Length))}");
-                        }
                     }
                     else
                     {
@@ -286,10 +291,8 @@ namespace RimTalk.Memory
             }
             catch (Exception ex)
             {
-                if (Prefs.DevMode)
-                {
-                    Log.Warning($"[EventRecord] Error in ExtractEventInfo: {ex.Message}");
-                }
+                // ? v3.3.2: 移除调试日志
+                // if (Prefs.DevMode) { ... }
                 return null;
             }
         }

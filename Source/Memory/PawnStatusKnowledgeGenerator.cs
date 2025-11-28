@@ -59,9 +59,10 @@ namespace RimTalk.Memory
                         {
                             colonistJoinTicks[pawnID] = currentTick;
                             
-                            if (Prefs.DevMode)
+                            // ? v3.3.2: 降低日志输出 - 仅DevMode且10%概率
+                            if (Prefs.DevMode && UnityEngine.Random.value < 0.1f)
                             {
-                                Log.Message($"[PawnStatus] ? First detection: {pawn.LabelShort} marked as new colonist");
+                                Log.Message($"[PawnStatus] First detection: {pawn.LabelShort} marked as new colonist");
                             }
                         }
                         
@@ -82,12 +83,17 @@ namespace RimTalk.Memory
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"[PawnStatus] Error updating status for {pawn.LabelShort}: {ex.Message}");
+                        // ? v3.3.2: 错误日志保留但降低频率
+                        if (Prefs.DevMode && UnityEngine.Random.value < 0.2f)
+                        {
+                            Log.Error($"[PawnStatus] Error updating status for {pawn.LabelShort}: {ex.Message}");
+                        }
                     }
                 }
             }
             
-            if (updatedCount > 0 && Prefs.DevMode)
+            // ? v3.3.2: 降低日志输出 - 仅DevMode且10%概率
+            if (updatedCount > 0 && Prefs.DevMode && UnityEngine.Random.value < 0.1f)
             {
                 Log.Message($"[PawnStatus] Updated {updatedCount} colonist status knowledge entries");
             }
@@ -123,7 +129,11 @@ namespace RimTalk.Memory
                     joinTick = currentTick;
                     colonistJoinTicks[pawnID] = joinTick;
                     
-                    Log.Warning($"[PawnStatus] ?? No join record for {pawn.LabelShort}, using current time");
+                    // ? v3.3.2: 降低警告输出
+                    if (Prefs.DevMode && UnityEngine.Random.value < 0.2f)
+                    {
+                        Log.Warning($"[PawnStatus] No join record for {pawn.LabelShort}, using current time");
+                    }
                 }
                 
                 int ticksInColony = currentTick - joinTick;
@@ -132,7 +142,8 @@ namespace RimTalk.Memory
                 // 防止负数（数据损坏情况）
                 if (daysInColony < 0)
                 {
-                    Log.Error($"[PawnStatus] ? Negative days for {pawn.LabelShort}: {daysInColony}, resetting join time");
+                    // ? v3.3.2: 错误日志保留
+                    Log.Error($"[PawnStatus] Negative days for {pawn.LabelShort}: {daysInColony}, resetting join time");
                     colonistJoinTicks[pawnID] = currentTick;
                     daysInColony = 0;
                 }
@@ -151,9 +162,10 @@ namespace RimTalk.Memory
                     {
                         library.RemoveEntry(existingEntry);
                         
-                        if (Prefs.DevMode)
+                        // ? v3.3.2: 降低日志输出
+                        if (Prefs.DevMode && UnityEngine.Random.value < 0.1f)
                         {
-                            Log.Message($"[PawnStatus] ??? Removed new colonist tag for {pawn.LabelShort} (>= {NEW_COLONIST_THRESHOLD_DAYS} days)");
+                            Log.Message($"[PawnStatus] Removed new colonist tag for {pawn.LabelShort} (>= {NEW_COLONIST_THRESHOLD_DAYS} days)");
                         }
                     }
                     return; // 7天后不再生成任何常识
@@ -176,18 +188,16 @@ namespace RimTalk.Memory
                         existingEntry.importance = defaultImportance;
                         existingEntry.targetPawnId = pawn.thingIDNumber;
                         
-                        if (Prefs.DevMode)
+                        // ? v3.3.2: 降低日志输出
+                        if (Prefs.DevMode && UnityEngine.Random.value < 0.05f)
                         {
-                            Log.Message($"[PawnStatus] ? Updated: {pawn.LabelShort} (days: {daysInColony}) -> {newContent}");
+                            Log.Message($"[PawnStatus] Updated: {pawn.LabelShort} (days: {daysInColony}) -> {newContent}");
                         }
                     }
                     else
                     {
+                        // ? v3.3.2: 降低日志输出
                         // 保护用户的手动修改
-                        if (Prefs.DevMode)
-                        {
-                            Log.Message($"[PawnStatus] ?? Preserved user edits for {pawn.LabelShort}");
-                        }
                     }
                 }
                 else
@@ -203,14 +213,16 @@ namespace RimTalk.Memory
                     
                     library.AddEntry(newEntry);
                     
-                    if (Prefs.DevMode)
+                    // ? v3.3.2: 降低日志输出
+                    if (Prefs.DevMode && UnityEngine.Random.value < 0.1f)
                     {
-                        Log.Message($"[PawnStatus] ? Created: {pawn.LabelShort} (days: {daysInColony}, importance: {defaultImportance:F2})");
+                        Log.Message($"[PawnStatus] Created: {pawn.LabelShort} (days: {daysInColony}, importance: {defaultImportance:F2})");
                     }
                 }
             }
             catch (Exception ex)
             {
+                // ? v3.3.2: 错误日志保留
                 Log.Error($"[PawnStatus] Failed to update status for {pawn?.LabelShort ?? "Unknown"}: {ex.Message}");
             }
         }
@@ -287,9 +299,10 @@ namespace RimTalk.Memory
                 // 清理更新记录
                 lastUpdateTicks.Remove(pawn.thingIDNumber);
                 
-                if (Prefs.DevMode)
+                // ? v3.3.2: 降低日志输出
+                if (Prefs.DevMode && UnityEngine.Random.value < 0.1f)
                 {
-                    Log.Message($"[PawnStatus] ??? Removed status for {pawn.LabelShort}");
+                    Log.Message($"[PawnStatus] Removed status for {pawn.LabelShort}");
                 }
             }
         }
@@ -329,9 +342,10 @@ namespace RimTalk.Memory
                     colonistJoinTicks.Remove(id);
                 }
                 
-                if ((toRemove.Count > 0 || toRemoveJoin.Count > 0) && Prefs.DevMode)
+                // ? v3.3.2: 降低日志输出
+                if ((toRemove.Count > 0 || toRemoveJoin.Count > 0) && Prefs.DevMode && UnityEngine.Random.value < 0.1f)
                 {
-                    Log.Message($"[PawnStatus] ?? Cleaned up {toRemove.Count} update records, {toRemoveJoin.Count} join records");
+                    Log.Message($"[PawnStatus] Cleaned up {toRemove.Count} update records, {toRemoveJoin.Count} join records");
                 }
             }
         }

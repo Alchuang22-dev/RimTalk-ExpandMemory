@@ -284,18 +284,28 @@ namespace RimTalk.Memory
 
             if (summarized)
             {
-                Log.Message($"[RimTalk Memory] ✓ Summarized memories for {pawn.LabelShort} ({summarizationQueue.Count} remaining)");
+                // ⭐ v3.3.2: 降低日志输出 - 仅DevMode且10%概率
+                if (Prefs.DevMode && UnityEngine.Random.value < 0.1f)
+                {
+                    Log.Message($"[RimTalk Memory] Summarized memories for {pawn.LabelShort} ({summarizationQueue.Count} remaining)");
+                }
             }
 
             // 如果还有更多殖民者，设置下一个总结时间（15秒后）
             if (summarizationQueue.Count > 0)
             {
                 nextSummarizationTick = currentTick + SUMMARIZATION_DELAY_TICKS;
-                Log.Message($"[RimTalk Memory] ⏰ Next colonist will be summarized in 15 seconds...");
+                
+                // ⭐ v3.3.2: 移除下一次总结时间的日志
+                // Log.Message($"[RimTalk Memory] Next colonist will be summarized in 15 seconds...");
             }
             else
             {
-                Log.Message($"[RimTalk Memory] ✅ All colonists summarized!");
+                // ⭐ v3.3.2: 降低日志输出
+                if (Prefs.DevMode && UnityEngine.Random.value < 0.1f)
+                {
+                    Log.Message($"[RimTalk Memory] All colonists summarized!");
+                }
             }
         }
 
@@ -342,9 +352,13 @@ namespace RimTalk.Memory
 
             if (summarized)
             {
-                Log.Message($"[RimTalk Memory] ✓ Manual summarized for {pawn.LabelShort} ({scmCount} SCM -> ELS, {manualSummarizationQueue.Count} remaining)");
+                // ⭐ v3.3.2: 降低日志输出
+                if (Prefs.DevMode && UnityEngine.Random.value < 0.1f)
+                {
+                    Log.Message($"[RimTalk Memory] Manual summarized for {pawn.LabelShort} ({scmCount} SCM -> ELS, {manualSummarizationQueue.Count} remaining)");
+                }
                 
-                // ⭐ 给用户反馈消息
+                // ⭐ 给用户反馈消息（保留）
                 Messages.Message(
                     $"{pawn.LabelShort}: {scmCount}条短期记忆已总结",
                     MessageTypeDefOf.TaskCompletion,
@@ -359,8 +373,12 @@ namespace RimTalk.Memory
             }
             else
             {
-                Log.Message($"[RimTalk Memory] ✅ All manual summarizations complete!");
-                // ⭐ 所有总结完成后的消息
+                // ⭐ v3.3.2: 降低日志输出
+                if (Prefs.DevMode && UnityEngine.Random.value < 0.1f)
+                {
+                    Log.Message($"[RimTalk Memory] All manual summarizations complete!");
+                }
+                // ⭐ 所有总结完成后的消息（保留）
                 Messages.Message("所有殖民者手动总结完成", MessageTypeDefOf.PositiveEvent, false);
             }
         }
