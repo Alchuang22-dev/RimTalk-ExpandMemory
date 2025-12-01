@@ -66,7 +66,7 @@ namespace RimTalk.Memory.UI
             // 自动生成常识折叠区
             Rect autoGenRect = new Rect(0f, yPos, inRect.width, 35f);
             DrawAutoGenerateSection(autoGenRect);
-            yPos += expandAutoGenerate ? 140f : 40f;
+            yPos += expandAutoGenerate ? 170f : 40f; // ? 从140f增加到170f（130+35+5）
 
             // 左侧列表
             Rect listRect = new Rect(0f, yPos, 450f, inRect.height - yPos - 50f);
@@ -142,27 +142,55 @@ namespace RimTalk.Memory.UI
 
             if (expandAutoGenerate)
             {
-                Rect contentRect = new Rect(rect.x + 10f, rect.y + 35f, rect.width - 20f, 100f);
+                Rect contentRect = new Rect(rect.x + 10f, rect.y + 35f, rect.width - 20f, 130f); // ? 从100增加到130
                 GUI.Box(contentRect, "");
                 
                 Rect innerRect = contentRect.ContractedBy(5f);
                 float y = innerRect.y;
+                float buttonWidth = 120f;
                 
                 var settings = RimTalkMemoryPatchMod.Settings;
                 
-                // Pawn状态常识生成
-                Rect pawnStatusRect = new Rect(innerRect.x, y, innerRect.width, 30f);
+                // ? 第一行：Pawn状态常识
+                Rect pawnStatusLineRect = new Rect(innerRect.x, y, innerRect.width, 30f);
+                
+                // 复选框
+                Rect pawnCheckboxRect = new Rect(pawnStatusLineRect.x, pawnStatusLineRect.y, pawnStatusLineRect.width - buttonWidth - 10f, 30f);
                 bool enablePawnStatus = settings.enablePawnStatusKnowledge;
-                Widgets.CheckboxLabeled(pawnStatusRect, "生成Pawn状态常识", ref enablePawnStatus);
+                Widgets.CheckboxLabeled(pawnCheckboxRect, "生成Pawn状态常识", ref enablePawnStatus);
                 settings.enablePawnStatusKnowledge = enablePawnStatus;
+                
+                // ? 立即生成按钮
+                Rect pawnButtonRect = new Rect(pawnStatusLineRect.xMax - buttonWidth, pawnStatusLineRect.y, buttonWidth, 30f);
+                if (Widgets.ButtonText(pawnButtonRect, "立即生成"))
+                {
+                    GeneratePawnStatusKnowledge();
+                }
                 
                 y += 35f;
                 
-                // 事件记录常识生成
-                Rect eventRecordRect = new Rect(innerRect.x, y, innerRect.width, 30f);
+                // ? 第二行：事件记录常识
+                Rect eventLineRect = new Rect(innerRect.x, y, innerRect.width, 30f);
+                
+                // 复选框
+                Rect eventCheckboxRect = new Rect(eventLineRect.x, eventLineRect.y, eventLineRect.width - buttonWidth - 10f, 30f);
                 bool enableEventRecord = settings.enableEventRecordKnowledge;
-                Widgets.CheckboxLabeled(eventRecordRect, "生成事件记录常识", ref enableEventRecord);
+                Widgets.CheckboxLabeled(eventCheckboxRect, "生成事件记录常识", ref enableEventRecord);
                 settings.enableEventRecordKnowledge = enableEventRecord;
+                
+                // ? 立即生成按钮
+                Rect eventButtonRect = new Rect(eventLineRect.xMax - buttonWidth, eventLineRect.y, buttonWidth, 30f);
+                if (Widgets.ButtonText(eventButtonRect, "立即生成"))
+                {
+                    GenerateEventRecordKnowledge();
+                }
+                
+                y += 35f;
+                
+                // ? 提示信息
+                GUI.color = Color.gray;
+                Widgets.Label(new Rect(innerRect.x, y, innerRect.width, 20f), "提示：启用自动生成后，系统会定期更新常识库");
+                GUI.color = Color.white;
             }
         }
         
