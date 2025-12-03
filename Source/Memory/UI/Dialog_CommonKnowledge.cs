@@ -360,12 +360,68 @@ namespace RimTalk.Memory.UI
             Widgets.Label(new Rect(innerRect.x + innerRect.width - 40f, y, 40f, 25f), editImportance.ToString("F1"));
             y += 30f;
             
+            // ⭐ 专属Pawn选择
+            Widgets.Label(new Rect(innerRect.x, y, 100f, 25f), "专属殖民者:");
+            
+            // 获取当前选择的Pawn
+            Pawn selectedPawn = null;
+            if (editTargetPawnId >= 0)
+            {
+                selectedPawn = Find.Maps?
+                    .SelectMany(m => m.mapPawns.FreeColonists)
+                    .FirstOrDefault(p => p.thingIDNumber == editTargetPawnId);
+            }
+            
+            string buttonLabel = editTargetPawnId == -1 ? "全局可见" : 
+                                (selectedPawn != null ? selectedPawn.LabelShort : "已删除的Pawn");
+            
+            if (Widgets.ButtonText(new Rect(innerRect.x + 100f, y, innerRect.width - 100f, 25f), buttonLabel))
+            {
+                // 创建Pawn选择菜单
+                List<FloatMenuOption> options = new List<FloatMenuOption>();
+                
+                // 全局选项
+                options.Add(new FloatMenuOption("全局可见（所有殖民者）", delegate
+                {
+                    editTargetPawnId = -1;
+                }));
+                
+                // 添加所有殖民者选项
+                var colonists = Find.Maps?.SelectMany(m => m.mapPawns.FreeColonists).ToList();
+                if (colonists != null && colonists.Count > 0)
+                {
+                    foreach (var pawn in colonists.OrderBy(p => p.LabelShort))
+                    {
+                        int pawnId = pawn.thingIDNumber;
+                        options.Add(new FloatMenuOption($"专属: {pawn.LabelShort}", delegate
+                        {
+                            editTargetPawnId = pawnId;
+                        }));
+                    }
+                }
+                
+                Find.WindowStack.Add(new FloatMenu(options));
+            }
+            
+            y += 30f;
+            
+            // 提示文本
+            GUI.color = new Color(0.7f, 0.7f, 0.7f);
+            Text.Font = GameFont.Tiny;
+            string hint = editTargetPawnId == -1 ? 
+                "全局常识：所有殖民者都可以看到" : 
+                "专属常识：只有指定的殖民者可以看到";
+            Widgets.Label(new Rect(innerRect.x + 100f, y, innerRect.width - 100f, 20f), hint);
+            Text.Font = GameFont.Small;
+            GUI.color = Color.white;
+            y += 25f;
+            
             // 内容
             Widgets.Label(new Rect(innerRect.x, y, 100f, 25f), "内容:");
             y += 30f;
-            Rect contentRect = new Rect(innerRect.x, y, innerRect.width, 150f);
+            Rect contentRect = new Rect(innerRect.x, y, innerRect.width, 120f); // 从150减少到120
             editContent = Widgets.TextArea(contentRect, editContent);
-            y += 160f;
+            y += 130f;
             
             // 按钮
             if (Widgets.ButtonText(new Rect(innerRect.x, y, 100f, 30f), "保存"))
@@ -406,12 +462,28 @@ namespace RimTalk.Memory.UI
             Widgets.Label(new Rect(innerRect.x + 100f, y, 100f, 25f), selectedEntry.isEnabled ? "启用" : "禁用");
             y += 30f;
             
+            // ⭐ 专属Pawn信息
+            Widgets.Label(new Rect(innerRect.x, y, 100f, 25f), "可见范围:");
+            string visibilityText = "全局（所有殖民者）";
+            if (selectedEntry.targetPawnId >= 0)
+            {
+                var targetPawn = Find.Maps?
+                    .SelectMany(m => m.mapPawns.FreeColonists)
+                    .FirstOrDefault(p => p.thingIDNumber == selectedEntry.targetPawnId);
+                
+                visibilityText = targetPawn != null ? 
+                    $"专属: {targetPawn.LabelShort}" : 
+                    $"专属: Pawn已删除 (ID:{selectedEntry.targetPawnId})";
+            }
+            Widgets.Label(new Rect(innerRect.x + 100f, y, innerRect.width - 100f, 25f), visibilityText);
+            y += 30f;
+            
             // 内容
             Widgets.Label(new Rect(innerRect.x, y, 100f, 25f), "内容:");
             y += 30f;
-            Rect contentRect = new Rect(innerRect.x, y, innerRect.width, 150f);
+            Rect contentRect = new Rect(innerRect.x, y, innerRect.width, 120f); // 从150减少到120
             Widgets.Label(contentRect, selectedEntry.content);
-            y += 160f;
+            y += 130f;
             
             // 编辑按钮
             if (Widgets.ButtonText(new Rect(innerRect.x, y, 100f, 30f), "编辑"))
@@ -425,6 +497,7 @@ namespace RimTalk.Memory.UI
             editTag = "";
             editContent = "";
             editImportance = 0.5f;
+            editTargetPawnId = -1; // ⭐ 默认全局
             selectedEntry = null;
             editMode = true;
         }
@@ -436,6 +509,7 @@ namespace RimTalk.Memory.UI
                 editTag = selectedEntry.tag;
                 editContent = selectedEntry.content;
                 editImportance = selectedEntry.importance;
+                editTargetPawnId = selectedEntry.targetPawnId; // ⭐ 加载专属Pawn ID
                 editMode = true;
             }
         }
@@ -453,7 +527,8 @@ namespace RimTalk.Memory.UI
                 // 新建
                 var newEntry = new CommonKnowledgeEntry(editTag, editContent)
                 {
-                    importance = editImportance
+                    importance = editImportance,
+                    targetPawnId = editTargetPawnId // ⭐ 保存专属Pawn ID
                 };
                 library.AddEntry(newEntry);
                 selectedEntry = newEntry;
@@ -464,6 +539,7 @@ namespace RimTalk.Memory.UI
                 selectedEntry.tag = editTag;
                 selectedEntry.content = editContent;
                 selectedEntry.importance = editImportance;
+                selectedEntry.targetPawnId = editTargetPawnId; // ⭐ 保存专属Pawn ID
             }
 
             editMode = false;
