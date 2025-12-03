@@ -68,7 +68,7 @@ namespace RimTalk.Memory
         
         /// <summary>
         /// 每小时扫描PlayLog事件
-        /// 生成全局共享的殖民地历史常识
+        /// 生成全局公共殖民地历史常识
         /// </summary>
         public static void ScanRecentPlayLog()
         {
@@ -88,12 +88,11 @@ namespace RimTalk.Memory
                 int processedCount = 0;
                 int currentTick = Find.TickManager.TicksGame;
                 
-                // ? 修复：PlayLog.Age是事件发生时的tick（不是时间差）
-                // 应该比较：currentTick - entry.Age < GenDate.TicksPerHour
-                int oneHourAgoTick = currentTick - GenDate.TicksPerHour;
-                
+                // ? v3.3.3 修复：正确筛选最近1小时的事件
+                // PlayLog.Age 是事件发生时的游戏tick（绝对时间）
+                // 所以应该是：currentTick - Age <= GenDate.TicksPerHour
                 var recentEntries = gameHistory.AllEntries
-                    .Where(e => e != null && e.Age >= oneHourAgoTick) // 事件tick >= 1小时前的tick
+                    .Where(e => e != null && (currentTick - e.Age) <= GenDate.TicksPerHour) // ? 修复时间判断
                     .OrderByDescending(e => e.Age) // 按时间倒序（最新的优先）
                     .Take(50);
                 
@@ -119,7 +118,7 @@ namespace RimTalk.Memory
                             }
                         }
                         
-                        // 提取事件信息
+                        // 获取事件信息
                         string eventText = ExtractEventInfo(logEntry);
                         
                         if (!string.IsNullOrEmpty(eventText))
@@ -146,24 +145,17 @@ namespace RimTalk.Memory
                                 library.AddEntry(entry);
                                 processedCount++;
                                 
-                                // ? v3.3.2: 降低日志输出 - 仅DevMode且10%概率
+                                // ? v3.3.2: 减少日志量 - 仅DevMode且10%概率
                                 if (Prefs.DevMode && UnityEngine.Random.value < 0.1f)
                                 {
                                     Log.Message($"[EventRecord] Created global event knowledge: {eventText.Substring(0, Math.Min(50, eventText.Length))}...");
                                 }
                             }
                         }
-                        // ? v3.3.2: 移除调试日志
-                        /*
-                        else if (Prefs.DevMode)
-                        {
-                            // 调试日志已移除
-                        }
-                        */
                     }
                     catch (Exception ex)
                     {
-                        // ? v3.3.2: 仅在DevMode下输出警告
+                        // ? v3.3.2: 仅在DevMode且随机输出
                         if (Prefs.DevMode && UnityEngine.Random.value < 0.2f)
                         {
                             Log.Warning($"[EventRecord] Error processing log entry: {ex.Message}");
@@ -171,7 +163,7 @@ namespace RimTalk.Memory
                     }
                 }
                 
-                // ? v3.3.2: 降低日志输出 - 仅DevMode且10%概率
+                // ? v3.3.2: 减少日志量 - 仅DevMode且10%概率
                 if (processedCount > 0 && Prefs.DevMode && UnityEngine.Random.value < 0.1f)
                 {
                     Log.Message($"[EventRecord] Processed {processedCount} new PlayLog events");
@@ -179,7 +171,7 @@ namespace RimTalk.Memory
             }
             catch (Exception ex)
             {
-                // ? v3.3.2: 错误日志保留但降低频率
+                // ? v3.3.2: 减少日志量，降低错误频率
                 if (Prefs.DevMode && UnityEngine.Random.value < 0.2f)
                 {
                     Log.Error($"[EventRecord] Error scanning PlayLog: {ex.Message}");
