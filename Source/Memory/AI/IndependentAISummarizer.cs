@@ -476,41 +476,87 @@ namespace RimTalk.Memory.AI
 
         private static string BuildJsonRequest(string prompt)
         {
-            string str = prompt.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "").Replace("\t", "\\t");
-			StringBuilder stringBuilder = new StringBuilder();
-			bool flag = provider == "Google";
-			if (flag)
-			{
-				stringBuilder.Append("{");
-				stringBuilder.Append("\"contents\":[{");
-				stringBuilder.Append("\"parts\":[{");
-				stringBuilder.Append("\"text\":\"" + str + "\"");
-				stringBuilder.Append("}]");
-				stringBuilder.Append("}],");
-				stringBuilder.Append("\"generationConfig\":{");
-				stringBuilder.Append("\"temperature\":0.7,");
-				stringBuilder.Append("\"maxOutputTokens\":200");
-				bool flag2 = model.Contains("flash");
-				if (flag2)
-				{
-					stringBuilder.Append(",\"thinkingConfig\":{\"thinkingBudget\":0}");
-				}
-				stringBuilder.Append("}");
-				stringBuilder.Append("}");
-			}
-			else
-			{
-				stringBuilder.Append("{");
-				stringBuilder.Append("\"model\":\"" + model + "\",");
-				stringBuilder.Append("\"messages\":[");
-				stringBuilder.Append("{\"role\":\"user\",");
-				stringBuilder.Append("\"content\":\"" + str + "\"");
-				stringBuilder.Append("}],");
-				stringBuilder.Append("\"temperature\":0.7,");
-				stringBuilder.Append("\"max_tokens\":200");
-				stringBuilder.Append("}");
-			}
-			return stringBuilder.ToString();
+            StringBuilder stringBuilder = new StringBuilder();
+            bool isGoogle = (provider == "Google");
+            
+            if (isGoogle)
+            {
+                // Google Gemini: 保持原有格式
+                string str = prompt.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "").Replace("\t", "\\t");
+                
+                stringBuilder.Append("{");
+                stringBuilder.Append("\"contents\":[{");
+                stringBuilder.Append("\"parts\":[{");
+                stringBuilder.Append("\"text\":\"" + str + "\"");
+                stringBuilder.Append("}]");
+                stringBuilder.Append("}],");
+                stringBuilder.Append("\"generationConfig\":{");
+                stringBuilder.Append("\"temperature\":0.7,");
+                stringBuilder.Append("\"maxOutputTokens\":200");
+                
+                if (model.Contains("flash"))
+                {
+                    stringBuilder.Append(",\"thinkingConfig\":{\"thinkingBudget\":0}");
+                }
+                
+                stringBuilder.Append("}");
+                stringBuilder.Append("}");
+            }
+            else
+            {
+                // ⭐ v3.3.4: OpenAI/DeepSeek - 实现Prompt Caching
+                var settings = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings;
+                bool enableCaching = settings != null && settings.enablePromptCaching;
+                
+                // 固定的系统指令（可缓存）
+                string systemPrompt = "你是一个RimWorld殖民地的记忆总结助手。\\n" +
+                                    "请用极简的语言总结记忆内容。\\n" +
+                                    "只输出总结文字，不要其他格式。";
+                
+                // 用户数据（记忆列表）
+                string userPrompt = prompt.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "").Replace("\t", "\\t");
+                
+                stringBuilder.Append("{");
+                stringBuilder.Append("\"model\":\"" + model + "\",");
+                stringBuilder.Append("\"messages\":[");
+                
+                // system消息（带缓存控制）
+                stringBuilder.Append("{\"role\":\"system\",");
+                stringBuilder.Append("\"content\":\"" + systemPrompt + "\"");
+                
+                if (enableCaching)
+                {
+                    if (provider == "OpenAI" && (model.Contains("gpt-4") || model.Contains("gpt-3.5")))
+                    {
+                        // OpenAI Prompt Caching
+                        stringBuilder.Append(",\"cache_control\":{\"type\":\"ephemeral\"}");
+                    }
+                    else if (provider == "DeepSeek")
+                    {
+                        // DeepSeek缓存控制
+                        stringBuilder.Append(",\"cache\":true");
+                    }
+                }
+                
+                stringBuilder.Append("},");
+                
+                // user消息（变化的内容）
+                stringBuilder.Append("{\"role\":\"user\",");
+                stringBuilder.Append("\"content\":\"" + userPrompt + "\"");
+                stringBuilder.Append("}],");
+                
+                stringBuilder.Append("\"temperature\":0.7,");
+                stringBuilder.Append("\"max_tokens\":200");
+                
+                if (enableCaching && provider == "DeepSeek")
+                {
+                    stringBuilder.Append(",\"enable_prompt_cache\":true");
+                }
+                
+                stringBuilder.Append("}");
+            }
+            
+            return stringBuilder.ToString();
         }
 
         private static async Task<string> CallAIAsync(string prompt)
@@ -581,75 +627,77 @@ namespace RimTalk.Memory.AI
                     string errorDetail = "";
                     HttpStatusCode statusCode = 0; // ⭐ v3.3.3: 保存状态码到外部变量
                     
-                    if (ex.Response != null)
-                    {
-                        using (var errorResponse = (HttpWebResponse)ex.Response)
-                        using (var streamReader = new System.IO.StreamReader(errorResponse.GetResponseStream()))
-                        {
-                            string errorText = streamReader.ReadToEnd();
-                            statusCode = errorResponse.StatusCode; // ⭐ 保存状态码
-                            
-                            // ⭐ v3.3.3: 根据错误类型显示完整或截断的错误信息
-                            if (errorResponse.StatusCode == HttpStatusCode.Unauthorized || // 401
-                                errorResponse.StatusCode == HttpStatusCode.Forbidden)      // 403
-                            {
-                                // 认证错误：显示完整错误信息（帮助调试）
-                                errorDetail = errorText;
-                                Log.Error($"[AI Summarizer] ❌ Authentication Error ({errorResponse.StatusCode}):");
-                                Log.Error($"[AI Summarizer]    API Key: {SanitizeApiKey(apiKey)}");
-                                Log.Error($"[AI Summarizer]    Provider: {provider}");
-                                Log.Error($"[AI Summarizer]    Response: {errorText}");
-                                Log.Error("[AI Summarizer] ");
-                                Log.Error("[AI Summarizer] 💡 Possible solutions:");
-                                Log.Error("[AI Summarizer]    1. Check if API Key is correct");
-                                Log.Error("[AI Summarizer]    2. Verify Provider selection matches your key");
-                                Log.Error("[AI Summarizer]    3. Check if API Key has sufficient credits");
-                                Log.Error("[AI Summarizer]    4. Try regenerating your API Key");
-                            }
-                            else
-                            {
-                                // 其他错误：截断显示
-                                errorDetail = errorText.Substring(0, Math.Min(200, errorText.Length));
-                            }
-                            
-                            // 判断是否应该重试
-                            if (errorResponse.StatusCode == HttpStatusCode.ServiceUnavailable || // 503
-                                errorResponse.StatusCode == (HttpStatusCode)429 ||              // Too Many Requests
-                                errorResponse.StatusCode == HttpStatusCode.GatewayTimeout ||    // 504
-                                errorText.Contains("overloaded") ||
-                                errorText.Contains("UNAVAILABLE"))
-                            {
-                                shouldRetry = true;
-                            }
-                            
-                            if (errorResponse.StatusCode != HttpStatusCode.Unauthorized && 
-                                errorResponse.StatusCode != HttpStatusCode.Forbidden)
-                            {
-                                Log.Warning($"[AI Summarizer] ⚠️ API Error (attempt {attempt}/{MAX_RETRIES}): {errorResponse.StatusCode} - {errorDetail}");
-                            }
-                        }
-                    }
-                    else
-                    {
-                        errorDetail = ex.Message;
-                        Log.Warning($"[AI Summarizer] ⚠️ Network Error (attempt {attempt}/{MAX_RETRIES}): {errorDetail}");
-                        shouldRetry = true; // 网络错误也重试
-                    }
-                    
-                    // 如果是最后一次尝试或不应该重试，则失败
-                    if (attempt >= MAX_RETRIES || !shouldRetry)
-                    {
-                        // ⭐ v3.3.3: 使用保存的状态码判断
-                        if (statusCode != HttpStatusCode.Unauthorized && 
-                            statusCode != HttpStatusCode.Forbidden)
-                        {
-                            Log.Error($"[AI Summarizer] ❌ Failed after {attempt} attempts. Last error: {errorDetail}");
-                        }
-                        return null;
-                    }
-                    
-                    // 等待后重试
-                    await Task.Delay(RETRY_DELAY_MS * attempt); // 递增延迟：2s, 4s, 6s
+
+
+	                if (ex.Response != null)
+	                {
+	                    using (var errorResponse = (HttpWebResponse)ex.Response)
+	                    using (var streamReader = new System.IO.StreamReader(errorResponse.GetResponseStream()))
+	                    {
+	                        string errorText = streamReader.ReadToEnd();
+	                        statusCode = errorResponse.StatusCode; // ⭐ 保存状态码
+	                        
+	                        // ⭐ v3.3.3: 根据错误类型显示完整或截断的错误信息
+	                        if (errorResponse.StatusCode == HttpStatusCode.Unauthorized || // 401
+	                            errorResponse.StatusCode == HttpStatusCode.Forbidden)      // 403
+	                        {
+	                            // 认证错误：显示完整错误信息（帮助调试）
+	                            errorDetail = errorText;
+	                            Log.Error($"[AI Summarizer] ❌ Authentication Error ({errorResponse.StatusCode}):");
+	                            Log.Error($"[AI Summarizer]    API Key: {SanitizeApiKey(apiKey)}");
+	                            Log.Error($"[AI Summarizer]    Provider: {provider}");
+	                            Log.Error($"[AI Summarizer]    Response: {errorText}");
+	                            Log.Error("[AI Summarizer] ");
+	                            Log.Error("[AI Summarizer] 💡 Possible solutions:");
+	                            Log.Error("[AI Summarizer]    1. Check if API Key is correct");
+	                            Log.Error("[AI Summarizer]    2. Verify Provider selection matches your key");
+	                            Log.Error("[AI Summarizer]    3. Check if API Key has sufficient credits");
+	                            Log.Error("[AI Summarizer]    4. Try regenerating your API Key");
+	                        }
+	                        else
+	                        {
+	                            // 其他错误：截断显示
+	                            errorDetail = errorText.Substring(0, Math.Min(200, errorText.Length));
+	                        }
+	                        
+	                        // 判断是否应该重试
+	                        if (errorResponse.StatusCode == HttpStatusCode.ServiceUnavailable || // 503
+	                            errorResponse.StatusCode == (HttpStatusCode)429 ||              // Too Many Requests
+	                            errorResponse.StatusCode == HttpStatusCode.GatewayTimeout ||    // 504
+	                            errorText.Contains("overloaded") ||
+	                            errorText.Contains("UNAVAILABLE"))
+	                        {
+	                            shouldRetry = true;
+	                        }
+	                        
+	                        if (errorResponse.StatusCode != HttpStatusCode.Unauthorized && 
+	                            errorResponse.StatusCode != HttpStatusCode.Forbidden)
+	                        {
+	                            Log.Warning($"[AI Summarizer] ⚠️ API Error (attempt {attempt}/{MAX_RETRIES}): {errorResponse.StatusCode} - {errorDetail}");
+	                        }
+	                    }
+	                }
+	                else
+	                {
+	                    errorDetail = ex.Message;
+	                    Log.Warning($"[AI Summarizer] ⚠️ Network Error (attempt {attempt}/{MAX_RETRIES}): {errorDetail}");
+	                    shouldRetry = true; // 网络错误也重试
+	                }
+	                
+	                // 如果是最后一次尝试或不应该重试，则失败
+	                if (attempt >= MAX_RETRIES || !shouldRetry)
+	                {
+	                    // ⭐ v3.3.3: 使用保存的状态码判断
+	                    if (statusCode != HttpStatusCode.Unauthorized && 
+	                        statusCode != HttpStatusCode.Forbidden)
+	                    {
+	                        Log.Error($"[AI Summarizer] ❌ Failed after {attempt} attempts. Last error: {errorDetail}");
+	                    }
+	                    return null;
+	                }
+	                
+	                // 等待后重试
+	                await Task.Delay(RETRY_DELAY_MS * attempt); // 递增延迟：2s, 4s, 6s
                 }
                 catch (Exception ex)
                 {
