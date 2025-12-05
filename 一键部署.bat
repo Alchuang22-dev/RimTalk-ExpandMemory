@@ -9,18 +9,18 @@ echo ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨
 echo.
 
 set "SOURCE=%~dp0"
-set "TARGET=D:\SteamLibrary\steamapps\common\RimWorld\Mods\RimTalk-ExpandMemory"
+set "TARGET=D:\steam\steamapps\common\RimWorld\Mods\RimTalk-ExpandMemory"
 
 echo Ô´Ä¿Â¼: %SOURCE%
 echo Ä¿±êÄ¿Â¼: %TARGET%
 echo.
 
 REM ¼ì²éRimWorldÄ¿Â¼
-if not exist "D:\SteamLibrary\steamapps\common\RimWorld" (
+if not exist "D:\steam\steamapps\common\RimWorld" (
     echo [´íÎó] Î´ÕÒµ½RimWorld°²×°Ä¿Â¼£¡
     echo.
     echo Çë¼ì²éÂ·¾¶ÊÇ·ñÕýÈ·£º
-    echo D:\SteamLibrary\steamapps\common\RimWorld
+    echo D:\steam\steamapps\common\RimWorld
     echo.
     pause
     exit /b 1
@@ -36,7 +36,7 @@ echo [¿ªÊ¼] ¸´ÖÆÎÄ¼þ...
 echo.
 
 REM ¸´ÖÆAbout
-echo [1/3] About ÎÄ¼þ¼Ð...
+echo [1/4] About ÎÄ¼þ¼Ð...
 xcopy "%SOURCE%About" "%TARGET%\About\" /E /I /Y /Q
 if errorlevel 1 (
     echo [Ê§°Ü] About¸´ÖÆÊ§°Ü
@@ -45,9 +45,9 @@ if errorlevel 1 (
 )
 echo       Íê³É
 
-REM ¸´ÖÆAssemblies
-echo [2/3] Assemblies ÎÄ¼þ¼Ð (DLL)...
-xcopy "%SOURCE%Assemblies" "%TARGET%\Assemblies\" /E /I /Y /Q
+REM ¸´ÖÆAssemblies£¨´Ó1.6/Assemblies£¬ÕâÊÇÕýÈ·µÄ±àÒëÊä³öÄ¿Â¼£©
+echo [2/4] Assemblies ÎÄ¼þ¼Ð (DLL)...
+xcopy "%SOURCE%1.6\Assemblies" "%TARGET%\Assemblies\" /E /I /Y /Q
 if errorlevel 1 (
     echo [Ê§°Ü] Assemblies¸´ÖÆÊ§°Ü
     pause
@@ -56,9 +56,18 @@ if errorlevel 1 (
 echo       Íê³É
 
 REM ¸´ÖÆLanguages (¿ÉÑ¡)
-echo [3/3] Languages ÎÄ¼þ¼Ð...
+echo [3/4] Languages ÎÄ¼þ¼Ð...
 if exist "%SOURCE%Languages" (
     xcopy "%SOURCE%Languages" "%TARGET%\Languages\" /E /I /Y /Q
+    echo       Íê³É
+) else (
+    echo       Ìø¹ý (²»´æÔÚ)
+)
+
+REM ¸´ÖÆDefs (¿ÉÑ¡)
+echo [4/4] Defs ÎÄ¼þ¼Ð...
+if exist "%SOURCE%Defs" (
+    xcopy "%SOURCE%Defs" "%TARGET%\Defs\" /E /I /Y /Q
     echo       Íê³É
 ) else (
     echo       Ìø¹ý (²»´æÔÚ)
@@ -71,11 +80,8 @@ echo ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨
 echo.
 
 REM ÑéÖ¤DLL
-if exist "%TARGET%\Assemblies\RimTalk-ExpandMemory.dll" (
-    echo [ÑéÖ¤] DLLÎÄ¼þÒÑ²¿Êð ?
-    for %%A in ("%TARGET%\Assemblies\RimTalk-ExpandMemory.dll") do (
-        echo [ÐÅÏ¢] DLL´óÐ¡: %%~zA ×Ö½Ú
-    )
+if exist "%TARGET%\Assemblies\RimTalkMemoryPatch.dll" (
+    echo [ÑéÖ¤] DLLÎÄ¼þÒÑ²¿Êð
 ) else (
     echo [¾¯¸æ] DLLÎÄ¼þÎ´ÕÒµ½£¡
     echo        ÇëÏÈ±àÒëÏîÄ¿ (°´F6»òCtrl+Shift+B)
@@ -92,23 +98,5 @@ echo 1. Æô¶¯ RimWorld
 echo 2. ´ò¿ª Ñ¡Ïî ^> Mods
 echo 3. ¹´Ñ¡ 'RimTalk-ExpandMemory'
 echo 4. ÖØÆôÓÎÏ·
-echo.
-echo 5. ´ò¿ª Ñ¡Ïî ^> Mod Settings ^> RimTalk-Expand Memory
-echo 6. È·ÈÏÒÔÏÂÑ¡ÏîÒÑÆôÓÃ:
-echo    ? ÆôÓÃPrompt Caching (½µµÍ50%%·ÑÓÃ)
-echo    ? ÆôÓÃ¶Ô»°»º´æ
-echo    ? ÆôÓÃÌáÊ¾´Ê»º´æ
-echo.
-echo ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
-echo   v3.3.4 ÐÂ¹¦ÄÜ
-echo ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
-echo.
-echo ? ConversationCacheÓÅ»¯ - ÃüÖÐÂÊÌáÉý4-5±¶
-echo ? PromptCacheÓÅ»¯ - ÃüÖÐÂÊÌáÉý3-4±¶  
-echo ? Prompt CachingÊµÏÖ - ·ÑÓÃ½µµÍ50%%
-echo ? »º´æÈÝÁ¿À©´ó - 200¸ö¶Ô»° + 100¸öÌáÊ¾´Ê
-echo.
-echo ×ÜÌåÐ§¹û: API·ÑÓÃ½µµÍÔ¼ 80%%
-echo Äê¶È½ÚÊ¡: $162-216 (»ùÓÚGPT-4 Turbo)
 echo.
 pause
