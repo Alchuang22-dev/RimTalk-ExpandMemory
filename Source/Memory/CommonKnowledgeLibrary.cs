@@ -671,10 +671,12 @@ namespace RimTalk.Memory
                 .ToList();
 
             // 计算每个常识的相关性分数（包括详细信息）
+            // ⭐ v3.3.2.30: 优化 tie-breaker - 使用匹配关键词数量而不是 ID
             allScores = filteredEntries
                 .Select(e => e.CalculateRelevanceScoreWithDetails(contextKeywords))
                 .OrderByDescending(se => se.TotalScore)
-                .ThenBy(se => se.Entry.id, StringComparer.Ordinal) // ⭐ v3.3.2.29: 确定性 tie-breaker
+                .ThenByDescending(se => se.KeywordMatchCount) // ⭐ 优先按匹配数量（高到低）
+                .ThenBy(se => se.Entry.id, StringComparer.Ordinal) // ⭐ 最后才按 ID（稳定排序）
                 .ToList();
             
             // ⭐ v3.3.2.29: 过滤并获取前N条（已排序，无需再次排序）
