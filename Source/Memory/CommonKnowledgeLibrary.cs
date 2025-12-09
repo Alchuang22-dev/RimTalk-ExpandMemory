@@ -167,6 +167,7 @@ namespace RimTalk.Memory
         /// <summary>
         /// 计算与上下文的相关性分数（标签匹配 + 内容匹配）
         /// ⭐ v3.3.2.25: 优化长关键词权重 + 精确匹配加成
+        /// ⭐ v3.3.2.31: 提高名字关键词的匹配分数
         /// </summary>
         public float CalculateRelevanceScore(List<string> contextKeywords)
         {
@@ -201,8 +202,9 @@ namespace RimTalk.Memory
                 }
             }
 
-            // 2. ⭐ 内容匹配（长关键词加权）
+            // 2. ⭐ 内容匹配（长关键词加权 + 名字特殊加成）
             float contentMatchScore = 0f;
+            float nameMatchBonus = 0f; // ⭐ v3.3.2.31: 名字匹配额外加成
             
             if (!string.IsNullOrEmpty(content))
             {
@@ -211,23 +213,45 @@ namespace RimTalk.Memory
                     // 直接在内容中查找关键词
                     if (content.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        // ⭐ 长关键词权重更高（识别"龙王种索拉克"等完整实体）
+                        // ⭐ v3.3.2.31: 检测是否是名字（2-6字符，且包含在标签中）
+                        bool isNameKeyword = false;
+                        if (keyword.Length >= 2 && keyword.Length <= 6)
+                        {
+                            // 简单启发式：如果标签包含这个关键词，很可能是名字
+                            foreach (var tag in tags)
+                            {
+                                if (tag.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
+                                {
+                                    isNameKeyword = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // 基础长关键词权重
                         if (keyword.Length >= 6)
                             contentMatchScore += 0.40f;  // "龙王种索拉克" 超大加分
                         else if (keyword.Length >= 5)
-                            contentMatchScore += 0.30f;  // "龙王种索" 大幅加分
+                            contentMatchScore += 0.30f;  // "龙王种索拉克" 超大加分
                         else if (keyword.Length >= 4)
-                            contentMatchScore += 0.20f;  // "龙王种" 中等加分
+                            contentMatchScore += 0.20f;  // "龙王种索拉克" 超大加分
                         else if (keyword.Length == 3)
                             contentMatchScore += 0.12f;  // "龙王" 小幅加分
                         else
                             contentMatchScore += 0.05f;  // "种族" 基础加分
+                        
+                        // ⭐ v3.3.2.31: 名字额外加成（0.3分）
+                        if (isNameKeyword)
+                        {
+                            nameMatchBonus += 0.30f;
+                        }
                     }
                 }
             }
             
             // 限制最高分
             contentMatchScore = Math.Min(contentMatchScore, 1.5f);
+            nameMatchBonus = Math.Min(nameMatchBonus, 0.6f); // 最多2个名字 * 0.3
 
             // 3. ⭐ 完全匹配加成（内容包含连续的长查询串）
             float exactMatchBonus = 0f;
@@ -258,11 +282,13 @@ namespace RimTalk.Memory
 
             // 综合评分
             // ⭐ v3.3.2.25: contentPart和exactPart不受importance影响（避免被低重要性压制）
+            // ⭐ v3.3.2.31: 添加namePart（名字加成）
             float tagMatchRate = tags.Count > 0 ? (float)tagMatchCount / tags.Count : 0f;
             float tagPart = tagMatchRate * importance * KnowledgeWeights.TagWeight * 0.5f; // ⭐ 标签权重降低
             float contentPart = contentMatchScore;  // ⭐ 不再乘importance
             float exactPart = exactMatchBonus;      // ⭐ 不再乘importance
-            float totalScore = baseScore + tagPart + contentPart + exactPart;
+            float namePart = nameMatchBonus;        // ⭐ v3.3.2.31: 名字加成
+            float totalScore = baseScore + tagPart + contentPart + exactPart + namePart;
 
             return totalScore;
         }
@@ -270,6 +296,7 @@ namespace RimTalk.Memory
         /// <summary>
         /// 计算与上下文的相关性分数（带详细信息）- 用于调试
         /// ⭐ v3.3.2.25: 同步优化长关键词权重 + 精确匹配加成
+        /// ⭐ v3.3.2.31: 提高名字关键词的匹配分数
         /// </summary>
         public KnowledgeScoreDetail CalculateRelevanceScoreWithDetails(List<string> contextKeywords)
         {
@@ -321,9 +348,10 @@ namespace RimTalk.Memory
             detail.MatchedTags = matchedTags;
             detail.TagScore = tagMatchRate;
 
-            // 2. ⭐ 内容匹配（长关键词加权）
+            // 2. ⭐ 内容匹配（长关键词加权 + 名字特殊加成）
             var matchedKeywords = new List<string>();
             float contentMatchScore = 0f;
+            float nameMatchBonus = 0f; // ⭐ v3.3.2.31: 名字匹配额外加成
             
             if (!string.IsNullOrEmpty(content))
             {
@@ -333,7 +361,22 @@ namespace RimTalk.Memory
                     {
                         matchedKeywords.Add(keyword);
                         
-                        // ⭐ 长关键词权重更高
+                        // ⭐ v3.3.2.31: 检测是否是名字（2-6字符，且包含在标签中）
+                        bool isNameKeyword = false;
+                        if (keyword.Length >= 2 && keyword.Length <= 6)
+                        {
+                            // 简单启发式：如果标签包含这个关键词，很可能是名字
+                            foreach (var tag in tags)
+                            {
+                                if (tag.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
+                                {
+                                    isNameKeyword = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // 基础长关键词权重
                         if (keyword.Length >= 6)
                             contentMatchScore += 0.40f;
                         else if (keyword.Length >= 5)
@@ -344,13 +387,18 @@ namespace RimTalk.Memory
                             contentMatchScore += 0.12f;
                         else
                             contentMatchScore += 0.05f;
+                        
+                        // ⭐ v3.3.2.31: 名字额外加成（0.3分）
+                        if (isNameKeyword)
+                        {
+                            nameMatchBonus += 0.30f;
+                        }
                     }
                 }
             }
             
             contentMatchScore = Math.Min(contentMatchScore, 1.5f);
-            detail.MatchedKeywords = matchedKeywords;
-            detail.KeywordMatchCount = matchedKeywords.Count;
+            nameMatchBonus = Math.Min(nameMatchBonus, 0.6f); // 最多2个名字 * 0.3
 
             // 3. ⭐ 完全匹配加成
             float exactMatchBonus = 0f;
@@ -381,10 +429,13 @@ namespace RimTalk.Memory
             float tagPart = tagMatchRate * importance * KnowledgeWeights.TagWeight * 0.5f; // ⭐ 标签权重降低
             float contentPart = contentMatchScore;  // ⭐ 不再乘importance
             float exactPart = exactMatchBonus;      // ⭐ 不再乘importance
-            float totalScore = baseScore + tagPart + contentPart + exactPart;
+            float namePart = nameMatchBonus;        // ⭐ v3.3.2.31: 名字加成
+            float totalScore = baseScore + tagPart + contentPart + exactPart + namePart;
             
             detail.TotalScore = totalScore;
             detail.JaccardScore = exactMatchBonus;
+            detail.KeywordMatchCount = matchedKeywords.Count;
+            detail.MatchedKeywords = matchedKeywords;
             
             if (matchedTags.Count == 0 && matchedKeywords.Count == 0)
             {
@@ -392,7 +443,8 @@ namespace RimTalk.Memory
             }
             else if (matchedTags.Count == 0)
             {
-                detail.FailReason = $"仅内容匹配({matchedKeywords.Count}个关键词，长关键词加成)";
+                string nameInfo = nameMatchBonus > 0 ? $"+名字加成{nameMatchBonus:F2}" : "";
+                detail.FailReason = $"仅内容匹配({matchedKeywords.Count}个关键词，长关键词加成{nameInfo})";
             }
             else if (matchedKeywords.Count == 0)
             {
@@ -400,7 +452,8 @@ namespace RimTalk.Memory
             }
             else
             {
-                detail.FailReason = exactMatchBonus > 0 ? $"精确匹配加成{exactMatchBonus:F2}" : "";
+                string nameInfo = nameMatchBonus > 0 ? $"+名字{nameMatchBonus:F2}" : "";
+                detail.FailReason = exactMatchBonus > 0 ? $"精确匹配加成{exactMatchBonus:F2}{nameInfo}" : nameInfo;
             }
             
             return detail;
@@ -676,7 +729,7 @@ namespace RimTalk.Memory
                 .Select(e => e.CalculateRelevanceScoreWithDetails(contextKeywords))
                 .OrderByDescending(se => se.TotalScore)
                 .ThenByDescending(se => se.KeywordMatchCount) // ⭐ 优先按匹配数量（高到低）
-                .ThenBy(se => se.Entry.id, StringComparer.Ordinal) // ⭐ 最后才按 ID（稳定排序）
+                .ThenBy(se => se.Entry.id, StringComparer.Ordinal) // ⭐ 最后按 ID（稳定排序）
                 .ToList();
             
             // ⭐ v3.3.2.29: 过滤并获取前N条（已排序，无需再次排序）
@@ -1148,9 +1201,9 @@ namespace RimTalk.Memory
         
         /// <summary>
         /// ⭐ 获取关系优先级（数字越小优先级越高）
-        /// 第一梯队：配偶、恋人、未婚妻
-        /// 第二梯队：父母、子女、兄弟姐妹
-        /// 第三梯队：羁绊
+        /// 第一级：配偶、恋人、未婚妻
+        /// 第二级：父母、子女、兄弟姐妹
+        /// 第三级：羁绊
         /// 其他关系：默认优先级
         /// </summary>
         private int GetRelationPriority(PawnRelationDef relationDef)
@@ -1158,17 +1211,17 @@ namespace RimTalk.Memory
             if (relationDef == null)
                 return 999; // 无效关系，最低优先级
             
-            // 第一梯队：配偶、恋人、未婚妻（优先级 0-2）
+            // 第一级：配偶、恋人、未婚妻（优先级 0-2）
             if (relationDef == PawnRelationDefOf.Spouse) return 0;
             if (relationDef == PawnRelationDefOf.Lover) return 1;
             if (relationDef == PawnRelationDefOf.Fiance) return 2;
             
-            // 第二梯队：父母、子女、兄弟姐妹（优先级 10-19）
+            // 第二级：父母、子女、兄弟姐妹（优先级 10-19）
             if (relationDef == PawnRelationDefOf.Parent) return 10;
             if (relationDef == PawnRelationDefOf.Child) return 11;
             if (relationDef == PawnRelationDefOf.Sibling) return 12;
             
-            // 第三梯队：羁绊（优先级 20-29）
+            // 第三级：羁绊（优先级 20-29）
             if (relationDef == PawnRelationDefOf.Bond) return 20;
             
             // 其他关系（优先级 100+）
