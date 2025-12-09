@@ -189,6 +189,7 @@ namespace RimTalk.Memory
         
         /// <summary>
         /// 从LogEntry提取事件信息
+        /// ? v3.3.4: 优化为提取关键信息，减少token消耗
         /// </summary>
         private static string ExtractEventInfo(LogEntry logEntry)
         {
@@ -266,6 +267,12 @@ namespace RimTalk.Memory
                 if (IsConversationContent(text))
                     return null;
                 
+                // ? v3.3.4: 提取关键信息（压缩原文）
+                string compressedText = ExtractKeyInformation(text);
+                
+                if (string.IsNullOrEmpty(compressedText))
+                    return null;
+                
                 // 添加时间前缀
                 int ticksAgo = Find.TickManager.TicksGame - logEntry.Age;
                 int daysAgo = ticksAgo / GenDate.TicksPerDay;
@@ -288,7 +295,7 @@ namespace RimTalk.Memory
                     return null; // 超过7天的事件不记录
                 }
                 
-                return $"{timePrefix}{text}";
+                return $"{timePrefix}{compressedText}";
             }
             catch (Exception ex)
             {
@@ -299,62 +306,196 @@ namespace RimTalk.Memory
         }
         
         /// <summary>
-        /// ? 新增：检测是否是对话内容（避免记录对话）
+        /// ? v3.3.4: 提取关键信息（压缩事件描述）
+        /// 目标：将完整事件描述压缩为核心要素，减少token消耗
+        /// 示例：
+        /// - "小明在基地南侧的农田里种植了12株土豆" → "小明种植土豆×12"
+        /// - "索拉克击杀了袭击者（机械体）" → "索拉克击杀机械体"
+        /// - "爱丽丝和鲍勃举行了婚礼" → "爱丽丝和鲍勃结婚"
         /// </summary>
-        private static bool IsConversationContent(string text)
+        private static string ExtractKeyInformation(string fullText)
         {
-            if (string.IsNullOrEmpty(text))
-                return false;
+            if (string.IsNullOrEmpty(fullText))
+                return null;
             
-            // 检测对话标记
-            string[] conversationMarkers = { 
-                "说:", "said:", "说：", "说道:", "说道：",
-                "问:", "asked:", "问：", "问道:", "问道：",
-                "回答:", "replied:", "回答：", "答道:", "答道：",
-                "叫道:", "shouted:", "叫道：", "喊道:", "喊道："
-            };
-            
-            return conversationMarkers.Any(marker => text.Contains(marker));
-        }
-        
-        /// <summary>
-        /// 过滤无聊事件
-        /// </summary>
-        private static bool IsBoringMessage(string text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return true;
-            
-            var boringKeywords = new[] 
-            { 
-                "走路", "吃饭", "睡觉", "娱乐", "闲逛", "休息",
-                "walking", "eating", "sleeping", "recreation", "wandering"
-            };
-            
-            return boringKeywords.Any(k => text.Contains(k));
-        }
-        
-        /// <summary>
-        /// 计算事件重要性
-        /// </summary>
-        private static float CalculateImportance(string text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return 0.5f;
-            
-            // 找到匹配的关键词
-            var matched = ImportantKeywords
-                .Where(kv => text.Contains(kv.Key))
-                .OrderByDescending(kv => kv.Value)
-                .FirstOrDefault();
-            
-            if (matched.Key != null)
+            try
             {
-                return matched.Value;
+                // 1. 提取人物名（第一个出现的名字，假设是主体）
+                string mainPerson = ExtractMainPerson(fullText);
+                
+                // 2. 提取核心动作（基于重要关键词）
+                string action = ExtractMainAction(fullText);
+                
+                // 3. 提取目标/对象（第二个名字或重要名词）
+                string target = ExtractTarget(fullText, mainPerson);
+                
+                // 4. 提取数量（如果有）
+                string quantity = ExtractQuantity(fullText);
+                
+                // 5. 组合压缩文本
+                var parts = new List<string>();
+                
+                if (!string.IsNullOrEmpty(mainPerson))
+                    parts.Add(mainPerson);
+                
+                if (!string.IsNullOrEmpty(action))
+                    parts.Add(action);
+                
+                if (!string.IsNullOrEmpty(target))
+                    parts.Add(target);
+                
+                if (!string.IsNullOrEmpty(quantity))
+                    parts.Add(quantity);
+                
+                // 如果提取失败，保留原文但截断
+                if (parts.Count < 2)
+                {
+                    // 至少要有主体和动作，否则使用原文（截断）
+                    return fullText.Length > 40 ? fullText.Substring(0, 40) : fullText;
+                }
+                
+                return string.Join("", parts);
+            }
+            catch (Exception ex)
+            {
+                // 提取失败，返回原文截断
+                if (Prefs.DevMode)
+                    Log.Warning($"[EventRecord] Key info extraction failed: {ex.Message}");
+                
+                return fullText.Length > 40 ? fullText.Substring(0, 40) : fullText;
+            }
+        }
+        
+        /// <summary>
+        /// 提取主要人物（通常是事件的主体）
+        /// </summary>
+        private static string ExtractMainPerson(string text)
+        {
+            // 方法1：查找常见名字分隔符前的文本
+            var separators = new[] { "在", "的", "将", "被", "向", "与", "和", "对", " " };
+            
+            foreach (var sep in separators)
+            {
+                int index = text.IndexOf(sep);
+                if (index > 0 && index < 15) // 名字通常在前15字符内
+                {
+                    string candidate = text.Substring(0, index).Trim();
+                    
+                    // 验证是否像名字（2-8字符，无标点）
+                    if (candidate.Length >= 2 && candidate.Length <= 8 && 
+                        !candidate.Any(c => char.IsPunctuation(c) || char.IsDigit(c)))
+                    {
+                        return candidate;
+                    }
+                }
             }
             
-            // ? 新增：没有关键词匹配但可能是Incident事件，给较低默认重要性
-            return 0.4f; // 比普通事件低，但仍会被记录
+            // 方法2：如果找不到，取前5个字符（可能是名字）
+            if (text.Length >= 2)
+            {
+                string candidate = text.Substring(0, Math.Min(5, text.Length)).Trim();
+                if (!candidate.Any(c => char.IsPunctuation(c)))
+                    return candidate;
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// 提取核心动作（基于重要关键词）
+        /// </summary>
+        private static string ExtractMainAction(string text)
+        {
+            // 查找文本中的重要关键词
+            var matchedKeywords = ImportantKeywords.Keys
+                .Where(k => text.Contains(k))
+                .OrderByDescending(k => ImportantKeywords[k]) // 按重要性排序
+                .ThenByDescending(k => k.Length) // 优先长关键词
+                .ToList();
+            
+            if (matchedKeywords.Any())
+            {
+                // 返回最重要的关键词作为核心动作
+                return matchedKeywords.First();
+            }
+            
+            // 如果没有匹配关键词，尝试提取动词（简单启发式）
+            var commonActions = new[] { "种植", "建造", "完成", "击杀", "攻击", "防御", "制作", "烹饪", 
+                                         "研究", "治疗", "加入", "离开", "死亡", "受伤" };
+            
+            foreach (var action in commonActions)
+            {
+                if (text.Contains(action))
+                    return action;
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// 提取目标/对象（通常是动作的接受者）
+        /// </summary>
+        private static string ExtractTarget(string text, string mainPerson)
+        {
+            // 移除主要人物后，查找第二个名字或重要名词
+            string remaining = text;
+            if (!string.IsNullOrEmpty(mainPerson))
+            {
+                int index = text.IndexOf(mainPerson);
+                if (index >= 0)
+                {
+                    remaining = text.Substring(index + mainPerson.Length);
+                }
+            }
+            
+            // 查找常见目标标记词后的内容
+            var targetMarkers = new[] { "击杀", "攻击", "种植", "建造", "制作", "完成", "治疗", "了" };
+            
+            foreach (var marker in targetMarkers)
+            {
+                int markerIndex = remaining.IndexOf(marker);
+                if (markerIndex >= 0)
+                {
+                    // 提取标记词后的10字符
+                    int start = markerIndex + marker.Length;
+                    if (start < remaining.Length)
+                    {
+                        string targetText = remaining.Substring(start, Math.Min(15, remaining.Length - start));
+                        
+                        // 清理标点和多余文字
+                        targetText = targetText.Split(new[] { '，', '。', '、', '；', '的', '在', '和', ' ' })[0].Trim();
+                        
+                        if (targetText.Length >= 2 && targetText.Length <= 10)
+                        {
+                            return targetText;
+                        }
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// 提取数量信息（如 "×12"）
+        /// </summary>
+        private static string ExtractQuantity(string text)
+        {
+            // 查找数字
+            var match = System.Text.RegularExpressions.Regex.Match(text, @"\d+");
+            
+            if (match.Success)
+            {
+                int number = int.Parse(match.Value);
+                
+                // 只保留有意义的数量（>1)
+                if (number > 1 && number < 10000)
+                {
+                    return $"×{number}";
+                }
+            }
+            
+            return null;
         }
         
         /// <summary>
@@ -432,6 +573,65 @@ namespace RimTalk.Memory
             }
             
             return eventText;
+        }
+        
+        /// <summary>
+        /// ? 新增：检测是否是对话内容（避免记录对话）
+        /// </summary>
+        private static bool IsConversationContent(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return false;
+            
+            // 检测对话标记
+            string[] conversationMarkers = { 
+                "说:", "said:", "说：", "说道:", "说道：",
+                "问:", "asked:", "问：", "问道:", "问道：",
+                "回答:", "replied:", "回答：", "答道:", "答道：",
+                "叫道:", "shouted:", "叫道：", "喊道:", "喊道："
+            };
+            
+            return conversationMarkers.Any(marker => text.Contains(marker));
+        }
+        
+        /// <summary>
+        /// 过滤无聊事件
+        /// </summary>
+        private static bool IsBoringMessage(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return true;
+            
+            var boringKeywords = new[] 
+            { 
+                "走路", "吃饭", "睡觉", "娱乐", "闲逛", "休息",
+                "walking", "eating", "sleeping", "recreation", "wandering"
+            };
+            
+            return boringKeywords.Any(k => text.Contains(k));
+        }
+        
+        /// <summary>
+        /// 计算事件重要性
+        /// </summary>
+        private static float CalculateImportance(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return 0.5f;
+            
+            // 找到匹配的关键词
+            var matched = ImportantKeywords
+                .Where(kv => text.Contains(kv.Key))
+                .OrderByDescending(kv => kv.Value)
+                .FirstOrDefault();
+            
+            if (matched.Key != null)
+            {
+                return matched.Value;
+            }
+            
+            // ? 新增：没有关键词匹配但可能是Incident事件，给较低默认重要性
+            return 0.4f; // 比普通事件低，但仍会被记录
         }
     }
 }

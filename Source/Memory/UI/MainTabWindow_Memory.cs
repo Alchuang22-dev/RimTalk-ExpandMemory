@@ -101,7 +101,7 @@ namespace RimTalk.Memory.UI
             {
                 Find.WindowStack.Add(new RimTalk.Memory.Debug.Dialog_InjectionPreview());
             }
-            TooltipHandler.TipRegion(previewButtonRect, "打开注入内容预览器\n实时查看将要注入给AI的记忆和常识");
+            TooltipHandler.TipRegion(previewButtonRect, "RimTalk_Tooltip_Preview".Translate());
             
             // ⭐ 新增：常识按钮（预览按钮左边）
             Rect knowledgeButtonRect = new Rect(rect.xMax - 70f, rect.y, 60f, 35f);
@@ -109,7 +109,7 @@ namespace RimTalk.Memory.UI
             {
                 OpenCommonKnowledgeDialog();
             }
-            TooltipHandler.TipRegion(knowledgeButtonRect, "打开常识库管理\n查看和编辑常识条目");
+            TooltipHandler.TipRegion(knowledgeButtonRect, "RimTalk_Tooltip_Knowledge".Translate());
             
             // 立即总结按钮（SCM → ELS）
             if (selectedPawn != null)
@@ -298,7 +298,7 @@ namespace RimTalk.Memory.UI
             }
             if (Mouse.IsOver(abmRect))
             {
-                TooltipHandler.TipRegion(abmRect, "超短期记忆 (Active Buffer Memory)\n当前对话上下文\n\n左键：显示/隐藏");
+                TooltipHandler.TipRegion(abmRect, "RimTalk_Tooltip_ABM".Translate());
             }
             
             // SCM 按钮（短期）
@@ -310,7 +310,7 @@ namespace RimTalk.Memory.UI
             }
             if (Mouse.IsOver(scmRect))
             {
-                TooltipHandler.TipRegion(scmRect, "短期记忆 (Situational Context Memory)\n最近几天的事件和对话\n\n左键：显示/隐藏");
+                TooltipHandler.TipRegion(scmRect, "RimTalk_Tooltip_SCM".Translate());
             }
             
             // ELS 按钮（中期） - 支持右键添加
@@ -331,7 +331,7 @@ namespace RimTalk.Memory.UI
             
             if (Mouse.IsOver(elsRect))
             {
-                TooltipHandler.TipRegion(elsRect, "中期记忆 (Event Log Summary)\nAI总结的阶段性事件\n\n左键：显示/隐藏\n右键：添加记忆到此层");
+                TooltipHandler.TipRegion(elsRect, "RimTalk_Tooltip_ELS".Translate());
             }
             
             // CLPA 按钮（长期） - 支持右键添加
@@ -352,7 +352,7 @@ namespace RimTalk.Memory.UI
             
             if (Mouse.IsOver(clpaRect))
             {
-                TooltipHandler.TipRegion(clpaRect, "长期记忆 (Colony Lore & Persona Archive)\n核心人设和重要里程碑\n\n左键：显示/隐藏\n右键：添加记忆到此层");
+                TooltipHandler.TipRegion(clpaRect, "RimTalk_Tooltip_CLPA".Translate());
             }
         }
 
@@ -363,51 +363,50 @@ namespace RimTalk.Memory.UI
         {
             if (selectedPawn == null || currentMemoryComp == null) return;
 
-            string layerName = targetLayer == MemoryLayer.EventLog ? "ELS（中期记忆）" : "CLPA（长期记忆）";
+            string layerName = targetLayer == MemoryLayer.EventLog ? 
+                "RimTalk_Layer_ELS".Translate() : "RimTalk_Layer_CLPA".Translate();
             
             List<FloatMenuOption> options = new List<FloatMenuOption>();
             
             // 选项1：添加行动记忆
-            options.Add(new FloatMenuOption($"添加行动记忆到 {layerName}", delegate
+            options.Add(new FloatMenuOption("RimTalk_Menu_AddActionMemory".Translate(layerName), delegate
             {
                 try
                 {
-                    // ⭐ v3.3.2.3: 启用手动创建记忆功能
                     if (currentMemoryComp is FourLayerMemoryComp fourLayerComp)
                     {
                         Find.WindowStack.Add(new Dialog_CreateMemory(selectedPawn, fourLayerComp, targetLayer, MemoryType.Action));
                     }
                     else
                     {
-                        Messages.Message("记忆组件不可用", MessageTypeDefOf.RejectInput, false);
+                        Messages.Message("RimTalk_Menu_MemoryCompUnavailable".Translate(), MessageTypeDefOf.RejectInput, false);
                     }
                 }
                 catch (Exception ex)
                 {
                     Log.Error($"[RimTalk Memory] Failed to create memory: {ex.Message}");
-                    Messages.Message("创建记忆失败", MessageTypeDefOf.RejectInput, false);
+                    Messages.Message("RimTalk_Menu_CreateMemoryFailed".Translate(), MessageTypeDefOf.RejectInput, false);
                 }
             }));
             
             // 选项2：添加对话记忆
-            options.Add(new FloatMenuOption($"添加对话记忆到 {layerName}", delegate
+            options.Add(new FloatMenuOption("RimTalk_Menu_AddConversationMemory".Translate(layerName), delegate
             {
                 try
                 {
-                    // ⭐ v3.3.2.3: 启用手动创建记忆功能
                     if (currentMemoryComp is FourLayerMemoryComp fourLayerComp)
                     {
                         Find.WindowStack.Add(new Dialog_CreateMemory(selectedPawn, fourLayerComp, targetLayer, MemoryType.Conversation));
                     }
                     else
                     {
-                        Messages.Message("记忆组件不可用", MessageTypeDefOf.RejectInput, false);
+                        Messages.Message("RimTalk_Menu_MemoryCompUnavailable".Translate(), MessageTypeDefOf.RejectInput, false);
                     }
                 }
                 catch (Exception ex)
                 {
                     Log.Error($"[RimTalk Memory] Failed to create memory: {ex.Message}");
-                    Messages.Message("创建记忆失败", MessageTypeDefOf.RejectInput, false);
+                    Messages.Message("RimTalk_Menu_CreateMemoryFailed".Translate(), MessageTypeDefOf.RejectInput, false);
                 }
             }));
             
@@ -648,7 +647,7 @@ namespace RimTalk.Memory.UI
             
             // 编辑按钮
             Rect editButtonRect = new Rect(buttonsStartX, buttonY, buttonWidth, 25f);
-            if (Widgets.ButtonText(editButtonRect, "编辑"))
+            if (Widgets.ButtonText(editButtonRect, "RimTalk_UI_Edit".Translate()))
             {
                 try
                 {
@@ -659,20 +658,20 @@ namespace RimTalk.Memory.UI
                     }
                     else
                     {
-                        Messages.Message("记忆组件不可用", MessageTypeDefOf.RejectInput, false);
+                        Messages.Message("RimTalk_Menu_MemoryCompUnavailable".Translate(), MessageTypeDefOf.RejectInput, false);
                     }
                 }
                 catch (Exception ex)
                 {
                     Log.Error($"[RimTalk Memory] Failed to open edit dialog: {ex.Message}");
-                    Messages.Message("打开编辑对话框失败", MessageTypeDefOf.RejectInput, false);
+                    Messages.Message("RimTalk_Menu_OpenEditFailed".Translate(), MessageTypeDefOf.RejectInput, false);
                 }
             }
-            TooltipHandler.TipRegion(editButtonRect, "编辑此记忆的内容、标签和备注");
+            TooltipHandler.TipRegion(editButtonRect, "RimTalk_Tooltip_Edit".Translate());
 
             // 固定按钮
             Rect pinButtonRect = new Rect(buttonsStartX + buttonWidth + buttonSpacing, buttonY, buttonWidth, 25f);
-            string pinLabel = memory.isPinned ? "已固定" : "固定";
+            string pinLabel = memory.isPinned ? "RimTalk_UI_Pinned".Translate() : "RimTalk_UI_Pin".Translate();
             if (Widgets.ButtonText(pinButtonRect, pinLabel))
             {
                 memory.isPinned = !memory.isPinned;
@@ -681,28 +680,28 @@ namespace RimTalk.Memory.UI
                     fourLayerComp.PinMemory(memory.id, memory.isPinned);
                 }
             }
-            string pinTooltip = memory.isPinned ? "取消固定此记忆" : "固定此记忆（不会被删除或衰减）";
+            string pinTooltip = memory.isPinned ? "RimTalk_Tooltip_Unpin".Translate() : "RimTalk_Tooltip_Pin".Translate();
             TooltipHandler.TipRegion(pinButtonRect, pinTooltip);
 
             // 删除按钮
             Rect deleteButtonRect = new Rect(buttonsStartX + (buttonWidth + buttonSpacing) * 2, buttonY, buttonWidth, 25f);
-            if (Widgets.ButtonText(deleteButtonRect, "删除"))
+            if (Widgets.ButtonText(deleteButtonRect, "RimTalk_UI_Delete".Translate()))
             {
                 Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
-                    "确认删除此记忆？",
+                    "RimTalk_UI_ConfirmDeleteMemory".Translate(),
                     delegate
                     {
                         if (currentMemoryComp is FourLayerMemoryComp fourLayerComp)
                         {
                             fourLayerComp.DeleteMemory(memory.id);
-                            Messages.Message("记忆已删除", MessageTypeDefOf.TaskCompletion);
+                            Messages.Message("RimTalk_MemoryDeleted".Translate(), MessageTypeDefOf.TaskCompletion);
                         }
                     },
                     true
                 ));
             }
-            TooltipHandler.TipRegion(deleteButtonRect, "永久删除此记忆");
-
+            TooltipHandler.TipRegion(deleteButtonRect, "RimTalk_Tooltip_Delete".Translate());
+            
             // Type, time, and layer indicator
             Rect headerRect = new Rect(innerRect.x, innerRect.y, buttonsStartX - innerRect.x - 10f, 20f);
             Text.Font = GameFont.Tiny;
@@ -734,7 +733,7 @@ namespace RimTalk.Memory.UI
             // 如果有标签，显示
             if (memory.tags != null && memory.tags.Any())
             {
-                header += $" | 标签: {string.Join(", ", memory.tags.Take(2))}";
+                header += " | " + "RimTalk_Tooltip_Tags".Translate(string.Join(", ", memory.tags.Take(2)));
                 if (memory.tags.Count > 2)
                     header += "...";
             }
@@ -774,7 +773,7 @@ namespace RimTalk.Memory.UI
                     string tooltipText = memory.content;
                     if (!string.IsNullOrEmpty(memory.notes))
                     {
-                        tooltipText += "\n\n备注: " + memory.notes;
+                        tooltipText += "\n\n" + "RimTalk_Tooltip_Notes".Translate(memory.notes);
                     }
                     TooltipHandler.TipRegion(tooltipRect, tooltipText);
                 }
@@ -787,13 +786,13 @@ namespace RimTalk.Memory.UI
             Rect importanceRect = new Rect(innerRect.x, barY, innerRect.width / 2 - 2f, 8f);
             Widgets.FillableBar(importanceRect, Mathf.Clamp01(memory.importance), 
                 Texture2D.whiteTexture, BaseContent.ClearTex, false);
-            TooltipHandler.TipRegion(importanceRect, $"重要性: {memory.importance:F2}");
+            TooltipHandler.TipRegion(importanceRect, "RimTalk_Tooltip_Importance".Translate(memory.importance.ToString("F2")));
             
             // Activity bar
             Rect activityRect = new Rect(innerRect.x + innerRect.width / 2 + 2f, barY, innerRect.width / 2 - 2f, 8f);
             Widgets.FillableBar(activityRect, Mathf.Clamp01(memory.activity), 
                 Texture2D.whiteTexture, BaseContent.ClearTex, false);
-            TooltipHandler.TipRegion(activityRect, $"活跃度: {memory.activity:F2}");
+            TooltipHandler.TipRegion(activityRect, "RimTalk_Tooltip_Activity".Translate(memory.activity.ToString("F2")));
             
             Text.Font = GameFont.Small;
         }
@@ -854,14 +853,14 @@ namespace RimTalk.Memory.UI
         {
             if (Current.Game == null)
             {
-                Messages.Message("请先进入游戏", MessageTypeDefOf.RejectInput, false);
+                Messages.Message("RimTalk_Settings_MustEnterGame".Translate(), MessageTypeDefOf.RejectInput, false);
                 return;
             }
 
             var memoryManager = Find.World.GetComponent<MemoryManager>();
             if (memoryManager == null)
             {
-                Messages.Message("无法找到记忆管理器", MessageTypeDefOf.RejectInput, false);
+                Messages.Message("RimTalk_Settings_CannotFindManager".Translate(), MessageTypeDefOf.RejectInput, false);
                 return;
             }
 

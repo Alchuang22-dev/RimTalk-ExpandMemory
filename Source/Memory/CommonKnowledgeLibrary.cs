@@ -249,7 +249,7 @@ namespace RimTalk.Memory
                         else if (keyword.Length >= 5)
                             exactMatchBonus += 0.5f; // "龙王种索" 强力加成
                         else if (keyword.Length >= 4)
-                            exactMatchBonus += 0.3f; // "龙王种" 中等加成
+                            exactMatchBonus += 0.3f; // "龙王种" 中等加分
                     }
                 }
             }
@@ -674,9 +674,10 @@ namespace RimTalk.Memory
             allScores = filteredEntries
                 .Select(e => e.CalculateRelevanceScoreWithDetails(contextKeywords))
                 .OrderByDescending(se => se.TotalScore)
+                .ThenBy(se => se.Entry.id, StringComparer.Ordinal) // ⭐ v3.3.2.29: 确定性 tie-breaker
                 .ToList();
             
-            // 过滤并获取前N条
+            // ⭐ v3.3.2.29: 过滤并获取前N条（已排序，无需再次排序）
             var scoredEntries = allScores
                 .Where(se => se.TotalScore >= threshold)
                 .Take(maxEntries)
@@ -890,16 +891,86 @@ namespace RimTalk.Memory
                 // 8. 关系
                 if (pawn.relations != null)
                 {
-                    var relatedPawns = pawn.relations.RelatedPawns;
-                    foreach (var relatedPawn in relatedPawns.Take(5))
+                    // ⭐ 重构：优先选择重要关系，按 thingIDNumber 排序保证稳定
+                    var allRelatedPawns = pawn.relations.RelatedPawns.ToList();
+                    
+                    // 定义重要关系类型（配偶、恋人、未婚妻；父母、子女、兄弟姐妹；羁绊动物）
+                    var importantRelationDefs = new HashSet<PawnRelationDef>
                     {
+                        PawnRelationDefOf.Spouse,
+                        PawnRelationDefOf.Lover,
+                        PawnRelationDefOf.Fiance,
+                        PawnRelationDefOf.Parent,
+                        PawnRelationDefOf.Child
+                    };
+                    
+                    // ⭐ 步骤1：选择重要关系，按 thingIDNumber 排序（稳定排序）
+                    var importantPawns = allRelatedPawns
+                        .Where(rp => pawn.relations.DirectRelations
+                            .Any(dr => dr.otherPawn == rp && importantRelationDefs.Contains(dr.def)))
+                        .OrderBy(rp => rp.thingIDNumber) // 稳定排序
+                        .ToList();
+                    
+                    // ⭐ 步骤2：检查是否有羁绊动物（Biotech DLC）
+                    try
+                    {
+                        var bondedAnimals = new List<Verse.Pawn>();
+                        foreach (var map in Find.Maps)
+                        {
+                            if (map.mapPawns == null) continue;
+                            
+                            foreach (var animal in map.mapPawns.AllPawns.Where(p => p.RaceProps != null && p.RaceProps.Animal))
+                            {
+                                if (animal.relations != null && animal.relations.DirectRelationExists(PawnRelationDefOf.Bond, pawn))
+                                {
+                                    bondedAnimals.Add(animal);
+                                }
+                            }
+                        }
+                        
+                        // 将羁绊动物添加到重要关系列表（也按 thingIDNumber 排序）
+                        bondedAnimals = bondedAnimals.OrderBy(ba => ba.thingIDNumber).ToList();
+                        importantPawns.AddRange(bondedAnimals);
+                    }
+                    catch
+                    {
+                        // 兼容性：如果没有 Bond 关系或系统不可用，跳过
+                    }
+                    
+                    // ⭐ 步骤3：如果凑不够5个人，从剩余关系中随机抽取填充
+                    var selectedPawns = importantPawns.Take(5).ToList();
+                    
+                    if (selectedPawns.Count < 5)
+                    {
+                        var remainingPawns = allRelatedPawns
+                            .Except(importantPawns)
+                            .ToList();
+                        
+                        // 随机打乱剩余关系
+                        var random = new System.Random(pawn.thingIDNumber); // 使用 pawn.thingIDNumber 作为随机种子保证稳定
+                        remainingPawns = remainingPawns.OrderBy(x => random.Next()).ToList();
+                        
+                        // 填充到5个人
+                        int needed = 5 - selectedPawns.Count;
+                        selectedPawns.AddRange(remainingPawns.Take(needed));
+                    }
+                    
+                    // ⭐ 步骤4：遍历最多5人，提取关键词
+                    foreach (var relatedPawn in selectedPawns)
+                    {
+                        // 提取相关人物的名字
                         if (!string.IsNullOrEmpty(relatedPawn.Name?.ToStringShort))
                         {
                             var relatedName = relatedPawn.Name.ToStringShort;
                             AddAndRecord(relatedName, keywords, info.RelationshipKeywords);
                         }
                         
-                        var directRelations = pawn.relations.DirectRelations.Where(r => r.otherPawn == relatedPawn);
+                        // ⭐ 提取关系类型标签（按优先级排序，最多2个）
+                        var directRelations = pawn.relations.DirectRelations
+                            .Where(r => r.otherPawn == relatedPawn)
+                            .OrderBy(r => GetRelationPriority(r.def)) // 按优先级排序
+                            .ToList();
+                        
                         foreach (var relation in directRelations.Take(2))
                         {
                             if (relation.def?.label != null)
@@ -981,9 +1052,11 @@ namespace RimTalk.Memory
         }
         
         /// <summary>
-        /// 提取上下文关键词（超级引擎版）
-        /// ⭐ v3.3.2.25: 使用SuperKeywordEngine替代滑动窗口分词
-        /// ⭐ v3.3.2.28: 强制输出日志用于诊断常识匹配问题
+        /// 提取上下文关键词（核心 + 模糊双重策略）
+        /// ⭐ v3.3.2.29: 实现"核心 + 模糊"策略，提升多样性和稳定性
+        /// - 核心策略：按长度降序排序，取前10个（优先详细概念）
+        /// - 模糊策略：从剩余池中随机选10个（增加多样性）
+        /// - 最终返回最多20个关键词
         /// </summary>
         private List<string> ExtractContextKeywords(string text)
         {
@@ -995,27 +1068,59 @@ namespace RimTalk.Memory
             if (text.Length > MAX_TEXT_LENGTH)
             {
                 text = text.Substring(0, MAX_TEXT_LENGTH);
-                
                 Log.Message($"[Knowledge] Context text truncated to {MAX_TEXT_LENGTH} chars for performance");
             }
 
-            // ⭐ 使用超级关键词引擎（TF-IDF + N-gram + 权重排序）
+            // 使用超级关键词引擎获取候选词
             var weightedKeywords = SuperKeywordEngine.ExtractKeywords(text, 100);
             
-            // ⭐ v3.3.2.28: 强制输出日志（移除DevMode检查）
-            if (weightedKeywords.Count > 0)
-            {
-                Log.Message($"[Knowledge] SuperKeywordEngine extracted {weightedKeywords.Count} keywords from context");
-                Log.Message($"[Knowledge] Context: \"{text.Substring(0, Math.Min(100, text.Length))}...\"");
-                Log.Message($"[Knowledge] Top 10 keywords: {string.Join(", ", weightedKeywords.Take(10).Select(kw => $"{kw.Word}({kw.Weight:F2})"))}");
-            }
-            else
+            if (weightedKeywords.Count == 0)
             {
                 Log.Warning($"[Knowledge] ⚠️ SuperKeywordEngine extracted 0 keywords from context: \"{text}\"");
+                return new List<string>();
             }
             
-            // 返回关键词列表（已按权重排序，高权重在前）
-            return weightedKeywords.Select(kw => kw.Word).ToList();
+            // ⭐ 策略1：核心词 - 按长度降序排序，取前10个（优先详细概念）
+            var sortedByLength = weightedKeywords
+                .OrderByDescending(kw => kw.Word.Length)
+                .ToList();
+            
+            var coreKeywords = sortedByLength.Take(10).ToList();
+            
+            // ⭐ 策略2：模糊词 - 从剩余池随机选10个（增加多样性）
+            var remainingPool = sortedByLength.Skip(10).ToList();
+            var fuzzyKeywords = new List<WeightedKeyword>();
+            
+            if (remainingPool.Count > 0)
+            {
+                // 使用当前tick作为随机种子（保证同一tick内结果一致）
+                var random = new System.Random(Find.TickManager.TicksGame);
+                
+                // Fisher-Yates 洗牌算法
+                for (int i = remainingPool.Count - 1; i > 0; i--)
+                {
+                    int j = random.Next(i + 1);
+                    var temp = remainingPool[i];
+                    remainingPool[i] = remainingPool[j];
+                    remainingPool[j] = temp;
+                }
+                
+                fuzzyKeywords = remainingPool.Take(10).ToList();
+            }
+            
+            // ⭐ 策略3：合并核心词 + 模糊词（最多20个）
+            var finalKeywords = new List<string>();
+            finalKeywords.AddRange(coreKeywords.Select(kw => kw.Word));
+            finalKeywords.AddRange(fuzzyKeywords.Select(kw => kw.Word));
+            
+            // 诊断日志输出
+            Log.Message($"[Knowledge] ExtractContextKeywords: {finalKeywords.Count} keywords total");
+            Log.Message($"[Knowledge] - Core: {coreKeywords.Count} (by length descending)");
+            Log.Message($"[Knowledge] - Fuzzy: {fuzzyKeywords.Count} (random from {remainingPool.Count} pool)");
+            Log.Message($"[Knowledge] Context: \"{text.Substring(0, Math.Min(100, text.Length))}...\"");
+            Log.Message($"[Knowledge] Top 10 final: {string.Join(", ", finalKeywords.Take(10))}");
+            
+            return finalKeywords;
         }
         
         /// <summary>
@@ -1037,6 +1142,35 @@ namespace RimTalk.Memory
             }
 
             return null;
+        }
+        
+        /// <summary>
+        /// ⭐ 获取关系优先级（数字越小优先级越高）
+        /// 第一梯队：配偶、恋人、未婚妻
+        /// 第二梯队：父母、子女、兄弟姐妹
+        /// 第三梯队：羁绊
+        /// 其他关系：默认优先级
+        /// </summary>
+        private int GetRelationPriority(PawnRelationDef relationDef)
+        {
+            if (relationDef == null)
+                return 999; // 无效关系，最低优先级
+            
+            // 第一梯队：配偶、恋人、未婚妻（优先级 0-2）
+            if (relationDef == PawnRelationDefOf.Spouse) return 0;
+            if (relationDef == PawnRelationDefOf.Lover) return 1;
+            if (relationDef == PawnRelationDefOf.Fiance) return 2;
+            
+            // 第二梯队：父母、子女、兄弟姐妹（优先级 10-19）
+            if (relationDef == PawnRelationDefOf.Parent) return 10;
+            if (relationDef == PawnRelationDefOf.Child) return 11;
+            if (relationDef == PawnRelationDefOf.Sibling) return 12;
+            
+            // 第三梯队：羁绊（优先级 20-29）
+            if (relationDef == PawnRelationDefOf.Bond) return 20;
+            
+            // 其他关系（优先级 100+）
+            return 100;
         }
     }
 

@@ -390,26 +390,32 @@ namespace RimTalk.Memory
             
             results.AddRange(activeMemories.Take(MAX_ACTIVE));
             
+            // ⭐ v3.3.2.29: SCM 候选 - 确定性排序（分数降序 + ID 升序）
             var scmCandidates = situationalMemories
                 .Where(m => MatchesQuery(m, query))
                 .OrderByDescending(m => m.CalculateRetrievalScore(null, query.keywords))
+                .ThenBy(m => m.id, StringComparer.Ordinal) // ⭐ 确定性 tie-breaker
                 .Take(5);
             results.AddRange(scmCandidates);
             
             if (query.includeContext && results.Count < query.maxCount)
             {
+                // ⭐ v3.3.2.29: ELS 候选 - 确定性排序（分数降序 + ID 升序）
                 var elsCandidates = eventLogMemories
                     .Where(m => MatchesQuery(m, query))
                     .OrderByDescending(m => m.CalculateRetrievalScore(null, query.keywords))
+                    .ThenBy(m => m.id, StringComparer.Ordinal) // ⭐ 确定性 tie-breaker
                     .Take(query.maxCount - results.Count);
                 results.AddRange(elsCandidates);
             }
             
             if (query.layer == MemoryLayer.Archive)
             {
+                // ⭐ v3.3.2.29: CLPA 候选 - 确定性排序（重要性降序 + ID 升序）
                 var clpaCandidates = archiveMemories
                     .Where(m => MatchesQuery(m, query))
                     .OrderByDescending(m => m.importance)
+                    .ThenBy(m => m.id, StringComparer.Ordinal) // ⭐ 确定性 tie-breaker
                     .Take(3);
                 results.AddRange(clpaCandidates);
             }

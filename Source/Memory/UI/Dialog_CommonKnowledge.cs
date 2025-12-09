@@ -32,6 +32,10 @@ namespace RimTalk.Memory.UI
         
         // 导入文本
         private string importText = "";
+        
+        // ⭐ v3.3.9: 添加 GUI 控制名称（用于焦点管理）
+        private const string ContentTextAreaName = "KnowledgeContentTextArea";
+        private bool focusedThisFrame = false;
 
         public override Vector2 InitialSize => new Vector2(900f, 700f);
 
@@ -416,22 +420,69 @@ namespace RimTalk.Memory.UI
             GUI.color = Color.white;
             y += 25f;
             
-            // 内容
+            // 内容标签
             Widgets.Label(new Rect(innerRect.x, y, 100f, 25f), "内容:");
             y += 30f;
-            Rect contentRect = new Rect(innerRect.x, y, innerRect.width, 120f); // 从150减少到120
-            editContent = Widgets.TextArea(contentRect, editContent);
-            y += 130f;
+            
+            // ⭐ v3.3.9: 修复 TextArea 焦点问题
+            float contentHeight = innerRect.yMax - y - 50f;
+            contentHeight = Mathf.Max(contentHeight, 150f);
+            
+            Rect contentRect = new Rect(innerRect.x, y, innerRect.width, contentHeight);
+            
+            // 设置 GUI 控制名称（用于焦点管理）
+            GUI.SetNextControlName(ContentTextAreaName);
+            
+            // 绘制背景
+            Widgets.DrawBoxSolid(contentRect, new Color(0.1f, 0.1f, 0.1f, 0.8f));
+            
+            // 检测点击事件（用于手动设置焦点）
+            if (Mouse.IsOver(contentRect) && Event.current.type == EventType.MouseDown)
+            {
+                GUI.FocusControl(ContentTextAreaName);
+                focusedThisFrame = true;
+                Event.current.Use(); // 消耗事件，防止其他控件响应
+            }
+            
+            // 内容输入框
+            Rect textAreaRect = contentRect.ContractedBy(2f);
+            GUI.color = Color.white;
+            
+            // 确保 editContent 不为 null
+            if (editContent == null)
+                editContent = "";
+            
+            // 绘制 TextArea（第三个参数控制只读状态，false = 可编辑）
+            string newContent = GUI.TextArea(textAreaRect, editContent, Text.CurTextAreaStyle);
+            
+            // 只在内容实际改变时更新（避免不必要的重绘）
+            if (newContent != editContent)
+            {
+                editContent = newContent;
+            }
+            
+            GUI.color = Color.white;
+            
+            // ⭐ 显示焦点提示（调试用）
+            if (GUI.GetNameOfFocusedControl() == ContentTextAreaName)
+            {
+                // 绘制焦点指示器
+                Widgets.DrawBoxSolid(new Rect(contentRect.x, contentRect.y, 3f, contentRect.height), Color.cyan);
+            }
+            
+            y += contentHeight + 10f;
             
             // 按钮
-            if (Widgets.ButtonText(new Rect(innerRect.x, y, 100f, 30f), "保存"))
+            float buttonY = innerRect.yMax - 40f;
+            if (Widgets.ButtonText(new Rect(innerRect.x, buttonY, 100f, 30f), "保存"))
             {
                 SaveEntry();
             }
             
-            if (Widgets.ButtonText(new Rect(innerRect.x + 110f, y, 100f, 30f), "取消"))
+            if (Widgets.ButtonText(new Rect(innerRect.x + 110f, buttonY, 100f, 30f), "取消"))
             {
                 editMode = false;
+                GUI.FocusControl(null); // 清除焦点
             }
         }
 

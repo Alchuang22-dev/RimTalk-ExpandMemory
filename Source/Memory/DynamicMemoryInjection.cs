@@ -245,32 +245,74 @@ namespace RimTalk.Memory
         }
 
         /// <summary>
-        /// 提取上下文关键词（简单的中文分词）
+        /// 提取上下文关键词（核心 + 模糊双重策略）
+        /// ⭐ v3.3.2.29: 升级为"核心 + 模糊"策略，与常识库保持一致
+        /// - 核心策略：按长度降序排序，取前10个（优先详细概念）
+        /// - 模糊策略：从剩余池中随机选10个（增加多样性）
+        /// - 最终返回最多20个关键词
         /// </summary>
         private static List<string> ExtractKeywords(string text)
         {
             if (string.IsNullOrEmpty(text))
                 return new List<string>();
 
-            var keywords = new HashSet<string>();
-
-            // 简单的中文关键词提取（2-4字词语）
-            for (int length = 2; length <= 4; length++)
+            // 截断过长文本
+            const int MAX_TEXT_LENGTH = 500;
+            if (text.Length > MAX_TEXT_LENGTH)
             {
-                for (int i = 0; i <= text.Length - length; i++)
-                {
-                    string word = text.Substring(i, length);
-                    
-                    // 过滤纯符号和空白
-                    if (word.Any(c => char.IsLetterOrDigit(c)))
-                    {
-                        keywords.Add(word);
-                    }
-                }
+                text = text.Substring(0, MAX_TEXT_LENGTH);
             }
 
-            // 限制关键词数量
-            return keywords.Take(20).ToList();
+            // 使用超级关键词引擎获取候选词
+            var weightedKeywords = SuperKeywordEngine.ExtractKeywords(text, 100);
+            
+            if (weightedKeywords.Count == 0)
+            {
+                return new List<string>();
+            }
+            
+            // ⭐ 策略1：核心词 - 按长度降序排序，取前10个（优先详细概念）
+            var sortedByLength = weightedKeywords
+                .OrderByDescending(kw => kw.Word.Length)
+                .ToList();
+            
+            var coreKeywords = sortedByLength.Take(10).ToList();
+            
+            // ⭐ 策略2：模糊词 - 从剩余池随机选10个（增加多样性）
+            var remainingPool = sortedByLength.Skip(10).ToList();
+            var fuzzyKeywords = new List<WeightedKeyword>();
+            
+            if (remainingPool.Count > 0)
+            {
+                // 使用当前tick作为随机种子（保证同一tick内结果一致）
+                var random = new System.Random(Find.TickManager.TicksGame);
+                
+                // Fisher-Yates 洗牌算法
+                for (int i = remainingPool.Count - 1; i > 0; i--)
+                {
+                    int j = random.Next(i + 1);
+                    var temp = remainingPool[i];
+                    remainingPool[i] = remainingPool[j];
+                    remainingPool[j] = temp;
+                }
+                
+                fuzzyKeywords = remainingPool.Take(10).ToList();
+            }
+            
+            // ⭐ 策略3：合并核心词 + 模糊词（最多20个）
+            var finalKeywords = new List<string>();
+            finalKeywords.AddRange(coreKeywords.Select(kw => kw.Word));
+            finalKeywords.AddRange(fuzzyKeywords.Select(kw => kw.Word));
+            
+            // 诊断日志（仅开发模式）
+            if (Prefs.DevMode)
+            {
+                Log.Message($"[Memory] ExtractKeywords: {finalKeywords.Count} keywords total");
+                Log.Message($"[Memory] - Core: {coreKeywords.Count} (by length descending)");
+                Log.Message($"[Memory] - Fuzzy: {fuzzyKeywords.Count} (random from {remainingPool.Count} pool)");
+            }
+            
+            return finalKeywords;
         }
 
         /// <summary>

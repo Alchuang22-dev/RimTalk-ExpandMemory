@@ -87,6 +87,19 @@
             <HintPath>$(USERPROFILE)\.nuget\packages\krafs.rimworld.ref\1.6.4633\ref\net472\UnityEngine.TextRenderingModule.dll</HintPath>
             <Private>False</Private>
         </Reference>
+        <!-- ⭐ v3.3.7: 添加音频和网络模块支持 TTS 播放 -->
+        <Reference Include="UnityEngine.AudioModule">
+            <HintPath>$(USERPROFILE)\.nuget\packages\krafs.rimworld.ref\1.6.4633\ref\net472\UnityEngine.AudioModule.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestAudioModule">
+            <HintPath>$(USERPROFILE)\.nuget\packages\krafs.rimworld.ref\1.6.4633\ref\net472\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestModule">
+            <HintPath>$(USERPROFILE)\.nuget\packages\krafs.rimworld.ref\1.6.4633\ref\net472\UnityEngine.UnityWebRequestModule.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
         <Reference Include="0Harmony">
             <HintPath>$(USERPROFILE)\.nuget\packages\lib.harmony.ref\2.4.2\ref\netstandard2.0\0Harmony.dll</HintPath>
             <Private>False</Private>
@@ -105,6 +118,7 @@
     <ItemGroup>
       <Folder Include="Source\Memory\Debug\" />
       <Folder Include="Source\Memory\DevTools\" />
+      <Folder Include="Source\Memory\TTS\" />
     </ItemGroup>
 
     <!-- ⭐ v3.3.2.27: 移除 SQLite 本地 DLL 复制目标（VectorDB已移除） -->

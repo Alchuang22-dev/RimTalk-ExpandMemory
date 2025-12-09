@@ -2,7 +2,7 @@
 
 ## ?? **概述**
 
-**Prompt Caching** 是AI模型提供商（如OpenAI、DeepSeek）提供的显式缓存功能，可以将重复的prompt前缀缓存到模型端，从而：
+**Prompt Caching** 是AI模型提供商（如OpenAI、DeepSeek、Google）提供的显式缓存功能，可以将重复的prompt前缀缓存到模型端，从而：
 
 - ? **降低50%费用**：缓存命中的token按50%价格计费
 - ? **提升响应速度**：跳过重复token的处理
@@ -31,107 +31,43 @@ user消息（不缓存） = 记忆注入 + 常识注入 + 用户对话
 
 ## ?? **实现方案**
 
-### 方案1：拆分system和user（推荐）
+### 方案1：OpenAI/DeepSeek 缓存
 
 修改 `IndependentAISummarizer.cs` 的 `BuildJsonRequest()` 方法：
 
 ```csharp
-// ? v3.3.4: Prompt Caching优化
-private static string BuildJsonRequest(string prompt)
-{
-    // Google提供商保持原样
-    if (provider == "Google")
-    {
-        // ... 现有代码 ...
-    }
-    
-    // OpenAI/DeepSeek：拆分system和user
-    StringBuilder sb = new StringBuilder();
-    
-    // 1. 提取固定的system部分
-    string systemPrompt = "你是一个RimWorld殖民地的角色扮演AI。\\n" +
-                         "请用极简的语言总结记忆内容。\\n" +
-                         "只输出总结文字，不要其他格式。";
-    
-    // 2. 动态内容（记忆列表）作为user部分
-    string userPrompt = prompt.Replace("\\", "\\\\")
-                              .Replace("\"", "\\\"")
-                              .Replace("\n", "\\n")
-                              .Replace("\r", "")
-                              .Replace("\t", "\\t");
-    
-    sb.Append("{");
-    sb.Append("\"model\":\"" + model + "\",");
-    sb.Append("\"messages\":[");
-    
-    // 3. system消息（带缓存控制）
-    sb.Append("{\"role\":\"system\",");
-    sb.Append("\"content\":\"" + systemPrompt + "\"");
-    
-    // ? 关键：添加缓存控制
-    if (provider == "OpenAI")
-    {
-        // OpenAI Prompt Caching（GPT-4/3.5）
-        sb.Append(",\"cache_control\":{\"type\":\"ephemeral\"}");
-    }
-    else if (provider == "DeepSeek")
-    {
-        // DeepSeek缓存控制
-        sb.Append(",\"cache\":true");
-    }
-    
-    sb.Append("},");
-    
-    // 4. user消息（变化内容）
-    sb.Append("{\"role\":\"user\",");
-    sb.Append("\"content\":\"" + userPrompt + "\"");
-    sb.Append("}],");
-    
-    sb.Append("\"temperature\":0.7,");
-    sb.Append("\"max_tokens\":200");
-    
-    // ? DeepSeek全局缓存开关
-    if (provider == "DeepSeek")
-    {
-        sb.Append(",\"enable_prompt_cache\":true");
-    }
-    
-    sb.Append("}");
-    return sb.ToString();
-}
+// OpenAI: 在system消息中添加cache_control
+sb.Append("{\"role\":\"system\",");
+sb.Append("\"content\":\"" + systemPrompt + "\"");
+sb.Append(",\"cache_control\":{\"type\":\"ephemeral\"}");  // ?? 关键
+sb.Append("},");
+
+// DeepSeek: 添加cache标记和全局开关
+sb.Append(",\"cache\":true");  // 消息级别
+sb.Append(",\"enable_prompt_cache\":true");  // 请求级别
 ```
 
----
+### 方案2：Google Gemini Context Caching ? 新增
 
-### 方案2：标记重复前缀（高级）
-
-如果记忆注入中也有固定部分，可以进一步标记：
+Google Gemini 使用 **Context Caching** 机制，与 OpenAI/DeepSeek 不同：
 
 ```csharp
+// Gemini: 在generationConfig中启用缓存
 {
-  "model": "gpt-4",
-  "messages": [
-    {
-      "role": "system",
-      "content": "你是一个RimWorld AI...",
-      "cache_control": {"type": "ephemeral"}  // ?? 固定指令
-    },
-    {
-      "role": "user",
-      "content": "【常识】\\n世界观知识...\\n\\n【记忆】\\n...",
-      "cache_control": {"type": "ephemeral"}  // ?? 常识部分也可缓存
-    },
-    {
-      "role": "user",
-      "content": "[用户对话]"  // ?? 用户输入不缓存
-    }
-  ]
+  "contents": [...],
+  "generationConfig": {
+    "temperature": 0.7,
+    "maxOutputTokens": 200
+  },
+  "cachedContent": "projects/{project}/locations/{location}/cachedContents/{id}"
 }
 ```
 
-**注意**：
-- OpenAI限制：只有最后一条system消息可以被缓存
-- DeepSeek更灵活：可以标记多条消息
+**Gemini 缓存特点**：
+- ? 支持缓存（Context Caching）
+- ?? 需要先创建 CachedContent 对象（较复杂）
+- ?? 免费版（AI Studio）缓存功能有限
+- ?? 本项目暂不实现 Gemini 缓存（复杂度高，收益有限）
 
 ---
 
@@ -159,12 +95,13 @@ private static string BuildJsonRequest(string prompt)
 ### 1. 缓存有效期
 - OpenAI：5-10分钟（自动过期）
 - DeepSeek：约10分钟
+- Google Gemini：可配置（需要Vertex AI）
 - **建议**：高频对话时效果最佳（如游戏中连续对话）
 
 ### 2. 兼容性
-- ? OpenAI GPT-4 Turbo、GPT-3.5 Turbo
-- ? DeepSeek Chat、Coder
-- ? Google Gemini（暂不支持）
+- ? OpenAI GPT-4 Turbo、GPT-3.5 Turbo（自动支持）
+- ? DeepSeek Chat、Coder（自动支持）
+- ?? Google Gemini（支持但实现复杂，本项目暂不实现）
 
 ### 3. 调试
 查看响应头中的缓存信息：
@@ -199,18 +136,20 @@ if (Prefs.DevMode)
 
 ---
 
-## ?? **配置选项（可选）**
+## ?? **配置选项**
 
-在 `RimTalkSettings.cs` 添加开关：
+在 `RimTalkSettings.cs` 中已添加开关：
 
 ```csharp
-public bool enablePromptCaching = true;  // 启用Prompt Caching
+public bool enablePromptCaching = true;  // 启用Prompt Caching（默认开启）
 ```
 
-在设置UI中：
-```csharp
-listing.CheckboxLabeled("?? 启用Prompt Caching（降低50%费用）", ref enablePromptCaching);
+在设置UI中（AI配置区域）：
 ```
+?? 启用Prompt Caching（降低50%费用）
+```
+
+**注意**：此选项仅对 OpenAI 和 DeepSeek 生效，Google Gemini 暂不支持。
 
 ---
 
@@ -237,6 +176,7 @@ listing.CheckboxLabeled("?? 启用Prompt Caching（降低50%费用）", ref enablePrompt
 
 - [OpenAI Prompt Caching](https://platform.openai.com/docs/guides/prompt-caching)
 - [DeepSeek API文档](https://platform.deepseek.com/api-docs)
+- [Google Gemini Context Caching](https://ai.google.dev/gemini-api/docs/caching)
 - [本项目issue讨论](https://github.com/sanguodxj-byte/RimTalk-ExpandMemory/issues)
 
 ---

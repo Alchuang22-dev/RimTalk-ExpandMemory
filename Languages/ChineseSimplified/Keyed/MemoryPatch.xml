@@ -192,4 +192,194 @@
     <RimTalk_Knowledge_VectorDBInjectionSuccess>成功注入 {0} 条到向量数据库</RimTalk_Knowledge_VectorDBInjectionSuccess>
     <RimTalk_Knowledge_VectorDBNotEnabled>向量数据库未启用，请在Mod设置中启用</RimTalk_Knowledge_VectorDBNotEnabled>
     <RimTalk_Knowledge_VectorDBInjectionFailed>向量库注入失败: {0}</RimTalk_Knowledge_VectorDBInjectionFailed>
+    
+    <!-- ==================== v3.3.6 新增翻译 ==================== -->
+    
+    <!-- Player2 供应商 -->
+    <RimTalk_Settings_Player2Tip1>Player2：游戏AI专用服务</RimTalk_Settings_Player2Tip1>
+    <RimTalk_Settings_Player2Tip2>优先检测本地Player2桌面应用（自动连接）</RimTalk_Settings_Player2Tip2>
+    <RimTalk_Settings_Player2Tip3>如未安装桌面应用，需手动输入API Key</RimTalk_Settings_Player2Tip3>
+    <RimTalk_Settings_Player2Tip4>下载地址：https://player2.game</RimTalk_Settings_Player2Tip4>
+    <RimTalk_Settings_DetectPlayer2>检测本地Player2应用</RimTalk_Settings_DetectPlayer2>
+    <RimTalk_Settings_Player2Detected>Player2桌面应用已检测到！自动连接成功</RimTalk_Settings_Player2Detected>
+    <RimTalk_Settings_Player2NotFound>未检测到Player2桌面应用，请手动输入API Key</RimTalk_Settings_Player2NotFound>
+    
+    <!-- 自定义供应商 -->
+    <RimTalk_Settings_CustomTip1>自定义模式：支持OpenAI兼容的第三方API</RimTalk_Settings_CustomTip1>
+    <RimTalk_Settings_CustomTip2>如：OpenRouter、OneAPI、API2D等</RimTalk_Settings_CustomTip2>
+    <RimTalk_Settings_CommonApiUrls>常用第三方API地址：</RimTalk_Settings_CommonApiUrls>
+    
+    <!-- API Key 验证 -->
+    <RimTalk_Settings_KeyConfigured>Key已配置（长度：{0}）</RimTalk_Settings_KeyConfigured>
+    <RimTalk_Settings_KeyTooShort>Key较短，请确认是否正确</RimTalk_Settings_KeyTooShort>
+    <RimTalk_Settings_KeyFormatCorrect>Key格式正确（{0}...）</RimTalk_Settings_KeyFormatCorrect>
+    <RimTalk_Settings_KeyWrongFormat>Key不是sk-开头，如使用第三方代理请选择"自定义"</RimTalk_Settings_KeyWrongFormat>
+    <RimTalk_Settings_GoogleKeyWrongFormat>Google Key应为AIza开头</RimTalk_Settings_GoogleKeyWrongFormat>
+    <RimTalk_Settings_PleaseEnterKey>请输入API Key</RimTalk_Settings_PleaseEnterKey>
+    
+    <!-- 模型提示 -->
+    <RimTalk_Settings_Player2Models>Player2模型：gpt-4o-mini, gpt-4o, claude-3-5-sonnet</RimTalk_Settings_Player2Models>
+    <RimTalk_Settings_Player2Recommended>推荐使用 gpt-4o-mini（性价比高）</RimTalk_Settings_Player2Recommended>
+    <RimTalk_Settings_CustomModels>常用模型：gpt-3.5-turbo, gpt-4, claude-3-haiku</RimTalk_Settings_CustomModels>
+    <RimTalk_Settings_CheckPlatformModels>具体支持的模型请参考您使用的API平台</RimTalk_Settings_CheckPlatformModels>
+    <RimTalk_Settings_OpenAIModels>OpenAI：gpt-3.5-turbo, gpt-4, gpt-4-turbo</RimTalk_Settings_OpenAIModels>
+    <RimTalk_Settings_DeepSeekModels>DeepSeek：deepseek-chat, deepseek-coder</RimTalk_Settings_DeepSeekModels>
+    <RimTalk_Settings_GoogleModels>Google：gemini-pro, gemini-1.5-flash</RimTalk_Settings_GoogleModels>
+    
+    <!-- Prompt Caching -->
+    <RimTalk_Settings_PromptCachingFree>Prompt Caching：Gemini免费，无需启用</RimTalk_Settings_PromptCachingFree>
+    <RimTalk_Settings_GeminiFreeQuota>Google Gemini有免费额度，不用担心费用</RimTalk_Settings_GeminiFreeQuota>
+    <RimTalk_Settings_EnablePromptCaching>启用Prompt Caching（降低50%费用）</RimTalk_Settings_EnablePromptCaching>
+    <RimTalk_Settings_CachingSystemInstruction>将system指令标记为可缓存</RimTalk_Settings_CachingSystemInstruction>
+    <RimTalk_Settings_CachingOpenAICompatible>适用于OpenAI兼容的API（需API支持）</RimTalk_Settings_CachingOpenAICompatible>
+    <RimTalk_Settings_CachingOpenAIDeepSeek>适用于OpenAI GPT-4/3.5和DeepSeek</RimTalk_Settings_CachingOpenAIDeepSeek>
+    <RimTalk_Settings_CachingFirstCall>首次调用正常计费，后续缓存命中费用降低50%</RimTalk_Settings_CachingFirstCall>
+    <RimTalk_Settings_CachingExpiry>缓存有效期：5-10分钟（由API提供商控制）</RimTalk_Settings_CachingExpiry>
+    <RimTalk_Settings_CachingDisabledWarning>关闭后所有token按正常价格计费</RimTalk_Settings_CachingDisabledWarning>
+    
+    <!-- 清除API配置 -->
+    <RimTalk_Settings_ClearAPIConfig>清除API配置和缓存</RimTalk_Settings_ClearAPIConfig>
+    <RimTalk_Settings_ClearAPIConfigConfirm>确定要清除所有API配置和缓存吗？\n\n这将：\n• 清空独立API Key、URL、Model\n• 清除所有AI总结缓存\n• 重置AI服务状态\n\n需要重新配置API才能使用AI总结功能。</RimTalk_Settings_ClearAPIConfigConfirm>
+    <RimTalk_Settings_ClearAPIConfigTitle>清除配置</RimTalk_Settings_ClearAPIConfigTitle>
+    <RimTalk_Settings_APIConfigCleared>API配置和缓存已清除</RimTalk_Settings_APIConfigCleared>
+    <RimTalk_Settings_ClearAPIConfigWarning>清除后需要重新输入API Key才能使用AI总结功能</RimTalk_Settings_ClearAPIConfigWarning>
+    
+    <!-- AI配置提示 -->
+    <RimTalk_Settings_UseRimTalkConfigTip>将优先使用RimTalk的API配置</RimTalk_Settings_UseRimTalkConfigTip>
+    <RimTalk_Settings_FallbackTip>如果RimTalk未配置，则使用下方的独立配置</RimTalk_Settings_FallbackTip>
+    <RimTalk_Settings_RecommendRimTalk>建议：直接在RimTalk Mod设置中配置API</RimTalk_Settings_RecommendRimTalk>
+    <RimTalk_Settings_UseIndependentTip>使用独立API配置（不跟随RimTalk）</RimTalk_Settings_UseIndependentTip>
+    <RimTalk_Settings_NeedConfigBelow>需要在下方手动配置提供商和API Key</RimTalk_Settings_NeedConfigBelow>
+    
+    <!-- 实验性功能 -->
+    <RimTalk_Settings_ExperimentalTitle>实验性功能 (v3.0-v3.3)</RimTalk_Settings_ExperimentalTitle>
+    <RimTalk_Settings_ExperimentalWarning>实验性功能，可能需要额外配置或有性能影响</RimTalk_Settings_ExperimentalWarning>
+    <RimTalk_Settings_ProactiveRecallTitle>主动记忆召回 (v3.0)</RimTalk_Settings_ProactiveRecallTitle>
+    <RimTalk_Settings_EnableProactiveRecall>启用主动记忆召回</RimTalk_Settings_EnableProactiveRecall>
+    <RimTalk_Settings_ProactiveRecallDesc>AI会主动从记忆中提及相关内容，增强对话连贯性</RimTalk_Settings_ProactiveRecallDesc>
+    <RimTalk_Settings_TriggerChance>触发概率：{0}</RimTalk_Settings_TriggerChance>
+    <RimTalk_Settings_TriggerChanceDesc>（基础15% + 情感因子 + 关系因子，最高60%）</RimTalk_Settings_TriggerChanceDesc>
+    <RimTalk_Settings_RemovedFeaturesTitle>已移除的功能 (v3.3.2.27)</RimTalk_Settings_RemovedFeaturesTitle>
+    <RimTalk_Settings_RemovedSemanticEmbedding>语义嵌入 (v3.1) - 已移除，使用SuperKeywordEngine替代</RimTalk_Settings_RemovedSemanticEmbedding>
+    <RimTalk_Settings_RemovedVectorDB>向量数据库 (v3.2) - 已移除，使用关键词索引替代</RimTalk_Settings_RemovedVectorDB>
+    <RimTalk_Settings_RemovedRAG>RAG检索 (v3.3) - 已移除，简化为直接匹配</RimTalk_Settings_RemovedRAG>
+    <RimTalk_Settings_RemovedAdvantages>优势：编译更快、体积更小、依赖更少、性能更好</RimTalk_Settings_RemovedAdvantages>
+    <RimTalk_Settings_AccuracyImproved>常识匹配准确率：65% → 95%（SuperKeywordEngine）</RimTalk_Settings_AccuracyImproved>
+    <RimTalk_Settings_ResponseTime>响应时间：&lt;3ms（无向量计算开销）</RimTalk_Settings_ResponseTime>
+    
+    <!-- 自适应阈值 -->
+    <RimTalk_Settings_EnableAdaptiveThreshold>启用自适应阈值（实验性）</RimTalk_Settings_EnableAdaptiveThreshold>
+    <RimTalk_Settings_AdaptiveThresholdDesc1>自动根据评分分布调整阈值</RimTalk_Settings_AdaptiveThresholdDesc1>
+    <RimTalk_Settings_AdaptiveThresholdDesc2>基于统计学方法（百分位+均值）</RimTalk_Settings_AdaptiveThresholdDesc2>
+    <RimTalk_Settings_AutoApplyThreshold>自动应用推荐阈值</RimTalk_Settings_AutoApplyThreshold>
+    <RimTalk_Settings_UsingManualThreshold>当前使用手动阈值，查看日志获取推荐值</RimTalk_Settings_UsingManualThreshold>
+    <RimTalk_Settings_StatsSamples>统计样本：记忆={0}，常识={1}</RimTalk_Settings_StatsSamples>
+    <RimTalk_Settings_RecommendedMemoryThreshold>推荐记忆阈值：{0}</RimTalk_Settings_RecommendedMemoryThreshold>
+    <RimTalk_Settings_RecommendedKnowledgeThreshold>推荐常识阈值：{0}</RimTalk_Settings_RecommendedKnowledgeThreshold>
+    <RimTalk_Settings_NeedMoreSamples>（需要至少50个样本才能计算）</RimTalk_Settings_NeedMoreSamples>
+    
+    <!-- 记忆界面按钮 -->
+    <RimTalk_UI_Preview>预览</RimTalk_UI_Preview>
+    <RimTalk_UI_Knowledge>常识</RimTalk_UI_Knowledge>
+    <RimTalk_UI_ImmediateSummarize>立即总结(SCM→ELS)</RimTalk_UI_ImmediateSummarize>
+    <RimTalk_UI_ImmediateSummarizeNoMemory>无记忆可总结</RimTalk_UI_ImmediateSummarizeNoMemory>
+    <RimTalk_UI_SummarizeAll>总结所有人</RimTalk_UI_SummarizeAll>
+    <RimTalk_UI_ImmediateArchive>立即归档(ELS→CLPA)</RimTalk_UI_ImmediateArchive>
+    <RimTalk_UI_ImmediateArchiveNoMemory>无记忆可归档</RimTalk_UI_ImmediateArchiveNoMemory>
+    <RimTalk_UI_ArchiveAll>归档所有人</RimTalk_UI_ArchiveAll>
+    <RimTalk_UI_MemorySummarized>{0}的记忆已总结</RimTalk_UI_MemorySummarized>
+    <RimTalk_UI_MemoriesSummarizedCount>{0}个殖民者的记忆已总结</RimTalk_UI_MemoriesSummarizedCount>
+    <RimTalk_UI_NoColonistsNeedSummarize>没有殖民者需要总结</RimTalk_UI_NoColonistsNeedSummarize>
+    <RimTalk_UI_MemoryArchived>{0}的记忆已归档</RimTalk_UI_MemoryArchived>
+    <RimTalk_UI_MemoriesArchivedCount>{0}个殖民者的记忆已归档</RimTalk_UI_MemoriesArchivedCount>
+    <RimTalk_UI_Edit>编辑</RimTalk_UI_Edit>
+    <RimTalk_UI_Pinned>已固定</RimTalk_UI_Pinned>
+    <RimTalk_UI_Pin>固定</RimTalk_UI_Pin>
+    <RimTalk_UI_Delete>删除</RimTalk_UI_Delete>
+    <RimTalk_UI_ConfirmDeleteMemory>确认删除此记忆？</RimTalk_UI_ConfirmDeleteMemory>
+    
+    <!-- 记忆层级提示 -->
+    <RimTalk_Tooltip_ABM>超短期记忆 (Active Buffer Memory)\n当前对话上下文\n\n左键：显示/隐藏</RimTalk_Tooltip_ABM>
+    <RimTalk_Tooltip_SCM>短期记忆 (Situational Context Memory)\n最近几天的事件和对话\n\n左键：显示/隐藏</RimTalk_Tooltip_SCM>
+    <RimTalk_Tooltip_ELS>中期记忆 (Event Log Summary)\nAI总结的阶段性事件\n\n左键：显示/隐藏\n右键：添加记忆到此层</RimTalk_Tooltip_ELS>
+    <RimTalk_Tooltip_CLPA>长期记忆 (Colony Lore &amp; Persona Archive)\n核心人设和重要里程碑\n\n左键：显示/隐藏\n右键：添加记忆到此层</RimTalk_Tooltip_CLPA>
+    <RimTalk_Tooltip_Edit>编辑此记忆的内容、标签和备注</RimTalk_Tooltip_Edit>
+    <RimTalk_Tooltip_Pin>固定此记忆（不会被删除或衰减）</RimTalk_Tooltip_Pin>
+    <RimTalk_Tooltip_Unpin>取消固定此记忆</RimTalk_Tooltip_Unpin>
+    <RimTalk_Tooltip_Delete>永久删除此记忆</RimTalk_Tooltip_Delete>
+    <RimTalk_Tooltip_Preview>打开注入内容预览器\n实时查看将要注入给AI的记忆和常识</RimTalk_Tooltip_Preview>
+    <RimTalk_Tooltip_Knowledge>打开常识库管理\n查看和编辑常识条目</RimTalk_Tooltip_Knowledge>
+    <RimTalk_Tooltip_Importance>重要性：{0}</RimTalk_Tooltip_Importance>
+    <RimTalk_Tooltip_Activity>活跃度：{0}</RimTalk_Tooltip_Activity>
+    <RimTalk_Tooltip_Tags>标签：{0}</RimTalk_Tooltip_Tags>
+    <RimTalk_Tooltip_Notes>备注：{0}</RimTalk_Tooltip_Notes>
+    
+    <!-- 记忆右键菜单 -->
+    <RimTalk_Menu_AddActionMemory>添加行动记忆到 {0}</RimTalk_Menu_AddActionMemory>
+    <RimTalk_Menu_AddConversationMemory>添加对话记忆到 {0}</RimTalk_Menu_AddConversationMemory>
+    <RimTalk_Menu_MemoryCompUnavailable>记忆组件不可用</RimTalk_Menu_MemoryCompUnavailable>
+    <RimTalk_Menu_CreateMemoryFailed>创建记忆失败</RimTalk_Menu_CreateMemoryFailed>
+    <RimTalk_Menu_OpenEditFailed>打开编辑对话框失败</RimTalk_Menu_OpenEditFailed>
+    
+    <!-- 常识库对话框 -->
+    <RimTalk_Knowledge_TotalAndEnabled>总计：{0} | 启用：{1}</RimTalk_Knowledge_TotalAndEnabled>
+    <RimTalk_Knowledge_New>新建</RimTalk_Knowledge_New>
+    <RimTalk_Knowledge_Import>导入</RimTalk_Knowledge_Import>
+    <RimTalk_Knowledge_Export>导出</RimTalk_Knowledge_Export>
+    <RimTalk_Knowledge_Delete>删除</RimTalk_Knowledge_Delete>
+    <RimTalk_Knowledge_ClearAll>清空</RimTalk_Knowledge_ClearAll>
+    <RimTalk_Knowledge_AutoGenerate>自动生成</RimTalk_Knowledge_AutoGenerate>
+    <RimTalk_Knowledge_GeneratePawnStatus>生成Pawn状态常识</RimTalk_Knowledge_GeneratePawnStatus>
+    <RimTalk_Knowledge_GenerateNow>立即生成</RimTalk_Knowledge_GenerateNow>
+    <RimTalk_Knowledge_GenerateEventRecord>生成事件记录常识</RimTalk_Knowledge_GenerateEventRecord>
+    <RimTalk_Knowledge_AutoGenerateTip>提示：启用自动生成后，系统会定期更新常识库</RimTalk_Knowledge_AutoGenerateTip>
+    <RimTalk_Knowledge_SelectToView>选择一个常识条目以查看详情</RimTalk_Knowledge_SelectToView>
+    <RimTalk_Knowledge_Details>详情</RimTalk_Knowledge_Details>
+    <RimTalk_Knowledge_Tag>标签</RimTalk_Knowledge_Tag>
+    <RimTalk_Knowledge_Content>内容</RimTalk_Knowledge_Content>
+    <RimTalk_Knowledge_ImportanceLabel>重要性：</RimTalk_Knowledge_ImportanceLabel>
+    <RimTalk_Knowledge_Status>状态：</RimTalk_Knowledge_Status>
+    <RimTalk_Knowledge_Enabled>启用</RimTalk_Knowledge_Enabled>
+    <RimTalk_Knowledge_Disabled>禁用</RimTalk_Knowledge_Disabled>
+    <RimTalk_Knowledge_Visibility>可见范围：</RimTalk_Knowledge_Visibility>
+    <RimTalk_Knowledge_Global>全局（所有殖民者）</RimTalk_Knowledge_Global>
+    <RimTalk_Knowledge_Exclusive>专属：{0}</RimTalk_Knowledge_Exclusive>
+    <RimTalk_Knowledge_PawnDeleted>Pawn已删除（ID：{0}）</RimTalk_Knowledge_PawnDeleted>
+    <RimTalk_Knowledge_Edit>编辑</RimTalk_Knowledge_Edit>
+    <RimTalk_Knowledge_Save>保存</RimTalk_Knowledge_Save>
+    <RimTalk_Knowledge_Cancel>取消</RimTalk_Knowledge_Cancel>
+    <RimTalk_Knowledge_EditTitle>编辑常识</RimTalk_Knowledge_EditTitle>
+    <RimTalk_Knowledge_ExclusiveColonist>专属殖民者：</RimTalk_Knowledge_ExclusiveColonist>
+    <RimTalk_Knowledge_GlobalVisible>全局可见</RimTalk_Knowledge_GlobalVisible>
+    <RimTalk_Knowledge_GlobalTip>全局常识：所有殖民者都可以看到</RimTalk_Knowledge_GlobalTip>
+    <RimTalk_Knowledge_ExclusiveTip>专属常识：只有指定的殖民者可以看到</RimTalk_Knowledge_ExclusiveTip>
+    <RimTalk_Knowledge_TagAndContentRequired>标签和内容不能为空</RimTalk_Knowledge_TagAndContentRequired>
+    <RimTalk_Knowledge_Saved>常识已保存</RimTalk_Knowledge_Saved>
+    <RimTalk_Knowledge_Deleted>常识已删除</RimTalk_Knowledge_Deleted>
+    <RimTalk_Knowledge_Cleared>常识库已清空</RimTalk_Knowledge_Cleared>
+    <RimTalk_Knowledge_CopiedToClipboard>常识库已复制到剪贴板</RimTalk_Knowledge_CopiedToClipboard>
+    <RimTalk_Knowledge_ImportedCount>已导入 {0} 条常识</RimTalk_Knowledge_ImportedCount>
+    <RimTalk_Knowledge_ConfirmClearAll>确定要清空所有常识吗？</RimTalk_Knowledge_ConfirmClearAll>
+    <RimTalk_Knowledge_PawnStatusNotEnabled>Pawn状态常识生成未启用，请在设置中启用</RimTalk_Knowledge_PawnStatusNotEnabled>
+    <RimTalk_Knowledge_NoColonistsOnMap>当前地图没有殖民者</RimTalk_Knowledge_NoColonistsOnMap>
+    <RimTalk_Knowledge_CannotGetManager>无法获取MemoryManager</RimTalk_Knowledge_CannotGetManager>
+    <RimTalk_Knowledge_GeneratedForCount>成功为 {0} 个殖民者生成状态常识</RimTalk_Knowledge_GeneratedForCount>
+    <RimTalk_Knowledge_GenerateFailed>生成失败：{0}</RimTalk_Knowledge_GenerateFailed>
+    <RimTalk_Knowledge_EventRecordNotEnabled>事件记录常识生成未启用，请在设置中启用</RimTalk_Knowledge_EventRecordNotEnabled>
+    <RimTalk_Knowledge_EventScanTriggered>已触发事件记录扫描，常识将自动生成到库中</RimTalk_Knowledge_EventScanTriggered>
+    
+    <!-- 创建记忆对话框 -->
+    <RimTalk_Memory_AddToLayer>为 {2} 添加 {0} 到 {1}</RimTalk_Memory_AddToLayer>
+    <RimTalk_Memory_Content>内容</RimTalk_Memory_Content>
+    <RimTalk_Memory_TagsOptional>标签（可选，逗号分隔）</RimTalk_Memory_TagsOptional>
+    <RimTalk_Memory_NotesOptional>备注（可选）</RimTalk_Memory_NotesOptional>
+    <RimTalk_Memory_ImportanceLabel>重要性：{0}</RimTalk_Memory_ImportanceLabel>
+    <RimTalk_Memory_PinMemory>固定此记忆</RimTalk_Memory_PinMemory>
+    <RimTalk_Memory_ContentRequired>内容不能为空</RimTalk_Memory_ContentRequired>
+    <RimTalk_Memory_AddedToELS>已为 {0} 添加记忆到ELS</RimTalk_Memory_AddedToELS>
+    <RimTalk_Memory_AddedToCLPA>已为 {0} 添加记忆到CLPA</RimTalk_Memory_AddedToCLPA>
+    <RimTalk_Layer_ELS>ELS（中期记忆）</RimTalk_Layer_ELS>
+    <RimTalk_Layer_CLPA>CLPA（长期记忆）</RimTalk_Layer_CLPA>
+    <RimTalk_Type_Action>行动</RimTalk_Type_Action>
+    <RimTalk_Type_Conversation>对话</RimTalk_Type_Conversation>
 </LanguageData>

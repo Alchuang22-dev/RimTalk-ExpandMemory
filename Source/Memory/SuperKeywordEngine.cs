@@ -89,9 +89,11 @@ namespace RimTalk.Memory
                 score.Weight = tf * lengthWeight * positionWeight * importanceBonus;
             }
 
-            // 3. 排序并返回（? 上限100）
+            // 3. 排序并返回，? 最多100个
+            // ? v3.3.2.29: 添加确定性 tie-breaker（权重降序 + 词语字母顺序升序）
             return keywordScores.Values
                 .OrderByDescending(s => s.Weight)
+                .ThenBy(s => s.Word, StringComparer.Ordinal) // ? 确定性 tie-breaker
                 .Take(maxKeywords)
                 .Select(s => new WeightedKeyword { Word = s.Word, Weight = s.Weight })
                 .ToList();

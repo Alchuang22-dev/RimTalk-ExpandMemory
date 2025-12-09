@@ -1,4 +1,4 @@
-ï»¿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Verse;
 using UnityEngine;
+using RimWorld;  // ? v3.3.6: Ìí¼Ó RimWorld ÃüÃû¿Õ¼ä
 
 namespace RimTalk.Memory.AI
 {
@@ -15,9 +16,9 @@ namespace RimTalk.Memory.AI
         private static bool isInitialized = false;
         private static string apiKey, apiUrl, model, provider;
         
-        // â­ ä¿®å¤1: æ·»åŠ ç¼“å­˜å¤§å°é™åˆ¶ï¼Œé˜²æ­¢å†…å­˜æ³„æ¼
-        private const int MAX_CACHE_SIZE = 100; // æœ€å¤šç¼“å­˜100ä¸ªæ€»ç»“
-        private const int CACHE_CLEANUP_THRESHOLD = 120; // è¾¾åˆ°120ä¸ªæ—¶æ¸…ç†
+        // ? ĞŞ¸´1: Ìí¼Ó»º´æ´óĞ¡ÏŞÖÆ£¬·ÀÖ¹ÄÚ´æĞ¹Â©
+        private const int MAX_CACHE_SIZE = 100; // ×î¶à»º´æ100¸ö×Ü½á
+        private const int CACHE_CLEANUP_THRESHOLD = 120; // ´ïµ½120¸öÊ±ÇåÀí
         
         private static readonly Dictionary<string, string> completedSummaries = new Dictionary<string, string>();
         private static readonly HashSet<string> pendingSummaries = new HashSet<string>();
@@ -65,7 +66,7 @@ namespace RimTalk.Memory.AI
         }
 
         /// <summary>
-        /// â­ ä¿®å¤ï¼šæ·»åŠ å¼ºåˆ¶é‡æ–°åˆå§‹åŒ–æ–¹æ³•
+        /// ? ĞŞ¸´£ºÌí¼ÓÇ¿ÖÆÖØĞÂ³õÊ¼»¯·½·¨
         /// </summary>
         public static void ForceReinitialize()
         {
@@ -74,18 +75,18 @@ namespace RimTalk.Memory.AI
         }
         
         /// <summary>
-        /// â­ v3.3.3: æ¸…é™¤æ‰€æœ‰APIé…ç½®å’Œç¼“å­˜
+        /// ? v3.3.3: Çå³ıËùÓĞAPIÅäÖÃºÍ»º´æ
         /// </summary>
         public static void ClearAllConfiguration()
         {
-            // æ¸…é™¤é™æ€å˜é‡
+            // Çå³ı¾²Ì¬±äÁ¿
             apiKey = "";
             apiUrl = "";
             model = "";
             provider = "";
             isInitialized = false;
             
-            // æ¸…é™¤æ‰€æœ‰ç¼“å­˜
+            // Çå³ıËùÓĞ»º´æ
             lock (completedSummaries)
             {
                 completedSummaries.Clear();
@@ -106,49 +107,68 @@ namespace RimTalk.Memory.AI
                 mainThreadActions.Clear();
             }
             
-            Log.Message("[AI] ğŸ§¹ All API configuration and cache cleared");
+            Log.Message("[AI] ?? All API configuration and cache cleared");
         }
         
         public static void Initialize()
         {
-            // â­ ä¿®å¤ï¼šç§»é™¤isInitializedæ£€æŸ¥ï¼Œå…è®¸é‡æ–°åˆå§‹åŒ–
-            // if (isInitialized) return; // <-- åˆ é™¤è¿™è¡Œ
-            
             try
             {
                 var settings = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings;
                 
-                // â­ ä¿®å¤ï¼šä¸¥æ ¼æŒ‰ç…§ç”¨æˆ·è®¾ç½®å†³å®šæ˜¯å¦è·ŸéšRimTalk
+                // ? ĞŞ¸´£ºÑÏ¸ñ°´ÕÕÓÃ»§ÉèÖÃ¾ö¶¨ÊÇ·ñ¸úËæRimTalk
                 if (settings.useRimTalkAIConfig)
                 {
-                    // ç”¨æˆ·é€‰æ‹©è·ŸéšRimTalkï¼Œå°è¯•åŠ è½½
                     if (TryLoadFromRimTalk())
                     {
-                        // æˆåŠŸä»RimTalkåŠ è½½ï¼ŒéªŒè¯é…ç½®
                         if (ValidateConfiguration())
                         {
-                            Log.Message($"[AI] âœ… Loaded from RimTalk ({provider}/{model})");
+                            Log.Message($"[AI] ? Loaded from RimTalk ({provider}/{model})");
                             isInitialized = true;
                             return;
                         }
                         else
                         {
-                            Log.Warning("[AI] âš ï¸ RimTalk config invalid, using independent config");
+                            Log.Warning("[AI] ?? RimTalk config invalid, using independent config");
                         }
                     }
                     else
                     {
-                        Log.Warning("[AI] âš ï¸ RimTalk not configured, using independent config as fallback");
+                        Log.Warning("[AI] ?? RimTalk not configured, using independent config as fallback");
                     }
                 }
                 
-                // ä½¿ç”¨ç‹¬ç«‹é…ç½®ï¼ˆç”¨æˆ·ä¸»åŠ¨é€‰æ‹© æˆ– RimTalkæœªé…ç½®ï¼‰
+                // Ê¹ÓÃ¶ÀÁ¢ÅäÖÃ
                 apiKey = settings.independentApiKey;
                 apiUrl = settings.independentApiUrl;
                 model = settings.independentModel;
                 provider = settings.independentProvider;
                 
-                // å¦‚æœ URL ä¸ºç©ºï¼Œæ ¹æ®æä¾›å•†è®¾ç½®é»˜è®¤å€¼
+                // ? v3.3.6: Player2 ÌØÊâ´¦Àí - ÓÅÏÈÊ¹ÓÃ±¾µØÓ¦ÓÃ
+                if (provider == "Player2")
+                {
+                    if (isPlayer2Local && !string.IsNullOrEmpty(player2LocalKey))
+                    {
+                        // Ê¹ÓÃ±¾µØ Player2 Ó¦ÓÃ
+                        apiKey = player2LocalKey;
+                        apiUrl = $"{Player2LocalUrl}/chat/completions";
+                        Log.Message("[AI] ?? Using Player2 local app connection");
+                    }
+                    else if (!string.IsNullOrEmpty(apiKey))
+                    {
+                        // Ê¹ÓÃÊÖ¶¯ÊäÈëµÄ Key + Ô¶³Ì API
+                        apiUrl = $"{Player2RemoteUrl}/chat/completions";
+                        Log.Message("[AI] ?? Using Player2 remote API with manual key");
+                    }
+                    else
+                    {
+                        // ³¢ÊÔ¼ì²â±¾µØÓ¦ÓÃ
+                        Log.Message("[AI] ?? Player2 selected but no key, trying to detect local app...");
+                        TryDetectPlayer2LocalApp();
+                    }
+                }
+                
+                // Èç¹û URL Îª¿Õ£¬¸ù¾İÌá¹©ÉÌÉèÖÃÄ¬ÈÏÖµ
                 if (string.IsNullOrEmpty(apiUrl))
                 {
                     if (provider == "OpenAI")
@@ -163,68 +183,76 @@ namespace RimTalk.Memory.AI
                     {
                         apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/MODEL_PLACEHOLDER:generateContent?key=API_KEY_PLACEHOLDER";
                     }
+                    else if (provider == "Player2")
+                    {
+                        apiUrl = $"{Player2RemoteUrl}/chat/completions";
+                    }
                 }
                 
-                // â­ è¯¦ç»†éªŒè¯é…ç½®
+                // ? ÏêÏ¸ÑéÖ¤ÅäÖÃ
                 if (!ValidateConfiguration())
                 {
                     isInitialized = false;
                     return;
                 }
                 
-                Log.Message($"[AI] âœ… Initialized with independent config ({provider}/{model})");
+                Log.Message($"[AI] ? Initialized with independent config ({provider}/{model})");
                 Log.Message($"[AI]    API Key: {SanitizeApiKey(apiKey)}");
                 Log.Message($"[AI]    API URL: {apiUrl}");
                 isInitialized = true;
             }
             catch (Exception ex)
             {
-                Log.Error($"[AI] âŒ Init failed: {ex.Message}");
+                Log.Error($"[AI] ? Init failed: {ex.Message}");
                 isInitialized = false;
             }
         }
         
         /// <summary>
-        /// â­ v3.3.3: éªŒè¯APIé…ç½®
+        /// ? v3.3.3: ÑéÖ¤APIÅäÖÃ
         /// </summary>
         private static bool ValidateConfiguration()
         {
-            // æ£€æŸ¥API Key
+            // ¼ì²éAPI Key
             if (string.IsNullOrEmpty(apiKey))
             {
-                Log.Error("[AI] âŒ API Key is empty!");
-                Log.Error("[AI]    Please configure in: Options â†’ Mod Settings â†’ RimTalk-Expand Memory â†’ AIé…ç½®");
+                Log.Error("[AI] ? API Key is empty!");
+                Log.Error("[AI]    Please configure in: Options ¡ú Mod Settings ¡ú RimTalk-Expand Memory ¡ú AIÅäÖÃ");
                 return false;
             }
             
-            // æ£€æŸ¥API Keyé•¿åº¦
-            if (apiKey.Length < 20)
+            // ¼ì²éAPI Key³¤¶È
+            if (apiKey.Length < 10)
             {
-                Log.Error($"[AI] âŒ API Key too short (length: {apiKey.Length})!");
-                Log.Error("[AI]    Valid API Keys are usually 30+ characters");
+                Log.Error($"[AI] ? API Key too short (length: {apiKey.Length})!");
+                Log.Error("[AI]    Valid API Keys are usually 20+ characters");
                 Log.Error($"[AI]    Your key: {SanitizeApiKey(apiKey)}");
                 return false;
             }
             
-            // æ£€æŸ¥API Keyæ ¼å¼ï¼ˆOpenAI/DeepSeekåº”è¯¥ä»¥sk-å¼€å¤´ï¼‰
-            if ((provider == "OpenAI" || provider == "DeepSeek") && !apiKey.StartsWith("sk-"))
+            // ? v3.3.6: Player2/CustomÄ£Ê½²»Ç¿ÖÆ¼ì²é¸ñÊ½
+            if (provider != "Custom" && provider != "Player2" && provider != "Google")
             {
-                Log.Warning($"[AI] âš ï¸ API Key doesn't start with 'sk-' for {provider}");
-                Log.Warning($"[AI]    Your key: {SanitizeApiKey(apiKey)}");
-                Log.Warning("[AI]    This might be incorrect. Check your API Key!");
+                // ¼ì²éAPI Key¸ñÊ½£¨OpenAI/DeepSeek½¨ÒéÒÔsk-¿ªÍ·£¬µ«Ö»ÊÇ¾¯¸æ£©
+                if ((provider == "OpenAI" || provider == "DeepSeek") && !apiKey.StartsWith("sk-"))
+                {
+                    Log.Warning($"[AI] ?? API Key doesn't start with 'sk-' for {provider}");
+                    Log.Warning($"[AI]    Your key: {SanitizeApiKey(apiKey)}");
+                    Log.Warning("[AI]    If using third-party proxy, select 'Custom' or 'Player2' provider");
+                }
             }
             
-            // æ£€æŸ¥API URL
+            // ¼ì²éAPI URL
             if (string.IsNullOrEmpty(apiUrl))
             {
-                Log.Error("[AI] âŒ API URL is empty!");
+                Log.Error("[AI] ? API URL is empty!");
                 return false;
             }
             
-            // æ£€æŸ¥Model
+            // ¼ì²éModel
             if (string.IsNullOrEmpty(model))
             {
-                Log.Warning("[AI] âš ï¸ Model name is empty, using default");
+                Log.Warning("[AI] ?? Model name is empty, using default");
                 model = "gpt-3.5-turbo";
             }
             
@@ -232,7 +260,7 @@ namespace RimTalk.Memory.AI
         }
         
         /// <summary>
-        /// â­ v3.3.3: å®‰å…¨æ˜¾ç¤ºAPI Keyï¼ˆåªæ˜¾ç¤ºå‰åç¼€ï¼‰
+        /// ? v3.3.3: °²È«ÏÔÊ¾API Key£¨Ö»ÏÔÊ¾Ç°ºó×º£©
         /// </summary>
         private static string SanitizeApiKey(string key)
         {
@@ -246,7 +274,7 @@ namespace RimTalk.Memory.AI
         }
         
         /// <summary>
-        /// å°è¯•ä» RimTalk åŠ è½½é…ç½®ï¼ˆå…¼å®¹æ¨¡å¼ï¼‰
+        /// ³¢ÊÔ´Ó RimTalk ¼ÓÔØÅäÖÃ£¨¼æÈİÄ£Ê½£©
         /// </summary>
         private static bool TryLoadFromRimTalk()
         {
@@ -304,6 +332,10 @@ namespace RimTalk.Memory.AI
                         else if (provider == "Google")
                         {
                             apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/MODEL_PLACEHOLDER:generateContent?key=API_KEY_PLACEHOLDER";
+                        }
+                        else if (provider == "Player2")
+                        {
+                            apiUrl = "https://api.player2.live/v1/chat/completions";
                         }
                     }
                 }
@@ -379,11 +411,16 @@ namespace RimTalk.Memory.AI
                     {
                         lock (completedSummaries)
                         {
-                            // â­ ä¿®å¤1: æ¸…ç†è¿‡å¤§çš„ç¼“å­˜ï¼Œé˜²æ­¢å†…å­˜æ³„æ¼
+                            // ? ĞŞ¸Ä1: Ôö¼Ó»º´æÉÏÏŞ£¬·ÀÖ¹ÄÚ´æĞ¹Â©
                             if (completedSummaries.Count >= CACHE_CLEANUP_THRESHOLD)
                             {
-                                // ç§»é™¤æœ€æ—§çš„50%æ¡ç›®ï¼ˆä½¿ç”¨FIFOç­–ç•¥ï¼‰
-                                var toRemove = completedSummaries.Keys.Take(MAX_CACHE_SIZE / 2).ToList();
+                                // ? v3.3.2.29: È·¶¨ĞÔÇåÀí - °´ key ×ÖÄ¸Ë³ĞòÉıĞòÅÅĞòºóÉ¾³ıÇ°50%
+                                // Ê¹ÓÃ×ÖÄ¸Ë³ĞòÅÅĞò´úÌæËæ»ú Take()£¬È·±£ÏàÍ¬µÄ»º´æ×´Ì¬×ÜÊÇÉ¾³ıÏàÍ¬µÄÌõÄ¿
+                                var toRemove = completedSummaries.Keys
+                                    .OrderBy(k => k, StringComparer.Ordinal) // ×ÖÄ¸Ë³ĞòÉıĞò
+                                    .Take(MAX_CACHE_SIZE / 2)
+                                    .ToList();
+                                
                                 foreach (var key in toRemove)
                                 {
                                     completedSummaries.Remove(key);
@@ -391,7 +428,7 @@ namespace RimTalk.Memory.AI
                                 
                                 if (Prefs.DevMode)
                                 {
-                                    Log.Message($"[AI Summarizer] ğŸ§¹ Cleaned cache: {toRemove.Count} entries removed, {completedSummaries.Count} remaining");
+                                    Log.Message($"[AI Summarizer] ?? Cleaned cache: {toRemove.Count} entries removed (deterministic by key order), {completedSummaries.Count} remaining");
                                 }
                             }
                             
@@ -433,13 +470,13 @@ namespace RimTalk.Memory.AI
         {
             var sb = new StringBuilder();
             
-            // ç»Ÿä¸€æç®€æ ¼å¼
+            // Í³Ò»¼«¼ò¸ñÊ½
             if (template == "deep_archive")
             {
-                // æ·±åº¦å½’æ¡£
-                sb.AppendLine($"æ®–æ°‘è€…{pawn.LabelShort}çš„è®°å¿†å½’æ¡£");
+                // Éî¶È¹éµµ
+                sb.AppendLine($"Ö³ÃñÕß{pawn.LabelShort}µÄ¼ÇÒä¹éµµ");
                 sb.AppendLine();
-                sb.AppendLine("è®°å¿†åˆ—è¡¨");
+                sb.AppendLine("¼ÇÒäÁĞ±í");
                 int i = 1;
                 foreach (var m in memories.Take(15))
                 {
@@ -447,17 +484,17 @@ namespace RimTalk.Memory.AI
                     i++;
                 }
                 sb.AppendLine();
-                sb.AppendLine("è¦æ±‚æç‚¼æ ¸å¿ƒç‰¹å¾å’Œé‡Œç¨‹ç¢‘äº‹ä»¶");
-                sb.AppendLine("åˆå¹¶ç›¸ä¼¼ç»å†çªå‡ºé•¿æœŸè¶‹åŠ¿");
-                sb.AppendLine("æç®€è¡¨è¾¾ä¸è¶…è¿‡60å­—");
-                sb.AppendLine("åªè¾“å‡ºæ€»ç»“æ–‡å­—ä¸è¦å…¶ä»–æ ¼å¼");
+                sb.AppendLine("ÒªÇóÌáÁ¶ºËĞÄÌØÕ÷ºÍÀï³Ì±®ÊÂ¼ş");
+                sb.AppendLine("ºÏ²¢ÏàËÆ¾­ÀúÍ»³ö³¤ÆÚÇ÷ÊÆ");
+                sb.AppendLine("¼«¼ò±í´ï²»³¬¹ı60×Ö");
+                sb.AppendLine("Ö»Êä³ö×Ü½áÎÄ×Ö²»ÒªÆäËû¸ñÊ½");
             }
             else
             {
-                // æ¯æ—¥æ€»ç»“
-                sb.AppendLine($"æ®–æ°‘è€…{pawn.LabelShort}çš„è®°å¿†æ€»ç»“");
+                // Ã¿ÈÕ×Ü½á
+                sb.AppendLine($"Ö³ÃñÕß{pawn.LabelShort}µÄ¼ÇÒä×Ü½á");
                 sb.AppendLine();
-                sb.AppendLine("è®°å¿†åˆ—è¡¨");
+                sb.AppendLine("¼ÇÒäÁĞ±í");
                 int i = 1;
                 foreach (var m in memories.Take(20))
                 {
@@ -465,10 +502,10 @@ namespace RimTalk.Memory.AI
                     i++;
                 }
                 sb.AppendLine();
-                sb.AppendLine("è¦æ±‚æç‚¼åœ°ç‚¹äººç‰©äº‹ä»¶");
-                sb.AppendLine("ç›¸ä¼¼äº‹ä»¶åˆå¹¶æ ‡æ³¨é¢‘ç‡");
-                sb.AppendLine("æç®€è¡¨è¾¾ä¸è¶…è¿‡80å­—");
-                sb.AppendLine("åªè¾“å‡ºæ€»ç»“æ–‡å­—ä¸è¦å…¶ä»–æ ¼å¼");
+                sb.AppendLine("ÒªÇóÌáÁ¶µØµãÈËÎïÊÂ¼ş");
+                sb.AppendLine("ÏàËÆÊÂ¼şºÏ²¢±ê×¢ÆµÂÊ");
+                sb.AppendLine("¼«¼ò±í´ï²»³¬¹ı80×Ö");
+                sb.AppendLine("Ö»Êä³ö×Ü½áÎÄ×Ö²»ÒªÆäËû¸ñÊ½");
             }
             
             return sb.ToString();
@@ -481,7 +518,7 @@ namespace RimTalk.Memory.AI
             
             if (isGoogle)
             {
-                // Google Gemini: ä¿æŒåŸæœ‰æ ¼å¼
+                // Google Gemini: ±£³ÖÔ­ÓĞ¸ñÊ½
                 string str = prompt.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "").Replace("\t", "\\t");
                 
                 stringBuilder.Append("{");
@@ -504,43 +541,45 @@ namespace RimTalk.Memory.AI
             }
             else
             {
-                // â­ v3.3.4: OpenAI/DeepSeek - å®ç°Prompt Caching
+                // ? v3.3.6: OpenAI/DeepSeek/Player2/Custom - Í³Ò»Ê¹ÓÃOpenAI¼æÈİ¸ñÊ½
                 var settings = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings;
                 bool enableCaching = settings != null && settings.enablePromptCaching;
                 
-                // å›ºå®šçš„ç³»ç»ŸæŒ‡ä»¤ï¼ˆå¯ç¼“å­˜ï¼‰
-                string systemPrompt = "ä½ æ˜¯ä¸€ä¸ªRimWorldæ®–æ°‘åœ°çš„è®°å¿†æ€»ç»“åŠ©æ‰‹ã€‚\\n" +
-                                    "è¯·ç”¨æç®€çš„è¯­è¨€æ€»ç»“è®°å¿†å†…å®¹ã€‚\\n" +
-                                    "åªè¾“å‡ºæ€»ç»“æ–‡å­—ï¼Œä¸è¦å…¶ä»–æ ¼å¼ã€‚";
+                // ¹Ì¶¨µÄÏµÍ³Ö¸Áî£¨¿É»º´æ£©
+                string systemPrompt = "ÄãÊÇÒ»¸öRimWorldÖ³ÃñµØµÄ¼ÇÒä×Ü½áÖúÊÖ¡£\\n" +
+                                    "ÇëÓÃ¼«¼òµÄÓïÑÔ×Ü½á¼ÇÒäÄÚÈİ¡£\\n" +
+                                    "Ö»Êä³ö×Ü½áÎÄ×Ö£¬²»ÒªÆäËû¸ñÊ½¡£";
                 
-                // ç”¨æˆ·æ•°æ®ï¼ˆè®°å¿†åˆ—è¡¨ï¼‰
+                // ÓÃ»§Êı¾İ£¨¼ÇÒäÁĞ±í£©
                 string userPrompt = prompt.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "").Replace("\t", "\\t");
                 
                 stringBuilder.Append("{");
                 stringBuilder.Append("\"model\":\"" + model + "\",");
                 stringBuilder.Append("\"messages\":[");
                 
-                // systemæ¶ˆæ¯ï¼ˆå¸¦ç¼“å­˜æ§åˆ¶ï¼‰
+                // systemÏûÏ¢£¨´ø»º´æ¿ØÖÆ£©
                 stringBuilder.Append("{\"role\":\"system\",");
                 stringBuilder.Append("\"content\":\"" + systemPrompt + "\"");
                 
                 if (enableCaching)
                 {
-                    if (provider == "OpenAI" && (model.Contains("gpt-4") || model.Contains("gpt-3.5")))
+                    // ? v3.3.6: OpenAI/Custom/Player2 ¶¼³¢ÊÔÊ¹ÓÃ cache_control
+                    if ((provider == "OpenAI" || provider == "Custom" || provider == "Player2") && 
+                        (model.Contains("gpt-4") || model.Contains("gpt-3.5")))
                     {
                         // OpenAI Prompt Caching
                         stringBuilder.Append(",\"cache_control\":{\"type\":\"ephemeral\"}");
                     }
                     else if (provider == "DeepSeek")
                     {
-                        // DeepSeekç¼“å­˜æ§åˆ¶
+                        // DeepSeek»º´æ¿ØÖÆ
                         stringBuilder.Append(",\"cache\":true");
                     }
                 }
                 
                 stringBuilder.Append("},");
                 
-                // useræ¶ˆæ¯ï¼ˆå˜åŒ–çš„å†…å®¹ï¼‰
+                // userÏûÏ¢£¨±ä»¯µÄÄÚÈİ£©
                 stringBuilder.Append("{\"role\":\"user\",");
                 stringBuilder.Append("\"content\":\"" + userPrompt + "\"");
                 stringBuilder.Append("}],");
@@ -562,7 +601,7 @@ namespace RimTalk.Memory.AI
         private static async Task<string> CallAIAsync(string prompt)
         {
             const int MAX_RETRIES = 3;
-            const int RETRY_DELAY_MS = 2000; // 2ç§’é‡è¯•å»¶è¿Ÿ
+            const int RETRY_DELAY_MS = 2000; // 2ÃëÖØÊÔÑÓ³Ù
             
             for (int attempt = 1; attempt <= MAX_RETRIES; attempt++)
             {
@@ -590,7 +629,7 @@ namespace RimTalk.Memory.AI
                     request.Method = "POST";
                     request.ContentType = "application/json";
                     
-                    // â­ v3.3.3: Google APIä¸ä½¿ç”¨Bearer tokenï¼ˆKeyåœ¨URLä¸­ï¼‰
+                    // ? v3.3.3: Google API²»Ê¹ÓÃBearer token£¨KeyÔÚURLÖĞ£©
                     if (provider != "Google")
                     {
                         request.Headers["Authorization"] = $"Bearer {apiKey}";
@@ -615,7 +654,7 @@ namespace RimTalk.Memory.AI
                         
                         if (attempt > 1)
                         {
-                            Log.Message($"[AI Summarizer] âœ… Retry successful on attempt {attempt}");
+                            Log.Message($"[AI Summarizer] ? Retry successful on attempt {attempt}");
                         }
                         
                         return result;
@@ -625,7 +664,7 @@ namespace RimTalk.Memory.AI
                 {
                     bool shouldRetry = false;
                     string errorDetail = "";
-                    HttpStatusCode statusCode = 0; // â­ v3.3.3: ä¿å­˜çŠ¶æ€ç åˆ°å¤–éƒ¨å˜é‡
+                    HttpStatusCode statusCode = 0; // ? v3.3.3: ±£´æ×´Ì¬Âëµ½Íâ²¿±äÁ¿
                     
 
 
@@ -635,20 +674,20 @@ namespace RimTalk.Memory.AI
 	                    using (var streamReader = new System.IO.StreamReader(errorResponse.GetResponseStream()))
 	                    {
 	                        string errorText = streamReader.ReadToEnd();
-	                        statusCode = errorResponse.StatusCode; // â­ ä¿å­˜çŠ¶æ€ç 
+	                        statusCode = errorResponse.StatusCode; // ? ±£´æ×´Ì¬Âë
 	                        
-	                        // â­ v3.3.3: æ ¹æ®é”™è¯¯ç±»å‹æ˜¾ç¤ºå®Œæ•´æˆ–æˆªæ–­çš„é”™è¯¯ä¿¡æ¯
+	                        // ? v3.3.3: ¸ù¾İ´íÎóÀàĞÍÏÔÊ¾ÍêÕû»ò½Ø¶ÏµÄ´íÎóĞÅÏ¢
 	                        if (errorResponse.StatusCode == HttpStatusCode.Unauthorized || // 401
 	                            errorResponse.StatusCode == HttpStatusCode.Forbidden)      // 403
 	                        {
-	                            // è®¤è¯é”™è¯¯ï¼šæ˜¾ç¤ºå®Œæ•´é”™è¯¯ä¿¡æ¯ï¼ˆå¸®åŠ©è°ƒè¯•ï¼‰
+	                            // ÈÏÖ¤´íÎó£ºÏÔÊ¾ÍêÕû´íÎóĞÅÏ¢£¨°ïÖúµ÷ÊÔ£©
 	                            errorDetail = errorText;
-	                            Log.Error($"[AI Summarizer] âŒ Authentication Error ({errorResponse.StatusCode}):");
+	                            Log.Error($"[AI Summarizer] ? Authentication Error ({errorResponse.StatusCode}):");
 	                            Log.Error($"[AI Summarizer]    API Key: {SanitizeApiKey(apiKey)}");
 	                            Log.Error($"[AI Summarizer]    Provider: {provider}");
 	                            Log.Error($"[AI Summarizer]    Response: {errorText}");
 	                            Log.Error("[AI Summarizer] ");
-	                            Log.Error("[AI Summarizer] ğŸ’¡ Possible solutions:");
+	                            Log.Error("[AI Summarizer] ?? Possible solutions:");
 	                            Log.Error("[AI Summarizer]    1. Check if API Key is correct");
 	                            Log.Error("[AI Summarizer]    2. Verify Provider selection matches your key");
 	                            Log.Error("[AI Summarizer]    3. Check if API Key has sufficient credits");
@@ -656,11 +695,11 @@ namespace RimTalk.Memory.AI
 	                        }
 	                        else
 	                        {
-	                            // å…¶ä»–é”™è¯¯ï¼šæˆªæ–­æ˜¾ç¤º
+	                            // ÆäËû´íÎó£º½Ø¶ÏÏÔÊ¾
 	                            errorDetail = errorText.Substring(0, Math.Min(200, errorText.Length));
 	                        }
 	                        
-	                        // åˆ¤æ–­æ˜¯å¦åº”è¯¥é‡è¯•
+	                        // ÅĞ¶ÏÊÇ·ñÓ¦¸ÃÖØÊÔ
 	                        if (errorResponse.StatusCode == HttpStatusCode.ServiceUnavailable || // 503
 	                            errorResponse.StatusCode == (HttpStatusCode)429 ||              // Too Many Requests
 	                            errorResponse.StatusCode == HttpStatusCode.GatewayTimeout ||    // 504
@@ -673,35 +712,35 @@ namespace RimTalk.Memory.AI
 	                        if (errorResponse.StatusCode != HttpStatusCode.Unauthorized && 
 	                            errorResponse.StatusCode != HttpStatusCode.Forbidden)
 	                        {
-	                            Log.Warning($"[AI Summarizer] âš ï¸ API Error (attempt {attempt}/{MAX_RETRIES}): {errorResponse.StatusCode} - {errorDetail}");
+	                            Log.Warning($"[AI Summarizer] ?? API Error (attempt {attempt}/{MAX_RETRIES}): {errorResponse.StatusCode} - {errorDetail}");
 	                        }
 	                    }
 	                }
 	                else
 	                {
 	                    errorDetail = ex.Message;
-	                    Log.Warning($"[AI Summarizer] âš ï¸ Network Error (attempt {attempt}/{MAX_RETRIES}): {errorDetail}");
-	                    shouldRetry = true; // ç½‘ç»œé”™è¯¯ä¹Ÿé‡è¯•
+	                    Log.Warning($"[AI Summarizer] ?? Network Error (attempt {attempt}/{MAX_RETRIES}): {errorDetail}");
+	                    shouldRetry = true; // ÍøÂç´íÎóÒ²ÖØÊÔ
 	                }
 	                
-	                // å¦‚æœæ˜¯æœ€åä¸€æ¬¡å°è¯•æˆ–ä¸åº”è¯¥é‡è¯•ï¼Œåˆ™å¤±è´¥
+	                // Èç¹ûÊÇ×îºóÒ»´Î³¢ÊÔ»ò²»Ó¦¸ÃÖØÊÔ£¬ÔòÊ§°Ü
 	                if (attempt >= MAX_RETRIES || !shouldRetry)
 	                {
-	                    // â­ v3.3.3: ä½¿ç”¨ä¿å­˜çš„çŠ¶æ€ç åˆ¤æ–­
+	                    // ? v3.3.3: Ê¹ÓÃ±£´æµÄ×´Ì¬ÂëÅĞ¶Ï
 	                    if (statusCode != HttpStatusCode.Unauthorized && 
 	                        statusCode != HttpStatusCode.Forbidden)
 	                    {
-	                        Log.Error($"[AI Summarizer] âŒ Failed after {attempt} attempts. Last error: {errorDetail}");
+	                        Log.Error($"[AI Summarizer] ? Failed after {attempt} attempts. Last error: {errorDetail}");
 	                    }
 	                    return null;
 	                }
 	                
-	                // ç­‰å¾…åé‡è¯•
-	                await Task.Delay(RETRY_DELAY_MS * attempt); // é€’å¢å»¶è¿Ÿï¼š2s, 4s, 6s
+	                // µÈ´ıºóÖØÊÔ
+	                await Task.Delay(RETRY_DELAY_MS * attempt); // µİÔöÑÓ³Ù£º2s, 4s, 6s
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"[AI Summarizer] âŒ Unexpected error: {ex.GetType().Name} - {ex.Message}");
+                    Log.Error($"[AI Summarizer] ? Unexpected error: {ex.GetType().Name} - {ex.Message}");
                     Log.Error($"[AI Summarizer]    Stack trace: {ex.StackTrace}");
                     return null;
                 }
@@ -719,9 +758,120 @@ namespace RimTalk.Memory.AI
             }
             catch (Exception ex)
             {
-                Log.Error($"[AI Summarizer] âŒ Parse error: {ex.Message}");
+                Log.Error($"[AI Summarizer] ? Parse error: {ex.Message}");
             }
             return null;
+        }
+        
+        // ? v3.3.6: Player2 ±¾µØÓ¦ÓÃÖ§³Ö
+        private const string Player2LocalUrl = "http://localhost:4315/v1";
+        private const string Player2RemoteUrl = "https://api.player2.game/v1";
+        private const string Player2GameClientId = "rimtalk-expand-memory";
+        private static bool isPlayer2Local = false;
+        private static string player2LocalKey = null;
+        
+        /// <summary>
+        /// ? v3.3.6: ³¢ÊÔ¼ì²â²¢Á¬½Ó±¾µØ Player2 ×ÀÃæÓ¦ÓÃ
+        /// </summary>
+        public static void TryDetectPlayer2LocalApp()
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    Log.Message("[AI] ?? Checking for local Player2 app...");
+                    
+                    // 1. ½¡¿µ¼ì²é
+                    var healthRequest = (HttpWebRequest)WebRequest.Create($"{Player2LocalUrl}/health");
+                    healthRequest.Method = "GET";
+                    healthRequest.Timeout = 2000; // 2Ãë³¬Ê±
+                    
+                    try
+                    {
+                        using (var response = (HttpWebResponse)await healthRequest.GetResponseAsync())
+                        {
+                            if (response.StatusCode == HttpStatusCode.OK)
+                            {
+                                Log.Message("[AI] ? Player2 local app detected!");
+                                
+                                // 2. »ñÈ¡±¾µØKey
+                                await TryGetPlayer2LocalKey();
+                                
+                                if (!string.IsNullOrEmpty(player2LocalKey))
+                                {
+                                    isPlayer2Local = true;
+                                    LongEventHandler.ExecuteWhenFinished(() =>
+                                    {
+                                        Messages.Message("RimTalk_Settings_Player2Detected".Translate(), MessageTypeDefOf.PositiveEvent, false);
+                                    });
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    catch (WebException)
+                    {
+                        // ±¾µØÓ¦ÓÃÎ´ÔËĞĞ
+                    }
+                    
+                    isPlayer2Local = false;
+                    player2LocalKey = null;
+                    Log.Message("[AI] ?? Player2 local app not found, will use remote API");
+                    LongEventHandler.ExecuteWhenFinished(() =>
+                    {
+                        Messages.Message("RimTalk_Settings_Player2NotFound".Translate(), MessageTypeDefOf.NeutralEvent, false);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning($"[AI] Player2 detection error: {ex.Message}");
+                    isPlayer2Local = false;
+                    player2LocalKey = null;
+                }
+            });
+        }
+        
+        /// <summary>
+        /// ? v3.3.6: ´Ó±¾µØ Player2 Ó¦ÓÃ»ñÈ¡ API Key
+        /// </summary>
+        private static async Task TryGetPlayer2LocalKey()
+        {
+            try
+            {
+                string loginUrl = $"{Player2LocalUrl}/login/web/{Player2GameClientId}";
+                
+                var request = (HttpWebRequest)WebRequest.Create(loginUrl);
+                request.Method = "POST";
+                request.ContentType = "application/json";
+                request.Timeout = 3000;
+                
+                byte[] bodyRaw = Encoding.UTF8.GetBytes("{}");
+                request.ContentLength = bodyRaw.Length;
+                
+                using (var stream = await request.GetRequestStreamAsync())
+                {
+                    await stream.WriteAsync(bodyRaw, 0, bodyRaw.Length);
+                }
+                
+                using (var response = (HttpWebResponse)await request.GetResponseAsync())
+                using (var reader = new System.IO.StreamReader(response.GetResponseStream()))
+                {
+                    string responseText = await reader.ReadToEndAsync();
+                    
+                    // ½âÎö {"p2Key": "xxx"}
+                    var match = System.Text.RegularExpressions.Regex.Match(responseText, @"""p2Key""\s*:\s*""([^""]+)""");
+                    if (match.Success)
+                    {
+                        player2LocalKey = match.Groups[1].Value;
+                        Log.Message($"[AI] ? Got Player2 local key: {SanitizeApiKey(player2LocalKey)}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[AI] Failed to get Player2 local key: {ex.Message}");
+                player2LocalKey = null;
+            }
         }
     }
 }
