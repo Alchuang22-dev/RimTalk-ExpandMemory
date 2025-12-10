@@ -11,12 +11,10 @@
         <!-- 移除app.manifest引用 -->
         <!-- <ApplicationManifest>app.manifest</ApplicationManifest> -->
 
-        <!-- ⭐ 设置默认 RimWorld 目录 -->
-        <RimWorldDir Condition=" '$(RimWorldDir)' == '' AND '$(RIMWORLD_DIR)' != '' ">$(RIMWORLD_DIR)</RimWorldDir>
-        <RimWorldDir Condition=" '$(RimWorldDir)' == '' AND '$(RIMWORLD_DIR)' == '' ">D:\steam\steamapps\common\RimWorld</RimWorldDir>
+        <RimWorldDir Condition=" '$(RimWorldDir)' == '' ">$(RIMWORLD_DIR)</RimWorldDir>
 
         <OutputPath>$(GameVersion)/Assemblies</OutputPath>
-        <ModFolderName>RimTalk-ExpandMemory</ModFolderName>
+        <ModFolderName>RimTalk-MemoryPatch</ModFolderName>
         <LangVersion>7.3</LangVersion>
         <EnableBubbles>true</EnableBubbles>
         
@@ -63,7 +61,6 @@
         <!-- ⭐ v3.3.2.27: 移除 SQLite 依赖（VectorDB已移除） -->
         <!-- <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" /> -->
         <!-- <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.10" /> -->
-        <PackageReference Include="System.ValueTuple" Version="4.5.0" />
         <PackageReference Include="System.Net.Http" Version="4.3.4" />
     </ItemGroup>
     
