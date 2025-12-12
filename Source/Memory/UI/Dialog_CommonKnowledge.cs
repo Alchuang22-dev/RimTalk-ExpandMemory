@@ -292,19 +292,21 @@ namespace RimTalk.Memory.UI
         {
             GUI.Box(rect, "");
             
-            var viewRect = new Rect(0f, 0f, rect.width - 16f, library.Entries.Count * 70f); // ? 从50增加到70
-            Widgets.BeginScrollView(rect, ref scrollPosition, viewRect);
-
-            float y = 0f;
+            // ⭐ 优化：先过滤再计算滚动视图高度
             var filteredEntries = library.Entries.Where(e => 
                 string.IsNullOrEmpty(searchFilter) || 
                 e.tag.ToLower().Contains(searchFilter.ToLower()) ||
                 e.content.ToLower().Contains(searchFilter.ToLower())
             ).ToList();
+            
+            var viewRect = new Rect(0f, 0f, rect.width - 16f, filteredEntries.Count * 70f);
+            Widgets.BeginScrollView(rect, ref scrollPosition, viewRect);
+
+            float y = 0f;
 
             foreach (var entry in filteredEntries)
             {
-                Rect entryRect = new Rect(0f, y, viewRect.width, 65f); // ? 从45增加到65
+                Rect entryRect = new Rect(0f, y, viewRect.width, 65f);
                 
                 if (selectedEntry == entry)
                 {
@@ -331,16 +333,27 @@ namespace RimTalk.Memory.UI
                 Widgets.Label(importanceRect, entry.importance.ToString("F1"));
                 
                 // 内容预览（两行显示）
-                Rect contentRect = new Rect(entryRect.x + 35f, entryRect.y + 25f, entryRect.width - 40f, 35f); // ? 从15增加到35，允许两行
+                Rect contentRect = new Rect(entryRect.x + 35f, entryRect.y + 25f, entryRect.width - 40f, 35f);
                 Text.Font = GameFont.Tiny;
-                string preview = entry.content.Length > 80 ? entry.content.Substring(0, 80) + "..." : entry.content; // ? 从50增加到80
+                string preview = entry.content.Length > 80 ? entry.content.Substring(0, 80) + "..." : entry.content;
                 Widgets.Label(contentRect, preview);
                 Text.Font = GameFont.Small;
 
-                y += 70f; // ? 从50增加到70
+                y += 70f;
             }
 
             Widgets.EndScrollView();
+            
+            // ⭐ 显示搜索结果统计
+            if (!string.IsNullOrEmpty(searchFilter))
+            {
+                Rect searchResultRect = new Rect(rect.x, rect.yMax - 20f, rect.width, 20f);
+                GUI.color = new Color(0.7f, 0.7f, 0.7f);
+                Text.Font = GameFont.Tiny;
+                Widgets.Label(searchResultRect, $"搜索结果: {filteredEntries.Count} / {library.Entries.Count}");
+                Text.Font = GameFont.Small;
+                GUI.color = Color.white;
+            }
         }
 
         private void DrawEditPanel(Rect rect)
@@ -424,7 +437,7 @@ namespace RimTalk.Memory.UI
             Widgets.Label(new Rect(innerRect.x, y, 100f, 25f), "内容:");
             y += 30f;
             
-            // ⭐ v3.3.9: 修复 TextArea 焦点问题
+            // ⭐ v3.3.9: 修复 TextArea 焦点问题（不拦截列表点击事件）
             float contentHeight = innerRect.yMax - y - 50f;
             contentHeight = Mathf.Max(contentHeight, 150f);
             
@@ -436,14 +449,6 @@ namespace RimTalk.Memory.UI
             // 绘制背景
             Widgets.DrawBoxSolid(contentRect, new Color(0.1f, 0.1f, 0.1f, 0.8f));
             
-            // 检测点击事件（用于手动设置焦点）
-            if (Mouse.IsOver(contentRect) && Event.current.type == EventType.MouseDown)
-            {
-                GUI.FocusControl(ContentTextAreaName);
-                focusedThisFrame = true;
-                Event.current.Use(); // 消耗事件，防止其他控件响应
-            }
-            
             // 内容输入框
             Rect textAreaRect = contentRect.ContractedBy(2f);
             GUI.color = Color.white;
@@ -452,7 +457,7 @@ namespace RimTalk.Memory.UI
             if (editContent == null)
                 editContent = "";
             
-            // 绘制 TextArea（第三个参数控制只读状态，false = 可编辑）
+            // 绘制 TextArea
             string newContent = GUI.TextArea(textAreaRect, editContent, Text.CurTextAreaStyle);
             
             // 只在内容实际改变时更新（避免不必要的重绘）
@@ -579,7 +584,8 @@ namespace RimTalk.Memory.UI
                 var newEntry = new CommonKnowledgeEntry(editTag, editContent)
                 {
                     importance = editImportance,
-                    targetPawnId = editTargetPawnId // ⭐ 保存专属Pawn ID
+                    targetPawnId = editTargetPawnId, // ⭐ 保存专属Pawn ID
+                    isUserEdited = true // ⭐ 标记为用户编辑，防止被自动生成覆盖
                 };
                 library.AddEntry(newEntry);
                 selectedEntry = newEntry;
@@ -591,6 +597,7 @@ namespace RimTalk.Memory.UI
                 selectedEntry.content = editContent;
                 selectedEntry.importance = editImportance;
                 selectedEntry.targetPawnId = editTargetPawnId; // ⭐ 保存专属Pawn ID
+                selectedEntry.isUserEdited = true; // ⭐ 标记为用户编辑，防止被自动生成覆盖
             }
 
             editMode = false;

@@ -306,12 +306,13 @@ namespace RimTalk.Memory
         }
         
         /// <summary>
-        /// ? v3.3.4: 提取关键信息（压缩事件描述）
-        /// 目标：将完整事件描述压缩为核心要素，减少token消耗
+        /// ? v3.3.10: 提取关键信息，压缩事件文本（修复制造清单问题）
+        /// 目标：将详细事件描述压缩为最重要的部分，减少token浪费
         /// 示例：
-        /// - "小明在基地南侧的农田里种植了12株土豆" → "小明种植土豆×12"
-        /// - "索拉克击杀了袭击者（机械体）" → "索拉克击杀机械体"
-        /// - "爱丽丝和鲍勃举行了婚礼" → "爱丽丝和鲍勃结婚"
+        /// - "小明在机械加工台上种植了12株玉米" → "小明种植玉米x12"
+        /// - "张三击杀了袭击者（机械虫）" → "张三击杀机械虫"
+        /// - "李四运输物资送到仓库" → "李四运输物资"
+        /// - "王五完成target.A清单-手工制作台" → "王五在手工制作台制造物品"
         /// </summary>
         private static string ExtractKeyInformation(string fullText)
         {
@@ -320,16 +321,19 @@ namespace RimTalk.Memory
             
             try
             {
-                // 1. 提取人物名（第一个出现的名字，假设是主体）
+                // ? v3.3.10: 修复1 - 先检测并清理 "完成...清单" 模式
+                fullText = CleanBillText(fullText);
+                
+                // 1. 提取主要人物（第一个出现的人名，通常是主语）
                 string mainPerson = ExtractMainPerson(fullText);
                 
-                // 2. 提取核心动作（基于重要关键词）
+                // 2. 提取核心动作（最重要的关键词）
                 string action = ExtractMainAction(fullText);
                 
-                // 3. 提取目标/对象（第二个名字或重要名词）
+                // 3. 提取目标/对象（第二个人名或者重要名词）
                 string target = ExtractTarget(fullText, mainPerson);
                 
-                // 4. 提取数量（如果有）
+                // 4. 提取数量信息（如 "x12"）
                 string quantity = ExtractQuantity(fullText);
                 
                 // 5. 组合压缩文本
@@ -347,10 +351,10 @@ namespace RimTalk.Memory
                 if (!string.IsNullOrEmpty(quantity))
                     parts.Add(quantity);
                 
-                // 如果提取失败，保留原文但截断
+                // 如果提取失败，返回原文的截断
                 if (parts.Count < 2)
                 {
-                    // 至少要有主体和动作，否则使用原文（截断）
+                    // 至少保证主语和动作，否则使用原文（截断）
                     return fullText.Length > 40 ? fullText.Substring(0, 40) : fullText;
                 }
                 
@@ -363,6 +367,69 @@ namespace RimTalk.Memory
                     Log.Warning($"[EventRecord] Key info extraction failed: {ex.Message}");
                 
                 return fullText.Length > 40 ? fullText.Substring(0, 40) : fullText;
+            }
+        }
+        
+        /// <summary>
+        /// ? v3.3.10: 清理制造清单相关的无用文本
+        /// "完成target.A清单-手工制作台" → "在手工制作台制造物品"
+        /// </summary>
+        private static string CleanBillText(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text;
+            
+            try
+            {
+                // 匹配模式："完成...清单-工作台名称"
+                var billPattern = System.Text.RegularExpressions.Regex.Match(
+                    text, 
+                    @"完成(target\.[A-Za-z0-9]+|.+?)清单[－\-](.+?)(?:[，。、\s]|$)",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
+                );
+                
+                if (billPattern.Success)
+                {
+                    string workbenchName = billPattern.Groups[2].Value.Trim();
+                    
+                    // 清理工作台名称中的无用字符
+                    workbenchName = System.Text.RegularExpressions.Regex.Replace(
+                        workbenchName, 
+                        @"[（\(].*?[）\)]", 
+                        ""
+                    ).Trim();
+                    
+                    // 提取主语（人名）
+                    string[] words = text.Split(new[] { '完', '成', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    string person = words.Length > 0 ? words[0].Trim() : "";
+                    
+                    // 重构为："人名在工作台制造物品"
+                    if (!string.IsNullOrEmpty(person) && !string.IsNullOrEmpty(workbenchName))
+                    {
+                        return $"{person}在{workbenchName}制造物品";
+                    }
+                    else if (!string.IsNullOrEmpty(workbenchName))
+                    {
+                        return $"在{workbenchName}制造物品";
+                    }
+                }
+                
+                // 如果没有匹配，检查是否包含 target.* 模式，直接删除
+                text = System.Text.RegularExpressions.Regex.Replace(
+                    text,
+                    @"target\.[A-Za-z0-9]+",
+                    "",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
+                );
+                
+                return text.Trim();
+            }
+            catch (Exception ex)
+            {
+                if (Prefs.DevMode)
+                    Log.Warning($"[EventRecord] Bill text cleaning failed: {ex.Message}");
+                
+                return text;
             }
         }
         

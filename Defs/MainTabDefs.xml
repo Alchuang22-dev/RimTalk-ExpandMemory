@@ -3,14 +3,9 @@
   <!-- Memory Management Main Tab -->
   <MainButtonDef>
     <defName>RimTalk_Memory</defName>
-    <label>Memory</label>
-    <description>View and manage colonist memories</description>
-    <!-- ? Ìí¼ÓÍêÕûµÄ³ÌÐò¼¯ÏÞ¶¨·û -->
+    <label>ï¿½ï¿½ï¿½ï¿½</label>
+    <description>ï¿½é¿´ï¿½Í¹ï¿½ï¿½ï¿½Ö³ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½</description>
     <tabWindowClass>RimTalk.Memory.UI.MainTabWindow_Memory, RimTalkMemoryPatch</tabWindowClass>
     <order>35</order>
-    <!-- ÒÆ³ýiconPath£¨Ê¹ÓÃÄ¬ÈÏÍ¼±ê£© -->
-    <!-- <iconPath>UI/Buttons/Memory</iconPath> -->
-    <!-- Ê¹ÓÃÓÐÐ§µÄ¿ì½Ý¼ü»ò²»ÉèÖÃ -->
-    <!-- <defaultHotKey>Misc12</defaultHotKey> -->
   </MainButtonDef>
 </Defs>

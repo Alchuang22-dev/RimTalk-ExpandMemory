@@ -169,6 +169,7 @@ namespace RimTalk.Memory
         /// ⭐ v3.3.2.25: 优化长关键词权重 + 精确匹配加成
         /// ⭐ v3.3.2.31: 提高名字关键词的匹配分数
         /// ⭐ v3.3.2.38: 接受角色名字列表参数，改进名字识别
+        /// ⭐ v3.3.10: 修改标签评分机制 - 单标签0.15分，多标签累加
         /// </summary>
         public float CalculateRelevanceScore(List<string> contextKeywords, HashSet<string> pawnNames = null)
         {
@@ -182,7 +183,7 @@ namespace RimTalk.Memory
             if (contextKeywords == null || contextKeywords.Count == 0)
                 return baseScore;
 
-            // 1. 标签匹配（粗略分类）
+            // 1. ⭐ 标签匹配（每个匹配的标签独立计分，累加）
             var tags = GetTags();
             int tagMatchCount = 0;
             
@@ -202,6 +203,9 @@ namespace RimTalk.Memory
                     }
                 }
             }
+            
+            // ⭐ v3.3.10: 每个匹配的标签贡献0.15分，累加
+            float tagPart = tagMatchCount * 0.15f;
 
             // 2. ⭐ 内容匹配（长关键词加权 + 名字特殊加成）
             float contentMatchScore = 0f;
@@ -274,8 +278,6 @@ namespace RimTalk.Memory
             exactMatchBonus = Math.Min(exactMatchBonus, 1.0f);
 
             // 综合评分
-            float tagMatchRate = tags.Count > 0 ? (float)tagMatchCount / tags.Count : 0f;
-            float tagPart = tagMatchRate * importance * KnowledgeWeights.TagWeight * 0.5f;
             float contentPart = contentMatchScore;
             float exactPart = exactMatchBonus;
             float namePart = nameMatchBonus;
@@ -289,6 +291,7 @@ namespace RimTalk.Memory
         /// ⭐ v3.3.2.25: 同步优化长关键词权重 + 精确匹配加成
         /// ⭐ v3.3.2.31: 提高名字关键词的匹配分数
         /// ⭐ v3.3.2.38: 接受角色名字列表参数，改进名字识别
+        /// ⭐ v3.3.10: 修改标签评分机制 - 单标签0.15分，多标签累加
         /// </summary>
         public KnowledgeScoreDetail CalculateRelevanceScoreWithDetails(List<string> contextKeywords, HashSet<string> pawnNames = null)
         {
@@ -316,7 +319,7 @@ namespace RimTalk.Memory
                 return detail;
             }
 
-            // 1. 标签匹配
+            // 1. ⭐ 标签匹配（每个匹配的标签独立计分，累加）
             var tags = GetTags();
             var matchedTags = new List<string>();
             
@@ -336,9 +339,11 @@ namespace RimTalk.Memory
                 }
             }
 
-            float tagMatchRate = tags.Count > 0 ? (float)matchedTags.Count / tags.Count : 0f;
+            // ⭐ v3.3.10: 每个匹配的标签贡献0.15分，累加
+            int tagMatchCount = matchedTags.Count;
+            float tagPart = tagMatchCount * 0.15f;
             detail.MatchedTags = matchedTags;
-            detail.TagScore = tagMatchRate;
+            detail.TagScore = tagPart; // 直接记录标签总分，而不是比例
 
             // 2. ⭐ 内容匹配（长关键词加权 + 名字特殊加成）
             var matchedKeywords = new List<string>();
@@ -415,11 +420,9 @@ namespace RimTalk.Memory
             exactMatchBonus = Math.Min(exactMatchBonus, 1.0f);
 
             // 综合评分
-            float tagPart = tagMatchRate * importance * KnowledgeWeights.TagWeight * 0.5f;
             float contentPart = contentMatchScore;
             float exactPart = exactMatchBonus;
-            float namePart = nameMatchBonus;
-            float totalScore = baseScore + tagPart + contentPart + exactPart + namePart;
+            float totalScore = baseScore + tagPart + contentPart + exactPart + nameMatchBonus;
             
             detail.TotalScore = totalScore;
             detail.JaccardScore = exactMatchBonus;
@@ -438,12 +441,18 @@ namespace RimTalk.Memory
             }
             else if (matchedKeywords.Count == 0)
             {
-                detail.FailReason = $"仅标签匹配({matchedTags.Count}/{tags.Count})";
+                // ⭐ v3.3.10: 显示标签累加分数
+                detail.FailReason = $"仅标签匹配({matchedTags.Count}个标签，总分{tagPart:F2})";
             }
             else
             {
+                // ⭐ v3.3.10: 显示标签累加分数
+                string tagInfo = tagMatchCount > 0 ? $"标签{tagMatchCount}个({tagPart:F2}分)" : "";
                 string nameInfo = nameMatchBonus > 0 ? $"+名字{nameMatchBonus:F2}({string.Join(",", matchedNameKeywords)})" : "";
-                detail.FailReason = exactMatchBonus > 0 ? $"精确匹配加成{exactMatchBonus:F2}{nameInfo}" : nameInfo;
+                string combinedInfo = string.IsNullOrEmpty(tagInfo) ? nameInfo : 
+                                     string.IsNullOrEmpty(nameInfo) ? tagInfo : 
+                                     $"{tagInfo} {nameInfo}";
+                detail.FailReason = exactMatchBonus > 0 ? $"精确匹配加成{exactMatchBonus:F2} {combinedInfo}" : combinedInfo;
             }
             
             return detail;
