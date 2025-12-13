@@ -287,19 +287,26 @@ namespace RimTalk.Memory
             int tile = pawn.Map?.Tile ?? (Find.AnyPlayerHomeMap?.Tile ?? 0);
             float longitude = Find.WorldGrid.LongLatOf(tile).x;
 
-            // ? 修复：使用 DayOfQuadrum (0-14) 并 +1，而不是 DayOfYear (0-59)
-            // DayOfYear 会导致显示如 "1象 50日" 的错误日期
+            // ? 修复：确保使用 DayOfQuadrum (0-14) 并 +1
             int joinDay = GenDate.DayOfQuadrum(joinTick, longitude) + 1;
             Quadrum joinQuadrum = GenDate.Quadrum(joinTick, longitude);
             int joinYear = GenDate.Year(joinTick, longitude);
             
-            // 格式化日期（例如：X象 5日, 5500年）
+            // 格式化日期（例如：冬季 5日, 5500年）
             string joinDate = $"{joinQuadrum.Label()} {joinDay}日, {joinYear}年";
+            
+            // ? 开发日志：输出实际计算的值用于调试
+            if (Prefs.DevMode && UnityEngine.Random.value < 0.05f)
+            {
+                int currentTick = Find.TickManager.TicksGame;
+                Log.Message($"[PawnStatus] {name} 日期计算: joinTick={joinTick}, currentTick={currentTick}, " +
+                           $"daysInColony={daysInColony}, date={joinDate}");
+            }
             
             // 获取完整种族信息（种族+亚种）
             string raceInfo = GetCompleteRaceInfo(pawn);
             
-            // ? v3.3.2.32: 根据天数生成不同描述
+            // ? v3.3.3: 根据天数生成不同描述
             string baseDescription = "";
             
             if (daysInColony < 7)
@@ -450,20 +457,34 @@ namespace RimTalk.Memory
         {
             try
             {
-                // 方法1：从records.colonistSince获取（最准确）
+                // 方法1：从records.TimeAsColonistOrColonyAnimal获取（最准确）
                 if (pawn.records != null)
                 {
-                    // colonistSince是殖民者记录中的游戏tick
-                    // 但该字段可能不存在或为0（对于非殖民者）
                     var recordDef = DefDatabase<RecordDef>.GetNamed("TimeAsColonistOrColonyAnimal", false);
                     if (recordDef != null)
                     {
-                        // 获取作为record的时间
-                        // 加入时间 = 当前tick - 作为殖民者的时长
+                        // 获取作为殖民者的时长（单位：ticks）
                         float timeAsColonist = pawn.records.GetValue(recordDef);
+                        
+                        // ? 开发日志：输出原始数据
+                        if (Prefs.DevMode)
+                        {
+                            int daysAsColonist = (int)(timeAsColonist / GenDate.TicksPerDay);
+                            Log.Message($"[PawnStatus] {pawn.LabelShort} TimeAsColonist 记录: {timeAsColonist} ticks ({daysAsColonist} 天)");
+                        }
+                        
                         if (timeAsColonist > 0)
                         {
+                            // 加入时间 = 当前tick - 作为殖民者的时长
                             int joinTick = fallbackTick - (int)timeAsColonist;
+                            
+                            // ? 开发日志：输出计算结果
+                            if (Prefs.DevMode)
+                            {
+                                int daysAgo = (fallbackTick - joinTick) / GenDate.TicksPerDay;
+                                Log.Message($"[PawnStatus] {pawn.LabelShort} 计算的加入时间: joinTick={joinTick}, " +
+                                           $"当前tick={fallbackTick}, 天数={daysAgo}");
+                            }
                             
                             // 安全检查：加入时间不能早于游戏开始
                             if (joinTick >= 0 && joinTick <= fallbackTick)
@@ -473,8 +494,27 @@ namespace RimTalk.Memory
                             // ? 修复：如果计算出的加入时间早于游戏开始（例如初始殖民者或记录误差），修正为0
                             else if (joinTick < 0)
                             {
+                                if (Prefs.DevMode)
+                                {
+                                    Log.Message($"[PawnStatus] {pawn.LabelShort} 加入时间<0，修正为游戏开始(0)");
+                                }
                                 return 0;
                             }
+                        }
+                        else
+                        {
+                            // TimeAsColonist = 0，说明是刚加入的新人
+                            if (Prefs.DevMode)
+                            {
+                                Log.Message($"[PawnStatus] {pawn.LabelShort} TimeAsColonist=0，使用当前时间");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (Prefs.DevMode)
+                        {
+                            Log.Warning($"[PawnStatus] {pawn.LabelShort} 找不到 TimeAsColonistOrColonyAnimal 记录定义");
                         }
                     }
                 }
@@ -489,13 +529,13 @@ namespace RimTalk.Memory
                 // 方法3：后备 - 使用当前时间
                 // 这意味着会被标记为新加入
                 if (Prefs.DevMode)
-                    Log.Warning($"[PawnStatus] Could not determine real join time for {pawn.LabelShort}, using current time as fallback");
+                    Log.Warning($"[PawnStatus] {pawn.LabelShort} 无法确定真实加入时间，使用当前时间(fallback)");
                 
                 return fallbackTick;
             }
             catch (Exception ex)
             {
-                Log.Error($"[PawnStatus] Error getting real join tick for {pawn?.LabelShort}: {ex.Message}");
+                Log.Error($"[PawnStatus] 获取 {pawn?.LabelShort} 加入时间时出错: {ex.Message}\n{ex.StackTrace}");
                 return fallbackTick;
             }
         }

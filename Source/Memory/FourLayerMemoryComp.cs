@@ -368,12 +368,17 @@ namespace RimTalk.Memory
             }
         }
 
+        /// <summary>
+        /// 记忆衰减和自动清理
+        /// ⭐ v3.3.14: 添加activity阈值清理 + 容量限制
+        /// </summary>
         public void DecayActivity()
         {
             float scmRate = RimTalkMemoryPatchMod.Settings.scmDecayRate;
             float elsRate = RimTalkMemoryPatchMod.Settings.elsDecayRate;
             float clpaRate = RimTalkMemoryPatchMod.Settings.clpaDecayRate;
 
+            // 步骤1：衰减所有记忆的activity
             foreach (var memory in situationalMemories)
                 memory.Decay(scmRate);
 
@@ -382,8 +387,109 @@ namespace RimTalk.Memory
 
             foreach (var memory in archiveMemories)
                 memory.Decay(clpaRate);
+            
+            // ⭐ 步骤2：清理极低activity的"死亡"记忆（方案1）
+            CleanupLowActivityMemories();
+            
+            // ⭐ 步骤3：强制执行容量限制（方案3）
+            EnforceMemoryLimits();
         }
-
+        
+        /// <summary>
+        /// ⭐ v3.3.14: 清理极低activity的记忆（方案1）
+        /// 当activity < 0.01时，认为记忆已"死亡"，可以安全删除
+        /// </summary>
+        private void CleanupLowActivityMemories()
+        {
+            const float ACTIVITY_THRESHOLD = 0.01f; // activity < 0.01视为"死亡"
+            
+            int removedSCM = 0;
+            int removedELS = 0;
+            
+            // 清理SCM中的低activity记忆
+            int beforeSCM = situationalMemories.Count;
+            situationalMemories.RemoveAll(m => 
+                m.activity < ACTIVITY_THRESHOLD && 
+                !m.isPinned && 
+                !m.isUserEdited
+            );
+            removedSCM = beforeSCM - situationalMemories.Count;
+            
+            // 清理ELS中的低activity记忆
+            int beforeELS = eventLogMemories.Count;
+            eventLogMemories.RemoveAll(m => 
+                m.activity < ACTIVITY_THRESHOLD && 
+                !m.isPinned && 
+                !m.isUserEdited
+            );
+            removedELS = beforeELS - eventLogMemories.Count;
+            
+            // CLPA不清理（长期记忆永久保留）
+            
+            // 开发模式日志
+            if (Prefs.DevMode && (removedSCM > 0 || removedELS > 0))
+            {
+                var pawn = parent as Pawn;
+                Log.Message($"[Memory] {pawn?.LabelShort ?? "Unknown"} cleaned up " +
+                           $"{removedSCM} SCM + {removedELS} ELS memories (activity < {ACTIVITY_THRESHOLD})");
+            }
+        }
+        
+        /// <summary>
+        /// ⭐ v3.3.14: 强制执行容量限制（方案3）
+        /// 当层级超过容量时，删除最低activity的记忆
+        /// </summary>
+        private void EnforceMemoryLimits()
+        {
+            int removedSCM = 0;
+            int removedELS = 0;
+            
+            // ⭐ 处理SCM容量限制
+            if (situationalMemories.Count > MAX_SITUATIONAL)
+            {
+                // 按activity升序排序，删除最低的
+                var toRemove = situationalMemories
+                    .Where(m => !m.isPinned && !m.isUserEdited)
+                    .OrderBy(m => m.activity)
+                    .ThenBy(m => m.timestamp) // 相同activity时，删除更旧的
+                    .Take(situationalMemories.Count - MAX_SITUATIONAL)
+                    .ToList();
+                
+                foreach (var memory in toRemove)
+                {
+                    situationalMemories.Remove(memory);
+                    removedSCM++;
+                }
+            }
+            
+            // ⭐ 处理ELS容量限制
+            if (eventLogMemories.Count > MAX_EVENTLOG)
+            {
+                // 按activity升序排序，删除最低的
+                var toRemove = eventLogMemories
+                    .Where(m => !m.isPinned && !m.isUserEdited)
+                    .OrderBy(m => m.activity)
+                    .ThenBy(m => m.timestamp)
+                    .Take(eventLogMemories.Count - MAX_EVENTLOG)
+                    .ToList();
+                
+                foreach (var memory in toRemove)
+                {
+                    eventLogMemories.Remove(memory);
+                    removedELS++;
+                }
+            }
+            
+            // 开发模式日志
+            if (Prefs.DevMode && (removedSCM > 0 || removedELS > 0))
+            {
+                var pawn = parent as Pawn;
+                Log.Message($"[Memory] {pawn?.LabelShort ?? "Unknown"} enforced limits: " +
+                           $"removed {removedSCM} SCM (max: {MAX_SITUATIONAL}) + " +
+                           $"{removedELS} ELS (max: {MAX_EVENTLOG})");
+            }
+        }
+        
         public List<MemoryEntry> RetrieveMemories(MemoryQuery query)
         {
             var results = new List<MemoryEntry>();
