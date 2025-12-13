@@ -501,11 +501,66 @@ namespace RimTalk.Memory.Debug
                 preview.AppendLine("🎓 【ExpandMemory - 常识库注入详细分析】");
                 preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
                 preview.AppendLine();
+                
+                // ⭐ 新增：场景分析显示（使用实际上下文）
+                if (!string.IsNullOrEmpty(contextInput))
+                {
+                    var sceneAnalysis = SceneAnalyzer.AnalyzeScene(contextInput);
+                    var dynamicWeights = SceneAnalyzer.GetDynamicWeights(sceneAnalysis.PrimaryScene, sceneAnalysis.Confidence);
+                    
+                    preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                    preview.AppendLine("🎬 【场景分析】");
+                    preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                    preview.AppendLine();
+                    
+                    // 场景类型和置信度
+                    string sceneEmoji = GetSceneEmoji(sceneAnalysis.PrimaryScene);
+                    string sceneDisplayName = SceneAnalyzer.GetSceneDisplayName(sceneAnalysis.PrimaryScene);
+                    
+                    preview.AppendLine($"{sceneEmoji} 【场景类型】: {sceneDisplayName}");
+                    preview.AppendLine($"📊 【置信度】: {sceneAnalysis.Confidence:P0}");
+                    preview.AppendLine();
+                    
+                    // 动态权重配置
+                    preview.AppendLine("【动态权重配置】（用于记忆检索）:");
+                    preview.AppendLine($"  • 时间衰减: {dynamicWeights.TimeDecay:F2} (越高越重视最近)");
+                    preview.AppendLine($"  • 重要性: {dynamicWeights.Importance:F2}");
+                    preview.AppendLine($"  • 关键词匹配: {dynamicWeights.KeywordMatch:F2}");
+                    preview.AppendLine($"  • 关系加成: {dynamicWeights.RelationshipBonus:F2}");
+                    preview.AppendLine($"  • 时间窗口: {dynamicWeights.RecencyWindow / 60000} 天");
+                    preview.AppendLine();
+                    
+                    // 场景特性说明
+                    preview.AppendLine("【场景特性】:");
+                    preview.AppendLine(GetSceneCharacteristics(sceneAnalysis.PrimaryScene));
+                    preview.AppendLine();
+                    
+                    // 多场景混合情况
+                    if (sceneAnalysis.SceneScores.Count > 1)
+                    {
+                        preview.AppendLine("【场景混合情况】:");
+                        foreach (var scoreKvp in sceneAnalysis.SceneScores.OrderByDescending(kvp => kvp.Value).Take(3))
+                        {
+                            string sceneName = SceneAnalyzer.GetSceneDisplayName(scoreKvp.Key);
+                            preview.AppendLine($"  • {sceneName}: {scoreKvp.Value:P0}");
+                        }
+                        preview.AppendLine();
+                    }
+                    
+                    preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
+                    preview.AppendLine();
+                }
 
                 if (knowledgeInjection != null && knowledgeScores != null)
                 {
                     preview.AppendLine($"🎯 动态评分选择了 {knowledgeScores.Count} 条常识");
                     preview.AppendLine($"📊 评分阈值: {settings.knowledgeScoreThreshold:F2} (低于此分数不注入)");
+                    
+                    // ⭐ 显示关键词数量
+                    if (keywordInfo != null)
+                    {
+                        preview.AppendLine($"🔑 提取关键词: {keywordInfo.TotalKeywords} 个 (上下文 {keywordInfo.ContextKeywords.Count} + 角色 {keywordInfo.PawnKeywordsCount})");
+                    }
                     preview.AppendLine();
 
                     for (int i = 0; i < knowledgeScores.Count; i++)
@@ -522,6 +577,20 @@ namespace RimTalk.Memory.Debug
                 {
                     preview.AppendLine("⚠️ 没有常识达到阈值，返回 null (不注入常识)");
                     preview.AppendLine($"📊 当前阈值: {settings.knowledgeScoreThreshold:F2}");
+                    
+                    // ⭐ 显示关键词信息以帮助调试
+                    if (keywordInfo != null)
+                    {
+                        preview.AppendLine($"🔑 已提取关键词: {keywordInfo.TotalKeywords} 个");
+                        if (keywordInfo.ContextKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"    前10个: {string.Join(", ", keywordInfo.ContextKeywords.Take(10))}");
+                        }
+                        else
+                        {
+                            preview.AppendLine("    ⚠️ 上下文关键词为空！请输入有效的上下文");
+                        }
+                    }
                     preview.AppendLine();
                 }
 
@@ -770,6 +839,83 @@ namespace RimTalk.Memory.Debug
             catch (Exception ex)
             {
                 Messages.Message("读取失败：" + ex.Message, MessageTypeDefOf.RejectInput, false);
+            }
+        }
+        
+        /// <summary>
+        /// ⭐ 新增：获取场景图标
+        /// </summary>
+        private string GetSceneEmoji(SceneType sceneType)
+        {
+            switch (sceneType)
+            {
+                case SceneType.Combat:
+                    return "⚔️";
+                case SceneType.Social:
+                    return "💬";
+                case SceneType.Work:
+                    return "🔨";
+                case SceneType.Medical:
+                    return "💉";
+                case SceneType.Research:
+                    return "🔬";
+                case SceneType.Event:
+                    return "🎉";
+                case SceneType.Neutral:
+                default:
+                    return "🏠";
+            }
+        }
+        
+        /// <summary>
+        /// ⭐ 新增：获取场景特性说明
+        /// </summary>
+        private string GetSceneCharacteristics(SceneType sceneType)
+        {
+            switch (sceneType)
+            {
+                case SceneType.Combat:
+                    return "  • 强调最近记忆（时间衰减0.8）\n" +
+                           "  • 只关注重要事件（重要性0.5）\n" +
+                           "  • 精准关键词匹配（0.4）\n" +
+                           "  • 弱化关系因素（0.1）\n" +
+                           "  • 时间窗口：6小时";
+                case SceneType.Social:
+                    return "  • 允许回忆旧事（时间衰减0.05）\n" +
+                           "  • 小事也能聊（重要性0.2）\n" +
+                           "  • 宽松匹配（关键词0.25）\n" +
+                           "  • 强化共同记忆（关系0.6）\n" +
+                           "  • 时间窗口：30天";
+                case SceneType.Work:
+                    return "  • 平衡时效性（时间衰减0.3）\n" +
+                           "  • 中等重要性（0.3）\n" +
+                           "  • 相关性优先（关键词0.35）\n" +
+                           "  • 关系次要（0.15）\n" +
+                           "  • 时间窗口：7天";
+                case SceneType.Medical:
+                    return "  • 重视医疗史（时间衰减0.15）\n" +
+                           "  • 健康记录重要（重要性0.45）\n" +
+                           "  • 精准匹配（关键词0.35）\n" +
+                           "  • 关系适中（0.2）\n" +
+                           "  • 时间窗口：14天";
+                case SceneType.Research:
+                    return "  • 知识积累（时间衰减0.02）\n" +
+                           "  • 长期记忆（重要性0.4）\n" +
+                           "  • 专业匹配（关键词0.4）\n" +
+                           "  • 关系弱化（0.1）\n" +
+                           "  • 时间窗口：60天";
+                case SceneType.Event:
+                    return "  • 永久记忆（时间衰减0.1）\n" +
+                           "  • 重要时刻（重要性0.5）\n" +
+                           "  • 事件相关（关键词0.3）\n" +
+                           "  • 关系重要（0.4）\n" +
+                           "  • 时间窗口：15天";
+                case SceneType.Neutral:
+                default:
+                    return "  • 平衡配置（时间衰减0.25）\n" +
+                           "  • 均衡权重（所有0.3）\n" +
+                           "  • 通用场景\n" +
+                           "  • 时间窗口：10天";
             }
         }
         

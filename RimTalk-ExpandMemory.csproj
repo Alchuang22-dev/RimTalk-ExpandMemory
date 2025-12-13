@@ -14,7 +14,7 @@
         <RimWorldDir Condition=" '$(RimWorldDir)' == '' ">$(RIMWORLD_DIR)</RimWorldDir>
 
         <OutputPath>$(GameVersion)/Assemblies</OutputPath>
-        <ModFolderName>RimTalk-MemoryPatch</ModFolderName>
+        <ModFolderName>RimTalk-ExpandMemory</ModFolderName>  <!-- ⭐ 修正为正确的 Mod 名称 -->
         <LangVersion>7.3</LangVersion>
         <EnableBubbles>true</EnableBubbles>
         
@@ -47,6 +47,7 @@
     </PropertyGroup>
     
     <ItemGroup>
+      <None Include=".github\copilot-instructions.md" />
       <None Include="CreateChineseTranslation.csproj" />
       <None Include="RimTalk-MemoryPatch.csproj" />
     </ItemGroup>

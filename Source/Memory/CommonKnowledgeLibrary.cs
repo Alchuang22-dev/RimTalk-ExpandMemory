@@ -227,15 +227,17 @@ namespace RimTalk.Memory
                         
                         // 基础长关键词权重
                         if (keyword.Length >= 6)
-                            contentMatchScore += 0.40f;
+                            contentMatchScore += 0.35f;  // 6字+（降低 0.40→0.35）
                         else if (keyword.Length >= 5)
-                            contentMatchScore += 0.30f;
+                            contentMatchScore += 0.28f;  // 5字（降低 0.30→0.28）
                         else if (keyword.Length >= 4)
-                            contentMatchScore += 0.20f;
+                            contentMatchScore += 0.22f;  // 4字（提升 0.20→0.22）
                         else if (keyword.Length == 3)
-                            contentMatchScore += 0.12f;
+                            contentMatchScore += 0.16f;  // 3字（提升 0.12→0.16）✅
+                        else if (keyword.Length == 2)
+                            contentMatchScore += 0.10f;  // 2字（提升 0.05→0.10）✅
                         else
-                            contentMatchScore += 0.05f;
+                            contentMatchScore += 0.05f;  // 1字（保持）
                         
                         // ⭐ v3.3.2.31: 名字额外加成（0.3分）
                         if (isNameKeyword)
@@ -251,13 +253,14 @@ namespace RimTalk.Memory
             nameMatchBonus = Math.Min(nameMatchBonus, 0.6f); // 最多2个名字 * 0.3
 
             // 3. ⭐ 完全匹配加成（内容包含连续的长查询串）
+            // 3. ⭐ v3.3.12: 完全匹配加成 - 包含2字关键词
             float exactMatchBonus = 0f;
             
             if (!string.IsNullOrEmpty(content))
             {
-                // 检查最长的关键词（通常是完整查询）
+                // ⭐ 检查最长的关键词（包含2字）
                 var longestKeywords = contextKeywords
-                    .Where(k => k.Length >= 3)
+                    .Where(k => k.Length >= 2)  // ✅ 改为 >= 2（原 >= 3）
                     .OrderByDescending(k => k.Length)
                     .Take(5);
                 
@@ -266,16 +269,20 @@ namespace RimTalk.Memory
                     if (content.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         if (keyword.Length >= 6)
-                            exactMatchBonus += 0.8f; // "龙王种索拉克" 超强加成
+                            exactMatchBonus += 0.6f;   // 6字+（降低 0.8→0.6）
                         else if (keyword.Length >= 5)
-                            exactMatchBonus += 0.5f; // "龙王种索" 强力加成
+                            exactMatchBonus += 0.4f;   // 5字（降低 0.5→0.4）
                         else if (keyword.Length >= 4)
-                            exactMatchBonus += 0.3f; // "龙王种" 中等加分
+                            exactMatchBonus += 0.25f;  // 4字（降低 0.3→0.25）
+                        else if (keyword.Length == 3)
+                            exactMatchBonus += 0.15f;  // 3字（新增）✅
+                        else if (keyword.Length == 2)
+                            exactMatchBonus += 0.10f;  // 2字（新增）✅
                     }
                 }
             }
             
-            exactMatchBonus = Math.Min(exactMatchBonus, 1.0f);
+            exactMatchBonus = Math.Min(exactMatchBonus, 0.8f);  // 降低上限（1.0→0.8）
 
             // 综合评分
             float contentPart = contentMatchScore;
@@ -372,15 +379,17 @@ namespace RimTalk.Memory
                         
                         // 基础长关键词权重
                         if (keyword.Length >= 6)
-                            contentMatchScore += 0.40f;
+                            contentMatchScore += 0.35f;  // 6字+（降低 0.40→0.35）
                         else if (keyword.Length >= 5)
-                            contentMatchScore += 0.30f;
+                            contentMatchScore += 0.28f;  // 5字（降低 0.30→0.28）
                         else if (keyword.Length >= 4)
-                            contentMatchScore += 0.20f;
+                            contentMatchScore += 0.22f;  // 4字（提升 0.20→0.22）
                         else if (keyword.Length == 3)
-                            contentMatchScore += 0.12f;
+                            contentMatchScore += 0.16f;  // 3字（提升 0.12→0.16）✅
+                        else if (keyword.Length == 2)
+                            contentMatchScore += 0.10f;  // 2字（提升 0.05→0.10）✅
                         else
-                            contentMatchScore += 0.05f;
+                            contentMatchScore += 0.05f;  // 1字（保持）
                         
                         // ⭐ v3.3.2.31: 名字额外加成（0.3分）
                         if (isNameKeyword)
@@ -395,11 +404,14 @@ namespace RimTalk.Memory
             nameMatchBonus = Math.Min(nameMatchBonus, 0.6f);
 
             // 3. ⭐ 完全匹配加成
+            // 3. ⭐ v3.3.12: 完全匹配加成 - 包含2字关键词
             float exactMatchBonus = 0f;
+            
             if (!string.IsNullOrEmpty(content))
             {
+                // ⭐ 检查最长的关键词（包含2字）
                 var longestKeywords = contextKeywords
-                    .Where(k => k.Length >= 3)
+                    .Where(k => k.Length >= 2)  // ✅ 改为 >= 2（原 >= 3）
                     .OrderByDescending(k => k.Length)
                     .Take(5);
                 
@@ -408,22 +420,26 @@ namespace RimTalk.Memory
                     if (content.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         if (keyword.Length >= 6)
-                            exactMatchBonus += 0.8f;
+                            exactMatchBonus += 0.6f;   // 6字+（降低 0.8→0.6）
                         else if (keyword.Length >= 5)
-                            exactMatchBonus += 0.5f;
+                            exactMatchBonus += 0.4f;   // 5字（降低 0.5→0.4）
                         else if (keyword.Length >= 4)
-                            exactMatchBonus += 0.3f;
+                            exactMatchBonus += 0.25f;  // 4字（降低 0.3→0.25）
+                        else if (keyword.Length == 3)
+                            exactMatchBonus += 0.15f;  // 3字（新增）✅
+                        else if (keyword.Length == 2)
+                            exactMatchBonus += 0.10f;  // 2字（新增）✅
                     }
                 }
             }
             
-            exactMatchBonus = Math.Min(exactMatchBonus, 1.0f);
+            exactMatchBonus = Math.Min(exactMatchBonus, 0.8f);  // 降低上限（1.0→0.8）
 
             // 综合评分
             float contentPart = contentMatchScore;
             float exactPart = exactMatchBonus;
             float totalScore = baseScore + tagPart + contentPart + exactPart + nameMatchBonus;
-            
+
             detail.TotalScore = totalScore;
             detail.JaccardScore = exactMatchBonus;
             detail.KeywordMatchCount = matchedKeywords.Count;
@@ -1014,6 +1030,11 @@ namespace RimTalk.Memory
                         PawnRelationDefOf.Parent,
                         PawnRelationDefOf.Child
                     };
+					
+					// 过滤掉无效的关系
+					allRelatedPawns = allRelatedPawns
+						.Where(rp => rp != null && rp.thingIDNumber >= 0)
+						.ToList();
                     
                     // ⭐ 步骤1：选择重要关系，按 thingIDNumber 排序（稳定排序）
                     var importantPawns = allRelatedPawns
