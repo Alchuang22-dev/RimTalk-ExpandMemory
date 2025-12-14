@@ -175,13 +175,19 @@ namespace RimTalk.Memory.Patches
             if (memoryComp == null)
                 return;
             
+            // ? 获取玩家称呼（默认为"玩家"）
+            string playerTitle = "玩家"; // 可以从RimTalk或其他设置中读取玩家自定义称呼
+            
+            // ? 简洁格式：(玩家称呼) 对 角色名 说: "内容"
+            string formattedContent = $"({playerTitle}) 对 {pawn.LabelShort} 说: \"{playerInput}\"";
+            
             // 创建记忆条目，直接放入 ELS
             var memory = new MemoryEntry(
-                content: $"玩家对我说: {playerInput}",
+                content: formattedContent,
                 type: MemoryType.Conversation,
                 layer: MemoryLayer.EventLog,  // 直接进入 ELS
                 importance: 0.8f,  // 玩家输入重要性较高
-                relatedPawn: "玩家"
+                relatedPawn: playerTitle
             );
             
             // 添加标签
@@ -189,7 +195,7 @@ namespace RimTalk.Memory.Patches
             memory.AddTag("直接记录");
             memory.AddTag("重要");
             
-            // 提取关键词
+            // 提取关键词（只从玩家输入内容中提取）
             ExtractKeywords(memory, playerInput);
             
             // 直接插入到 ELS 层（跳过 ABM 和 SCM）
