@@ -8,37 +8,15 @@ using RimWorld;
 namespace RimTalk.Memory
 {
     /// <summary>
-    /// 动态记忆注入系统 - 现实且严格的场景感知权重
-    /// ⭐ v3.3.12: 重构为"无上帝模式"设计
+    /// 动态记忆注入系统 - 整合场景分析和游戏状态感知
+    /// ⭐ v3.3.16: 重构整合SceneAnalyzer + 游戏状态检查
     /// 设计哲学：
-    /// - 没有完美回忆：即使紧急情况，角色也会遗忘旧细节
-    /// - 场景聚焦：根据场景调整关注点，但严格遵守评分结果
-    /// - 时间衰减永不为0：所有记忆都会随时间淡化
+    /// - 优先级1：游戏状态（Drafted, Downed, JobState）
+    /// - 优先级2：文本分析（SceneAnalyzer）
+    /// - 动态权重：根据场景调整检索策略
     /// </summary>
     public static class DynamicMemoryInjection
     {
-        /// <summary>
-        /// 场景类型（简化版）
-        /// </summary>
-        private enum SceneType
-        {
-            Casual,      // 日常/通用
-            Emergency,   // 紧急/战斗
-            Emotional,   // 情感/社交
-            Work         // 工作/任务
-        }
-        
-        /// <summary>
-        /// 场景权重配置
-        /// </summary>
-        private class SceneWeights
-        {
-            public float TimeDecay;          // 时间衰减（永不为0）
-            public float Importance;         // 重要性权重
-            public float KeywordMatch;       // 关键词匹配权重
-            public float RelationshipBonus;  // 关系加成权重
-        }
-        
         /// <summary>
         /// 静态权重配置（用户覆盖和固定记忆）
         /// </summary>
@@ -59,7 +37,7 @@ namespace RimTalk.Memory
 
         /// <summary>
         /// 动态注入记忆（带详细评分信息）- 用于预览
-        /// ⭐ v3.3.12: 使用现实场景感知权重
+        /// ⭐ v3.3.16: 使用SceneAnalyzer + 游戏状态感知
         /// </summary>
         public static string InjectMemoriesWithDetails(
             FourLayerMemoryComp memoryComp, 
@@ -72,20 +50,24 @@ namespace RimTalk.Memory
             if (memoryComp == null)
                 return string.Empty;
 
-            // ⭐ v3.3.12: 步骤1 - 场景识别
-            SceneType sceneType = IdentifyScene(context);
+            // ⭐ v3.3.16: 步骤1 - 获取Pawn对象
+            var pawn = memoryComp.parent as Pawn;
+            if (pawn == null)
+                return string.Empty;
+
+            // ⭐ v3.3.16: 步骤2 - 综合场景识别（游戏状态 + 文本分析）
+            SceneType sceneType = DetermineScene(pawn, context);
             
-            // ⭐ v3.3.12: 步骤2 - 获取场景专属权重
-            SceneWeights sceneWeights = GetWeightsForScene(sceneType);
+            // ⭐ v3.3.16: 步骤3 - 获取动态权重
+            var analysis = SceneAnalyzer.AnalyzeScene(context);
+            DynamicWeights sceneWeights = SceneAnalyzer.GetDynamicWeights(sceneType, analysis.Confidence);
             
             // 开发模式日志
             if (Prefs.DevMode)
             {
-                Log.Message($"[Memory Injection] Scene: {sceneType}");
-                Log.Message($"[Memory Injection] Weights: TimeDecay={sceneWeights.TimeDecay:F2}, " +
-                           $"Importance={sceneWeights.Importance:F2}, " +
-                           $"KeywordMatch={sceneWeights.KeywordMatch:F2}, " +
-                           $"Relationship={sceneWeights.RelationshipBonus:F2}");
+                Log.Message($"[Memory Injection] Scene: {SceneAnalyzer.GetSceneDisplayName(sceneType)}");
+                Log.Message($"[Memory Injection] Confidence: {analysis.Confidence:P0}");
+                Log.Message($"[Memory Injection] Weights: {sceneWeights}");
             }
 
             // 提取上下文关键词
@@ -97,8 +79,8 @@ namespace RimTalk.Memory
             allMemories.AddRange(memoryComp.EventLogMemories);
             
             // 根据场景决定是否包含归档记忆
-            // 情感场景更倾向于包含长期记忆（讲故事）
-            if (sceneType == SceneType.Emotional || ShouldIncludeArchive(context))
+            // 社交/事件场景更倾向于包含长期记忆（讲故事模式）
+            if (sceneType == SceneType.Social || sceneType == SceneType.Event || ShouldIncludeArchive(context))
             {
                 allMemories.AddRange(memoryComp.ArchiveMemories.Take(20));
             }
@@ -109,7 +91,7 @@ namespace RimTalk.Memory
             // 获取阈值设置
             float threshold = RimTalk.MemoryPatch.RimTalkMemoryPatchMod.Settings?.memoryScoreThreshold ?? 0.15f;
 
-            // ⭐ v3.3.12: 步骤3 - 使用场景权重计算评分
+            // ⭐ v3.3.16: 步骤4 - 使用动态权重计算评分
             var scoredMemories = allMemories
                 .Select(m => new ScoredMemory
                 {
@@ -134,14 +116,13 @@ namespace RimTalk.Memory
             // 生成详细评分信息
             foreach (var scored in scoredMemories)
             {
-                float timeScore = CalculateTimeDecayScore(scored.Memory, sceneWeights.TimeDecay);
+                float timeScore = CalculateTimeDecayScore(scored.Memory, sceneWeights.TimeDecay, sceneWeights.RecencyWindow);
                 float importanceScore = scored.Memory.importance * sceneWeights.Importance;
                 float keywordScore = CalculateKeywordMatchScore(scored.Memory, contextKeywords) * sceneWeights.KeywordMatch;
                 
                 float bonusScore = GetLayerBonus(scored.Memory.layer) * Weights.LayerBonus;
                 
                 // 关系加成
-                var pawn = memoryComp.parent as Pawn;
                 float relationshipScore = CalculateRelationshipBonus(scored.Memory, pawn) * sceneWeights.RelationshipBonus;
                 bonusScore += relationshipScore;
                 
@@ -167,109 +148,84 @@ namespace RimTalk.Memory
         }
         
         /// <summary>
-        /// ⭐ v3.3.12: 场景识别（基于关键词检测）
-        /// 现实设计：简单关键词匹配，不过度复杂化
+        /// ⭐ v3.3.16: 综合场景识别（游戏状态优先 + 文本分析回退）
         /// </summary>
-        private static SceneType IdentifyScene(string context)
+        private static SceneType DetermineScene(Pawn pawn, string context)
         {
-            if (string.IsNullOrEmpty(context))
-                return SceneType.Casual;
+            if (pawn == null)
+                return SceneType.Neutral;
             
-            string lowerContext = context.ToLower();
+            // ⭐ 优先级1：游戏状态检查（实时状态覆盖文本分析）
             
-            // 紧急场景（战斗/危险）
-            string[] emergencyKeywords = { "raid", "draft", "attack", "danger", "blood", "kill", "enemy", 
-                                          "袭击", "攻击", "危险", "战斗", "敌人", "受伤", "流血", "死亡" };
-            if (emergencyKeywords.Any(kw => lowerContext.Contains(kw)))
-                return SceneType.Emergency;
-            
-            // 情感场景（社交/情绪）
-            string[] emotionalKeywords = { "love", "hate", "marry", "divorce", "mood", "friend", 
-                                          "喜欢", "爱", "讨厌", "恨", "结婚", "离婚", "心情", "朋友", "聊天", "对话" };
-            if (emotionalKeywords.Any(kw => lowerContext.Contains(kw)))
-                return SceneType.Emotional;
-            
-            // 工作场景（建造/制造/种植）
-            string[] workKeywords = { "work", "build", "craft", "sow", "construct", "repair", 
-                                     "工作", "建造", "制作", "种植", "修理", "建筑" };
-            if (workKeywords.Any(kw => lowerContext.Contains(kw)))
-                return SceneType.Work;
-            
-            // 默认：日常
-            return SceneType.Casual;
-        }
-        
-        /// <summary>
-        /// ⭐ v3.3.12: 获取场景专属权重（现实且严格）
-        /// 核心原则：
-        /// - TimeDecay 永不为0（所有记忆都会衰减）
-        /// - 场景只改变"关注焦点"，不创造上帝模式
-        /// </summary>
-        private static SceneWeights GetWeightsForScene(SceneType sceneType)
-        {
-            switch (sceneType)
+            // 1.1 战斗状态检查
+            if (pawn.Drafted || (pawn.mindState?.enemyTarget != null))
             {
-                case SceneType.Emergency:
-                    // 紧急场景（战斗）
-                    // 设计：高度聚焦当前威胁，但仍会遗忘旧战术
-                    return new SceneWeights
-                    {
-                        TimeDecay = 0.3f,        // 标准衰减（旧记忆仍会遗忘）
-                        Importance = 0.6f,       // 高重要性（生死攸关）
-                        KeywordMatch = 0.8f,     // 极高关键词（紧盯"敌人"、"武器"）
-                        RelationshipBonus = 0.1f // 低关系（战斗时不关心友谊）
-                    };
-                
-                case SceneType.Emotional:
-                    // 情感场景（社交/对话）
-                    // 设计：略微放松时间限制，但仍会淡忘往事
-                    return new SceneWeights
-                    {
-                        TimeDecay = 0.15f,       // 放松衰减（讲故事模式）
-                        Importance = 0.3f,       // 中等重要性（小事也能聊）
-                        KeywordMatch = 0.4f,     // 中等关键词（话题宽泛）
-                        RelationshipBonus = 0.5f // 高关系加成（与听众的共同记忆）
-                    };
-                
-                case SceneType.Work:
-                    // 工作场景（建造/制造）
-                    // 设计：强调近期任务，快速遗忘旧工作
-                    return new SceneWeights
-                    {
-                        TimeDecay = 0.5f,        // 严格衰减（专注最近任务）
-                        Importance = 0.4f,       // 中高重要性
-                        KeywordMatch = 0.6f,     // 高关键词（任务相关）
-                        RelationshipBonus = 0.2f // 低关系（工作不关心情感）
-                    };
-                
-                case SceneType.Casual:
-                default:
-                    // 日常场景（默认平衡）
-                    return new SceneWeights
-                    {
-                        TimeDecay = 0.3f,
-                        Importance = 0.3f,
-                        KeywordMatch = 0.4f,
-                        RelationshipBonus = 0.25f
-                    };
+                return SceneType.Combat;
             }
+            
+            // 1.2 医疗状态检查
+            if (pawn.Downed || pawn.health?.State == PawnHealthState.Down)
+            {
+                return SceneType.Medical;
+            }
+            
+            // 1.3 社交状态检查（Lovin任务）
+            if (pawn.CurJob?.def?.defName != null && pawn.CurJob.def.defName.Contains("Lovin"))
+            {
+                return SceneType.Social;
+            }
+            
+            // 1.4 工作状态检查（当前Job）
+            if (pawn.CurJob?.def != null)
+            {
+                string jobDefName = pawn.CurJob.def.defName;
+                
+                // 研究任务
+                if (jobDefName.Contains("Research"))
+                {
+                    return SceneType.Research;
+                }
+                
+                // 医疗任务
+                if (jobDefName.Contains("Doctor") || jobDefName.Contains("Tend") || jobDefName.Contains("Surgery"))
+                {
+                    return SceneType.Medical;
+                }
+                
+                // 工作任务（建造、种植、搬运等）
+                if (jobDefName.Contains("Construct") || jobDefName.Contains("Plant") || 
+                    jobDefName.Contains("Haul") || jobDefName.Contains("Cook") ||
+                    jobDefName.Contains("Mine") || jobDefName.Contains("Clean"))
+                {
+                    return SceneType.Work;
+                }
+            }
+            
+            // ⭐ 优先级2：文本分析回退
+            if (!string.IsNullOrEmpty(context))
+            {
+                var analysis = SceneAnalyzer.AnalyzeScene(context);
+                return analysis.PrimaryScene;
+            }
+            
+            // 默认：中性
+            return SceneType.Neutral;
         }
         
         /// <summary>
-        /// ⭐ v3.3.12: 计算记忆评分（使用场景权重）
-        /// 严格遵守评分结果，无特殊照顾
+        /// ⭐ v3.3.16: 计算记忆评分（使用动态权重）
         /// </summary>
         private static float CalculateMemoryScore(
             MemoryEntry memory, 
             List<string> contextKeywords, 
-            SceneWeights sceneWeights,
+            DynamicWeights sceneWeights,
             FourLayerMemoryComp memoryComp)
         {
             float score = 0f;
 
-            // 1. 时间衰减分数（根据场景调整，但永不为0）
-            float timeScore = CalculateTimeDecayScore(memory, sceneWeights.TimeDecay);
-            score += timeScore * sceneWeights.TimeDecay;
+            // 1. 时间衰减分数（根据场景动态调整）
+            float timeScore = CalculateTimeDecayScore(memory, sceneWeights.TimeDecay, sceneWeights.RecencyWindow);
+            score += timeScore;
 
             // 2. 重要性分数
             score += memory.importance * sceneWeights.Importance;
@@ -301,15 +257,21 @@ namespace RimTalk.Memory
         }
 
         /// <summary>
-        /// 计算时间衰减分数（指数衰减，永不为0）
+        /// ⭐ v3.3.16: 计算时间衰减分数（支持时间窗口）
         /// </summary>
-        private static float CalculateTimeDecayScore(MemoryEntry memory, float decayRate)
+        private static float CalculateTimeDecayScore(MemoryEntry memory, float decayRate, int recencyWindow)
         {
             int currentTick = Find.TickManager.TicksGame;
             int age = currentTick - memory.timestamp;
 
-            // 使用指数衰减：e^(-age * decayRate)
-            // 半衰期约为：1 / decayRate 天
+            // 超过时间窗口的记忆大幅衰减
+            if (age > recencyWindow)
+            {
+                float excessAge = (age - recencyWindow) / 60000f; // 超出部分（天）
+                return UnityEngine.Mathf.Exp(-excessAge * 2.0f) * 0.1f; // 窗口外大幅衰减
+            }
+
+            // 窗口内：正常指数衰减
             float normalizedAge = age / 60000f; // 转换为游戏天数
             return UnityEngine.Mathf.Exp(-normalizedAge * decayRate);
         }
