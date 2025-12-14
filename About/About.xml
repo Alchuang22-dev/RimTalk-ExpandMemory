@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-	<packageId>cj.rimtalk.expandmemory</packageId>
+	<packageId>sanguo.rimtalk.expandmemory</packageId>
 	<name>RimTalk - Expand Memory</name>
 	<author>SANGUO</author>
 	<supportedVersions>
