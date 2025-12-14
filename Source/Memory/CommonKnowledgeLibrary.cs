@@ -64,11 +64,127 @@ namespace RimTalk.Memory
                 if (keywords == null) keywords = new List<string>();
                 cachedTags = null; // 清除缓存，强制重新解析
                 
+                // ⭐ 迁移旧版事件条目：检查是否是带时间前缀的事件常识
+                if (creationTick < 0 && !string.IsNullOrEmpty(content) && !string.IsNullOrEmpty(tag))
+                {
+                    // 检查标签是否包含"事件"或"历史"
+                    if (tag.Contains("事件") || tag.Contains("历史"))
+                    {
+                        // 尝试从content中提取时间前缀并回填creationTick
+                        MigrateLegacyEventEntry();
+                    }
+                }
+                
                 // ⭐ v3.3.3: 兼容旧存档 - 如果没有originalEventText，从content中提取
                 if (string.IsNullOrEmpty(originalEventText) && !string.IsNullOrEmpty(content))
                 {
                     // 尝试移除时间前缀（"今天"、"3天前"等）
                     originalEventText = RemoveTimePrefix(content);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// ⭐ 迁移旧版事件条目：从时间前缀推断creationTick
+        /// </summary>
+        private void MigrateLegacyEventEntry()
+        {
+            if (string.IsNullOrEmpty(content))
+                return;
+            
+            int currentTick = Find.TickManager?.TicksGame ?? 0;
+            if (currentTick <= 0)
+                return;
+            
+            // 尝试识别时间前缀并计算creationTick
+            int daysAgo = -1;
+            string prefix = "";
+            
+            // 检查各种时间前缀
+            if (content.StartsWith("今天"))
+            {
+                daysAgo = 0;
+                prefix = "今天";
+            }
+            else if (content.StartsWith("1天前"))
+            {
+                daysAgo = 1;
+                prefix = "1天前";
+            }
+            else if (content.StartsWith("2天前"))
+            {
+                daysAgo = 2;
+                prefix = "2天前";
+            }
+            else if (content.StartsWith("3天前"))
+            {
+                daysAgo = 3;
+                prefix = "3天前";
+            }
+            else if (content.StartsWith("4天前"))
+            {
+                daysAgo = 4;
+                prefix = "4天前";
+            }
+            else if (content.StartsWith("5天前"))
+            {
+                daysAgo = 5;
+                prefix = "5天前";
+            }
+            else if (content.StartsWith("6天前"))
+            {
+                daysAgo = 6;
+                prefix = "6天前";
+            }
+            else if (content.StartsWith("约3天前"))
+            {
+                daysAgo = 3;
+                prefix = "约3天前";
+            }
+            else if (content.StartsWith("约4天前"))
+            {
+                daysAgo = 4;
+                prefix = "约4天前";
+            }
+            else if (content.StartsWith("约5天前"))
+            {
+                daysAgo = 5;
+                prefix = "约5天前";
+            }
+            else if (content.StartsWith("约6天前"))
+            {
+                daysAgo = 6;
+                prefix = "约6天前";
+            }
+            else if (content.StartsWith("约7天前"))
+            {
+                daysAgo = 7;
+                prefix = "约7天前";
+            }
+            
+            // 如果识别到时间前缀
+            if (daysAgo >= 0 && !string.IsNullOrEmpty(prefix))
+            {
+                // 回填creationTick
+                creationTick = currentTick - (daysAgo * GenDate.TicksPerDay);
+                
+                // 提取originalEventText（移除时间前缀）
+                originalEventText = content.Substring(prefix.Length);
+                
+                if (Prefs.DevMode)
+                {
+                    Log.Message($"[Knowledge Migration] Migrated legacy event: '{prefix}' -> creationTick={creationTick}, originalText='{originalEventText.Substring(0, Math.Min(30, originalEventText.Length))}...'");
+                }
+            }
+            else
+            {
+                // 没有识别到时间前缀，使用默认值（当前时间）
+                creationTick = currentTick;
+                originalEventText = content;
+                
+                if (Prefs.DevMode)
+                {
+                    Log.Message($"[Knowledge Migration] No time prefix found, using current time for: '{content.Substring(0, Math.Min(30, content.Length))}...'");
                 }
             }
         }
