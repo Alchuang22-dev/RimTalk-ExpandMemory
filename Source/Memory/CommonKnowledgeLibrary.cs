@@ -614,6 +614,171 @@ namespace RimTalk.Memory
         private List<CommonKnowledgeEntry> entries = new List<CommonKnowledgeEntry>();
 
         public List<CommonKnowledgeEntry> Entries => entries;
+        
+        // ⭐ 新增：公共 API - 供其他 Mod 批量导入常识
+        /// <summary>
+        /// 批量导入常识（供其他 Mod 调用）
+        /// </summary>
+        /// <param name="knowledgeText">常识文本，格式：[标签|重要性]内容\n[标签|重要性]内容</param>
+        /// <param name="sourceModName">来源 Mod 名称（用于标记）</param>
+        /// <param name="overwriteExisting">是否覆盖已存在的相同标签常识</param>
+        /// <returns>成功导入的常识数量</returns>
+        public static int ImportFromExternalMod(string knowledgeText, string sourceModName = "ExternalMod", bool overwriteExisting = false)
+        {
+            if (string.IsNullOrEmpty(knowledgeText))
+            {
+                Log.Warning($"[CommonKnowledge API] Empty knowledge text from {sourceModName}");
+                return 0;
+            }
+            
+            var library = MemoryManager.GetCommonKnowledge();
+            if (library == null)
+            {
+                Log.Error($"[CommonKnowledge API] Failed to get CommonKnowledge library");
+                return 0;
+            }
+            
+            try
+            {
+                int importedCount = 0;
+                var lines = knowledgeText.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                
+                foreach (var line in lines)
+                {
+                    string trimmedLine = line.Trim();
+                    if (string.IsNullOrEmpty(trimmedLine) || trimmedLine.StartsWith("//") || trimmedLine.StartsWith("#"))
+                        continue; // 跳过空行和注释
+                    
+                    var entry = library.ParseLine(trimmedLine);
+                    if (entry == null)
+                        continue;
+                    
+                    // ⭐ 添加来源标记（追加到tag字符串）
+                    if (!entry.tag.Contains($"来自:{sourceModName}"))
+                    {
+                        entry.tag += $",来自:{sourceModName},自动导入";
+                    }
+                    
+                    // 检查是否已存在相同标签的常识
+                    bool exists = library.Entries.Any(e => e.tag == entry.tag && e.content == entry.content);
+                    
+                    if (exists && !overwriteExisting)
+                    {
+                        if (Prefs.DevMode)
+                        {
+                            Log.Message($"[CommonKnowledge API] Skipped duplicate: [{entry.tag}] {entry.content.Substring(0, Math.Min(30, entry.content.Length))}...");
+                        }
+                        continue;
+                    }
+                    
+                    if (exists && overwriteExisting)
+                    {
+                        // 移除旧条目
+                        var oldEntry = library.Entries.FirstOrDefault(e => e.tag == entry.tag && e.content == entry.content);
+                        if (oldEntry != null)
+                        {
+                            library.Entries.Remove(oldEntry);
+                        }
+                    }
+                    
+                    library.Entries.Add(entry);
+                    importedCount++;
+                }
+                
+                Log.Message($"[CommonKnowledge API] {sourceModName} imported {importedCount} knowledge entries");
+                return importedCount;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[CommonKnowledge API] Failed to import from {sourceModName}: {ex.Message}");
+                return 0;
+            }
+        }
+        
+        // ⭐ 新增：公共 API - 添加单条常识
+        /// <summary>
+        /// 添加单条常识（供其他 Mod 调用）
+        /// </summary>
+        public static bool AddKnowledgeEntry(string tag, string content, float importance = 0.5f, string sourceModName = "ExternalMod")
+        {
+            if (string.IsNullOrEmpty(tag) || string.IsNullOrEmpty(content))
+            {
+                Log.Warning($"[CommonKnowledge API] Empty tag or content from {sourceModName}");
+                return false;
+            }
+            
+            var library = MemoryManager.GetCommonKnowledge();
+            if (library == null)
+            {
+                Log.Error($"[CommonKnowledge API] Failed to get CommonKnowledge library");
+                return false;
+            }
+            
+            try
+            {
+                // ⭐ 限制重要性范围 [0, 1]
+                importance = Math.Max(0f, Math.Min(1f, importance));
+                
+                var entry = new CommonKnowledgeEntry(tag, content)
+                {
+                    importance = importance
+                };
+                
+                // ⭐ 添加来源标记（追加到tag字符串）
+                if (!entry.tag.Contains($"来自:{sourceModName}"))
+                {
+                    entry.tag += $",来自:{sourceModName},自动导入";
+                }
+                
+                library.Entries.Add(entry);
+                
+                if (Prefs.DevMode)
+                {
+                    Log.Message($"[CommonKnowledge API] Added: [{tag}|{importance:F2}] {content.Substring(0, Math.Min(30, content.Length))}...");
+                }
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[CommonKnowledge API] Failed to add entry from {sourceModName}: {ex.Message}");
+                return false;
+            }
+        }
+        
+        // ⭐ 新增：公共 API - 移除来自特定 Mod 的所有常识
+        /// <summary>
+        /// 移除来自特定 Mod 的所有常识
+        /// </summary>
+        public static int RemoveKnowledgeBySource(string sourceModName)
+        {
+            var library = MemoryManager.GetCommonKnowledge();
+            if (library == null)
+                return 0;
+            
+            try
+            {
+                string sourceTag = $"来自:{sourceModName}";
+                
+                // ⭐ 使用 GetTags() 方法获取标签列表进行检查
+                var toRemove = library.Entries
+                    .Where(e => e.GetTags().Any(t => t == sourceTag))
+                    .ToList();
+                
+                foreach (var entry in toRemove)
+                {
+                    library.Entries.Remove(entry);
+                }
+                
+                Log.Message($"[CommonKnowledge API] Removed {toRemove.Count} entries from {sourceModName}");
+                return toRemove.Count;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[CommonKnowledge API] Failed to remove entries from {sourceModName}: {ex.Message}");
+                return 0;
+            }
+        }
 
         public void ExposeData()
         {
