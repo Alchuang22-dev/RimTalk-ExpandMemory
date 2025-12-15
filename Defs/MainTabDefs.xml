@@ -3,9 +3,9 @@
   <!-- Memory Management Main Tab -->
   <MainButtonDef>
     <defName>RimTalk_Memory</defName>
-    <label>����</label>
-    <description>�鿴�͹���ֳ���߼���</description>
-    <tabWindowClass>RimTalk.Memory.UI.MainTabWindow_Memory, RimTalkMemoryPatch</tabWindowClass>
+    <label>记忆</label>
+    <description>查看和管理殖民者记忆</description>
+    <tabWindowClass>RimTalk.Memory.UI.MainTabWindow_Memory, RimTalkExpandMemory</tabWindowClass>
     <order>35</order>
   </MainButtonDef>
 </Defs>
