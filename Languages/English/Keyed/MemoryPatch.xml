@@ -422,6 +422,13 @@
     <RimTalk_MindStream_SummarizeAll>Summarize All</RimTalk_MindStream_SummarizeAll>
     <RimTalk_MindStream_ArchiveAll>Archive All</RimTalk_MindStream_ArchiveAll>
     
+    <!-- ⭐ v3.3.22: Operation Guide -->
+    <RimTalk_MindStream_OperationGuide>Operation Guide</RimTalk_MindStream_OperationGuide>
+    <RimTalk_MindStream_OpLeftDrag>• Left-drag: Select multiple memories</RimTalk_MindStream_OpLeftDrag>
+    <RimTalk_MindStream_OpCtrlClick>• Ctrl+Click: Add/Remove selection</RimTalk_MindStream_OpCtrlClick>
+    <RimTalk_MindStream_OpShiftClick>• Shift+Click: Continuous selection</RimTalk_MindStream_OpShiftClick>
+    <RimTalk_MindStream_OpRightClick>• Right-click: Open context menu</RimTalk_MindStream_OpRightClick>
+    
     <!-- Timeline Cards -->
     <RimTalk_MindStream_Pin>Pin</RimTalk_MindStream_Pin>
     <RimTalk_MindStream_Unpin>Unpin</RimTalk_MindStream_Unpin>
