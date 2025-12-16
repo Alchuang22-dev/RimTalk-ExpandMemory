@@ -207,6 +207,13 @@ namespace RimTalk.Memory
             // ⭐ v3.3.10: 每个匹配的标签贡献0.15分，累加
             float tagPart = tagMatchCount * 0.15f;
 
+            // ⭐ v3.3.22: 规则类常识只返回基础分+标签分，不计算内容分
+            bool isRule = IsRuleKnowledge();
+            if (isRule)
+            {
+                return baseScore + tagPart;
+            }
+
             // 2. ⭐ 内容匹配（长关键词加权 + 名字特殊加成）
             float contentMatchScore = 0f;
             float nameMatchBonus = 0f; // ⭐ v3.3.2.31: 名字匹配额外加成
@@ -352,6 +359,27 @@ namespace RimTalk.Memory
             detail.MatchedTags = matchedTags;
             detail.TagScore = tagPart; // 直接记录标签总分，而不是比例
 
+            // ⭐ v3.3.22: 规则类常识只返回基础分+标签分
+            bool isRule = IsRuleKnowledge();
+            if (isRule)
+            {
+                detail.TotalScore = baseScore + tagPart;
+                detail.JaccardScore = 0f;
+                detail.KeywordMatchCount = 0;
+                detail.MatchedKeywords = new List<string>();
+                
+                if (matchedTags.Count == 0)
+                {
+                    detail.FailReason = $"[规则类] 标签'{string.Join(",", tags)}'未匹配";
+                }
+                else
+                {
+                    detail.FailReason = $"[规则类] 仅标签匹配({matchedTags.Count}个标签，总分{tagPart:F2})";
+                }
+                
+                return detail;
+            }
+
             // 2. ⭐ 内容匹配（长关键词加权 + 名字特殊加成）
             var matchedKeywords = new List<string>();
             var matchedNameKeywords = new List<string>(); // ⭐ v3.3.2.38: 记录名字关键词
@@ -362,6 +390,7 @@ namespace RimTalk.Memory
             {
                 foreach (var keyword in contextKeywords)
                 {
+                    // 直接在内容中查找关键词
                     if (content.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         matchedKeywords.Add(keyword);
@@ -487,6 +516,21 @@ namespace RimTalk.Memory
         public override string ToString()
         {
             return FormatForExport();
+        }
+        
+        /// <summary>
+        /// ⭐ v3.3.22: 判断当前条目是否为规则类常识
+        /// 标签包含"规则"、"Instructions"、"rule"（不区分大小写）
+        /// </summary>
+        private bool IsRuleKnowledge()
+        {
+            if (string.IsNullOrEmpty(tag))
+                return false;
+            
+            string lowerTag = tag.ToLower();
+            return lowerTag.Contains("规则") || 
+                   lowerTag.Contains("instructions") || 
+                   lowerTag.Contains("rule");
         }
     }
 
