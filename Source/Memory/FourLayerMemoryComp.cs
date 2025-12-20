@@ -96,12 +96,21 @@ namespace RimTalk.Memory
             // ⭐ v3.3.2.25: VectorDB已移除，不再需要异步同步
             // 记忆现在完全通过关键词检索，无需向量化
 
-            // 超短期记忆满了，转移到短期
-            if (activeMemories.Count > MAX_ACTIVE)
+            // ⭐ 修复：超短期记忆满了，转移到短期（排除固定的）
+            int nonPinnedCount = activeMemories.Count(m => !m.isPinned && !m.isUserEdited);
+            if (nonPinnedCount > MAX_ACTIVE)
             {
-                var oldest = activeMemories[activeMemories.Count - 1];
-                activeMemories.RemoveAt(activeMemories.Count - 1);
-                PromoteToSituational(oldest);
+                // 找到最旧的非固定记忆
+                var oldest = activeMemories
+                    .Where(m => !m.isPinned && !m.isUserEdited)
+                    .OrderBy(m => m.timestamp)
+                    .FirstOrDefault();
+                    
+                if (oldest != null)
+                {
+                    activeMemories.Remove(oldest);
+                    PromoteToSituational(oldest);
+                }
             }
         }
         
@@ -187,7 +196,17 @@ namespace RimTalk.Memory
                 eventLogMemories.Insert(0, summaryEntry);
             }
 
-            situationalMemories.Clear();
+            // ⭐ 修复：保留固定的和用户编辑的记忆
+            int beforeCount = situationalMemories.Count;
+            situationalMemories.RemoveAll(m => !m.isPinned && !m.isUserEdited);
+            int removedCount = beforeCount - situationalMemories.Count;
+            
+            if (Prefs.DevMode && removedCount > 0)
+            {
+                Log.Message($"[Memory] {pawn?.LabelShort ?? "Unknown"} daily summarization: " +
+                           $"removed {removedCount} SCM, kept {situationalMemories.Count} pinned/edited");
+            }
+            
             TrimEventLog();
         }
 
@@ -242,7 +261,17 @@ namespace RimTalk.Memory
                 eventLogMemories.Insert(0, summaryEntry);
             }
 
-            situationalMemories.Clear();
+            // ⭐ 修复：保留固定的和用户编辑的记忆
+            int beforeCount = situationalMemories.Count;
+            situationalMemories.RemoveAll(m => !m.isPinned && !m.isUserEdited);
+            int removedCount = beforeCount - situationalMemories.Count;
+            
+            if (Prefs.DevMode && removedCount > 0)
+            {
+                Log.Message($"[Memory] {pawn?.LabelShort ?? "Unknown"} manual summarization: " +
+                           $"removed {removedCount} SCM, kept {situationalMemories.Count} pinned/edited");
+            }
+            
             TrimEventLog();
         }
 
@@ -341,13 +370,26 @@ namespace RimTalk.Memory
             if (eventLogMemories.Count <= MAX_EVENTLOG)
                 return;
 
-            while (eventLogMemories.Count > MAX_EVENTLOG)
+            // ⭐ 修复：只计算非固定、非用户编辑的记忆数量
+            int nonPinnedCount = eventLogMemories.Count(m => !m.isPinned && !m.isUserEdited);
+            
+            // 如果非固定记忆没超过上限，则不需要trim
+            if (nonPinnedCount <= MAX_EVENTLOG)
+                return;
+
+            // ⭐ 修复：按时间戳排序，只移除非固定、非用户编辑的最旧记忆
+            int toRemoveCount = nonPinnedCount - MAX_EVENTLOG;
+            var toRemove = eventLogMemories
+                .Where(m => !m.isPinned && !m.isUserEdited)
+                .OrderBy(m => m.timestamp)
+                .Take(toRemoveCount)
+                .ToList();
+            
+            foreach (var memory in toRemove)
             {
-                var oldest = eventLogMemories[eventLogMemories.Count - 1];
-                eventLogMemories.RemoveAt(eventLogMemories.Count - 1);
-                
-                oldest.layer = MemoryLayer.Archive;
-                archiveMemories.Insert(0, oldest);
+                eventLogMemories.Remove(memory);
+                memory.layer = MemoryLayer.Archive;
+                archiveMemories.Insert(0, memory);
             }
         }
 
@@ -438,21 +480,27 @@ namespace RimTalk.Memory
         /// <summary>
         /// ⭐ v3.3.14: 强制执行容量限制（方案3）
         /// 当层级超过容量时，删除最低activity的记忆
+        /// ⭐ v3.3.21: 修复固定记忆不计入上限
         /// </summary>
         private void EnforceMemoryLimits()
         {
             int removedSCM = 0;
             int removedELS = 0;
             
-            // ⭐ 处理SCM容量限制
-            if (situationalMemories.Count > MAX_SITUATIONAL)
+            // ⭐ 修复：只计算非固定、非用户编辑的记忆数量
+            int scmNonPinnedCount = situationalMemories.Count(m => !m.isPinned && !m.isUserEdited);
+            int elsNonPinnedCount = eventLogMemories.Count(m => !m.isPinned && !m.isUserEdited);
+            
+            // ⭐ 处理SCM容量限制（只有非固定记忆超过上限才删除）
+            if (scmNonPinnedCount > MAX_SITUATIONAL)
             {
+                int toRemoveCount = scmNonPinnedCount - MAX_SITUATIONAL;
                 // 按activity升序排序，删除最低的
                 var toRemove = situationalMemories
                     .Where(m => !m.isPinned && !m.isUserEdited)
                     .OrderBy(m => m.activity)
                     .ThenBy(m => m.timestamp) // 相同activity时，删除更旧的
-                    .Take(situationalMemories.Count - MAX_SITUATIONAL)
+                    .Take(toRemoveCount)
                     .ToList();
                 
                 foreach (var memory in toRemove)
@@ -462,15 +510,16 @@ namespace RimTalk.Memory
                 }
             }
             
-            // ⭐ 处理ELS容量限制
-            if (eventLogMemories.Count > MAX_EVENTLOG)
+            // ⭐ 处理ELS容量限制（只有非固定记忆超过上限才删除）
+            if (elsNonPinnedCount > MAX_EVENTLOG)
             {
+                int toRemoveCount = elsNonPinnedCount - MAX_EVENTLOG;
                 // 按activity升序排序，删除最低的
                 var toRemove = eventLogMemories
                     .Where(m => !m.isPinned && !m.isUserEdited)
                     .OrderBy(m => m.activity)
                     .ThenBy(m => m.timestamp)
-                    .Take(eventLogMemories.Count - MAX_EVENTLOG)
+                    .Take(toRemoveCount)
                     .ToList();
                 
                 foreach (var memory in toRemove)
@@ -484,9 +533,12 @@ namespace RimTalk.Memory
             if (Prefs.DevMode && (removedSCM > 0 || removedELS > 0))
             {
                 var pawn = parent as Pawn;
+                int scmPinnedCount = situationalMemories.Count - scmNonPinnedCount + removedSCM;
+                int elsPinnedCount = eventLogMemories.Count - elsNonPinnedCount + removedELS;
+                
                 Log.Message($"[Memory] {pawn?.LabelShort ?? "Unknown"} enforced limits: " +
-                           $"removed {removedSCM} SCM (max: {MAX_SITUATIONAL}) + " +
-                           $"{removedELS} ELS (max: {MAX_EVENTLOG})");
+                           $"removed {removedSCM} SCM (non-pinned: {scmNonPinnedCount - removedSCM}, pinned: {scmPinnedCount}, max: {MAX_SITUATIONAL}) + " +
+                           $"{removedELS} ELS (non-pinned: {elsNonPinnedCount - removedELS}, pinned: {elsPinnedCount}, max: {MAX_EVENTLOG})");
             }
         }
         

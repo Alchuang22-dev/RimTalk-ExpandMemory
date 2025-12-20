@@ -13,7 +13,7 @@ namespace RimTalk.Memory.UI
     /// Mind Stream Timeline - Multi-Select Memory Cards
     /// ★ v3.3.19: 完全重构 - 时间线卡片布局 + 拖拽多选 + 批量操作
     /// </summary>
-    public class MainTabWindow_Memory : MainTabWindow
+    public partial class MainTabWindow_Memory : MainTabWindow
     {
         // ==================== Data & State ====================
         private Pawn selectedPawn = null;
@@ -129,11 +129,18 @@ namespace RimTalk.Memory.UI
                 Find.WindowStack.Add(new Debug.Dialog_InjectionPreview());
             }
             
-            // Common Knowledge button
+            // ⭐ 修改：常识按钮移到更右侧（原来操作指南的位置）
             rightX -= buttonWidth + spacing;
             if (Widgets.ButtonText(new Rect(rightX, innerRect.y + 5f, buttonWidth, 35f), "RimTalk_MindStream_Knowledge".Translate()))
             {
                 OpenCommonKnowledgeDialog();
+            }
+
+            // ⭐ 修改：操作指南按钮移到左侧（原来常识的位置）
+            rightX -= buttonWidth + spacing;
+            if (Widgets.ButtonText(new Rect(rightX, innerRect.y + 5f, buttonWidth, 35f), "RimTalk_MindStream_OperationGuide".Translate()))
+            {
+                ShowOperationGuide();
             }
         }
         
@@ -277,32 +284,45 @@ namespace RimTalk.Memory.UI
             // ABM
             Rect abmRect = new Rect(parentRect.x, y, parentRect.width, checkboxHeight);
             Color abmColor = new Color(0.3f, 0.8f, 1f); // Cyan
-            DrawColoredCheckbox(abmRect, "RimTalk_MindStream_ABM".Translate(), ref showABM, abmColor);
+            DrawColoredCheckbox(abmRect, "RimTalk_MindStream_ABM".Translate(), ref showABM, abmColor, null);
             y += checkboxHeight + 2f;
             
             // SCM
             Rect scmRect = new Rect(parentRect.x, y, parentRect.width, checkboxHeight);
             Color scmColor = new Color(0.3f, 1f, 0.5f); // Green
-            DrawColoredCheckbox(scmRect, "RimTalk_MindStream_SCM".Translate(), ref showSCM, scmColor);
+            DrawColoredCheckbox(scmRect, "RimTalk_MindStream_SCM".Translate(), ref showSCM, scmColor, null);
             y += checkboxHeight + 2f;
             
-            // ELS
+            // ELS - ⭐ 带右键菜单
             Rect elsRect = new Rect(parentRect.x, y, parentRect.width, checkboxHeight);
             Color elsColor = new Color(1f, 0.8f, 0.3f); // Yellow
-            DrawColoredCheckbox(elsRect, "RimTalk_MindStream_ELS".Translate(), ref showELS, elsColor);
+            DrawColoredCheckbox(elsRect, "RimTalk_MindStream_ELS".Translate(), ref showELS, elsColor, MemoryLayer.EventLog);
             y += checkboxHeight + 2f;
             
-            // CLPA
+            // CLPA - ⭐ 带右键菜单
             Rect clpaRect = new Rect(parentRect.x, y, parentRect.width, checkboxHeight);
             Color clpaColor = new Color(0.8f, 0.4f, 1f); // Purple
-            DrawColoredCheckbox(clpaRect, "RimTalk_MindStream_CLPA".Translate(), ref showCLPA, clpaColor);
+            DrawColoredCheckbox(clpaRect, "RimTalk_MindStream_CLPA".Translate(), ref showCLPA, clpaColor, MemoryLayer.Archive);
             y += checkboxHeight;
             
             return y;
         }
         
-        private void DrawColoredCheckbox(Rect rect, string label, ref bool value, Color color)
+        private void DrawColoredCheckbox(Rect rect, string label, ref bool value, Color color, MemoryLayer? rightClickLayer)
         {
+            // ⭐ 右键检测（如果指定了层级）- 在绘制之前
+            if (rightClickLayer.HasValue)
+            {
+                if (Event.current.type == EventType.MouseDown && 
+                    Event.current.button == 1 && 
+                    rect.Contains(Event.current.mousePosition))
+                {
+                    ShowCreateMemoryMenu(rightClickLayer.Value);
+                    Event.current.Use();
+                    return; // 不继续绘制复选框，避免状态变化
+                }
+            }
+            
             // Colored indicator
             Rect colorRect = new Rect(rect.x, rect.y + 2f, 3f, rect.height - 4f);
             Widgets.DrawBoxSolid(colorRect, color);
@@ -310,6 +330,12 @@ namespace RimTalk.Memory.UI
             // Checkbox
             Rect checkboxRect = new Rect(rect.x + 8f, rect.y, rect.width - 8f, rect.height);
             Widgets.CheckboxLabeled(checkboxRect, label, ref value);
+            
+            // ⭐ 添加工具提示提示用户可以右键
+            if (rightClickLayer.HasValue && Mouse.IsOver(rect))
+            {
+                TooltipHandler.TipRegion(rect, $"右键点击新建{GetLayerLabel(rightClickLayer.Value)}记忆");
+            }
         }
         
         private float DrawTypeFilters(Rect parentRect, float startY)
@@ -380,33 +406,63 @@ namespace RimTalk.Memory.UI
             float spacing = 5f;
             bool hasSelection = selectedMemories.Count > 0;
             
-            // Summarize Selected (SCM -> ELS)
-            GUI.enabled = hasSelection && selectedMemories.Any(m => m.layer == MemoryLayer.Situational);
-            if (Widgets.ButtonText(new Rect(parentRect.x, y, parentRect.width, buttonHeight), 
-                hasSelection ? "RimTalk_MindStream_SummarizeN".Translate(selectedMemories.Count) : "RimTalk_MindStream_SummarizeSelected".Translate()))
+            // ⭐ 如果没有选中，则操作对象为当前页面所有可见记忆
+            var targetMemories = hasSelection ? selectedMemories.ToList() : GetFilteredMemories();
+            int targetCount = targetMemories.Count;
+            
+            // Summarize Selected/All (SCM -> ELS)
+            int scmCount = targetMemories.Count(m => m.layer == MemoryLayer.Situational);
+            GUI.enabled = scmCount > 0;
+            string summarizeLabel;
+            if (hasSelection)
             {
-                SummarizeSelectedMemories();
+                summarizeLabel = "RimTalk_MindStream_SummarizeN".Translate(targetCount).ToString();
+            }
+            else
+            {
+                summarizeLabel = $"总结全部 ({scmCount})";
+            }
+            if (Widgets.ButtonText(new Rect(parentRect.x, y, parentRect.width, buttonHeight), summarizeLabel))
+            {
+                SummarizeMemories(targetMemories);
             }
             GUI.enabled = true;
             y += buttonHeight + spacing;
             
-            // Archive Selected (ELS -> CLPA)
-            GUI.enabled = hasSelection && selectedMemories.Any(m => m.layer == MemoryLayer.EventLog);
-            if (Widgets.ButtonText(new Rect(parentRect.x, y, parentRect.width, buttonHeight), 
-                hasSelection ? "RimTalk_MindStream_ArchiveN".Translate(selectedMemories.Count) : "RimTalk_MindStream_ArchiveSelected".Translate()))
+            // Archive Selected/All (ELS -> CLPA)
+            int elsCount = targetMemories.Count(m => m.layer == MemoryLayer.EventLog);
+            GUI.enabled = elsCount > 0;
+            string archiveLabel;
+            if (hasSelection)
             {
-                ArchiveSelectedMemories();
+                archiveLabel = "RimTalk_MindStream_ArchiveN".Translate(targetCount).ToString();
+            }
+            else
+            {
+                archiveLabel = $"归档全部 ({elsCount})";
+            }
+            if (Widgets.ButtonText(new Rect(parentRect.x, y, parentRect.width, buttonHeight), archiveLabel))
+            {
+                ArchiveMemories(targetMemories);
             }
             GUI.enabled = true;
             y += buttonHeight + spacing;
             
-            // Delete Selected
-            GUI.enabled = hasSelection;
-            GUI.color = hasSelection ? new Color(1f, 0.4f, 0.4f) : Color.white;
-            if (Widgets.ButtonText(new Rect(parentRect.x, y, parentRect.width, buttonHeight), 
-                hasSelection ? "RimTalk_MindStream_DeleteN".Translate(selectedMemories.Count) : "RimTalk_MindStream_DeleteSelected".Translate()))
+            // Delete Selected/All
+            GUI.enabled = targetCount > 0;
+            GUI.color = targetCount > 0 ? new Color(1f, 0.4f, 0.4f) : Color.white;
+            string deleteLabel;
+            if (hasSelection)
             {
-                DeleteSelectedMemories();
+                deleteLabel = "RimTalk_MindStream_DeleteN".Translate(targetCount).ToString();
+            }
+            else
+            {
+                deleteLabel = $"删除全部 ({targetCount})";
+            }
+            if (Widgets.ButtonText(new Rect(parentRect.x, y, parentRect.width, buttonHeight), deleteLabel))
+            {
+                DeleteMemories(targetMemories);
             }
             GUI.color = Color.white;
             GUI.enabled = true;
@@ -441,6 +497,25 @@ namespace RimTalk.Memory.UI
             {
                 ArchiveAll();
             }
+            y += buttonHeight + spacing * 2;
+            
+            // ⭐ 导出/导入按钮（并排显示）
+            float halfWidth = (parentRect.width - spacing) / 2f;
+            
+            // Export button (left)
+            GUI.color = new Color(0.5f, 0.8f, 1f);
+            if (Widgets.ButtonText(new Rect(parentRect.x, y, halfWidth, buttonHeight), "RimTalk_Memory_Export".Translate()))
+            {
+                ExportMemories();
+            }
+            
+            // Import button (right)
+            GUI.color = new Color(0.8f, 1f, 0.5f);
+            if (Widgets.ButtonText(new Rect(parentRect.x + halfWidth + spacing, y, halfWidth, buttonHeight), "RimTalk_Memory_Import".Translate()))
+            {
+                ImportMemories();
+            }
+            GUI.color = Color.white;
         }
 
         // ==================== Timeline ====================
@@ -484,7 +559,7 @@ namespace RimTalk.Memory.UI
                 y += height + CARD_SPACING;
             }
             
-            // Draw selection box
+            // ⭐ 修复：在EndScrollView之前绘制选择框，使其在正确的坐标系中
             if (isDragging)
             {
                 DrawSelectionBox();
@@ -699,20 +774,31 @@ namespace RimTalk.Memory.UI
         {
             Event e = Event.current;
             
+            // ⭐ 修复：在viewport坐标系中开始拖拽
             if (e.type == EventType.MouseDown && e.button == 0 && listRect.Contains(e.mousePosition))
             {
                 isDragging = true;
-                dragStartPos = e.mousePosition - listRect.position + timelineScrollPosition;
+                // 转换为viewport坐标（相对于listRect）
+                dragStartPos = e.mousePosition - listRect.position;
                 dragCurrentPos = dragStartPos;
                 e.Use();
             }
             
             if (isDragging && e.type == EventType.MouseDrag)
             {
-                dragCurrentPos = e.mousePosition - listRect.position + timelineScrollPosition;
+                // ⭐ 修复：同样在viewport坐标系中
+                dragCurrentPos = e.mousePosition - listRect.position;
                 
                 // Select memories that intersect with drag box
-                Rect selectionBox = GetSelectionBox();
+                // ⭐ 修复：转换为content坐标（加上scroll offset）
+                Rect selectionBoxViewport = GetSelectionBox();
+                Rect selectionBoxContent = new Rect(
+                    selectionBoxViewport.x, 
+                    selectionBoxViewport.y + timelineScrollPosition.y,
+                    selectionBoxViewport.width,
+                    selectionBoxViewport.height
+                );
+                
                 var filteredMemories = GetFilteredMemories();
                 
                 bool ctrl = Event.current.control;
@@ -727,7 +813,7 @@ namespace RimTalk.Memory.UI
                     float height = GetCardHeight(memory.layer);
                     Rect cardRect = new Rect(0f, y, viewRect.width, height);
                     
-                    if (selectionBox.Overlaps(cardRect))
+                    if (selectionBoxContent.Overlaps(cardRect))
                     {
                         selectedMemories.Add(memory);
                     }
@@ -764,12 +850,16 @@ namespace RimTalk.Memory.UI
 
         // ==================== Batch Actions ====================
         
-        private void SummarizeSelectedMemories()
+        private void SummarizeMemories(List<MemoryEntry> targetMemories)
         {
-            if (currentMemoryComp == null || selectedMemories.Count == 0)
+            if (currentMemoryComp == null || targetMemories == null || targetMemories.Count == 0)
                 return;
             
-            var scmMemories = selectedMemories.Where(m => m.layer == MemoryLayer.Situational).ToList();
+            // ⭐ 修复：排除固定的和用户编辑的记忆
+            var scmMemories = targetMemories
+                .Where(m => m.layer == MemoryLayer.Situational && !m.isPinned && !m.isUserEdited)
+                .ToList();
+                
             if (scmMemories.Count == 0)
             {
                 Messages.Message("RimTalk_MindStream_NoSCMSelected".Translate(), MessageTypeDefOf.RejectInput, false);
@@ -780,13 +870,13 @@ namespace RimTalk.Memory.UI
                 "RimTalk_MindStream_SummarizeConfirm".Translate(scmMemories.Count),
                 delegate
                 {
-                    foreach (var memory in scmMemories)
-                    {
-                        // Move to ELS
-                        currentMemoryComp.SituationalMemories.Remove(memory);
-                        memory.layer = MemoryLayer.EventLog;
-                        currentMemoryComp.EventLogMemories.Insert(0, memory);
-                    }
+                    AggregateMemories(
+                        scmMemories,
+                        MemoryLayer.EventLog,
+                        currentMemoryComp.SituationalMemories,
+                        currentMemoryComp.EventLogMemories,
+                        "daily_summary"
+                    );
                     
                     selectedMemories.Clear();
                     Messages.Message("RimTalk_MindStream_SummarizedN".Translate(scmMemories.Count), MessageTypeDefOf.PositiveEvent, false);
@@ -794,12 +884,16 @@ namespace RimTalk.Memory.UI
             ));
         }
         
-        private void ArchiveSelectedMemories()
+        private void ArchiveMemories(List<MemoryEntry> targetMemories)
         {
-            if (currentMemoryComp == null || selectedMemories.Count == 0)
+            if (currentMemoryComp == null || targetMemories == null || targetMemories.Count == 0)
                 return;
             
-            var elsMemories = selectedMemories.Where(m => m.layer == MemoryLayer.EventLog).ToList();
+            // ⭐ 修复：排除固定的和用户编辑的记忆
+            var elsMemories = targetMemories
+                .Where(m => m.layer == MemoryLayer.EventLog && !m.isPinned && !m.isUserEdited)
+                .ToList();
+                
             if (elsMemories.Count == 0)
             {
                 Messages.Message("RimTalk_MindStream_NoELSSelected".Translate(), MessageTypeDefOf.RejectInput, false);
@@ -810,13 +904,13 @@ namespace RimTalk.Memory.UI
                 "RimTalk_MindStream_ArchiveConfirm".Translate(elsMemories.Count),
                 delegate
                 {
-                    foreach (var memory in elsMemories)
-                    {
-                        // Move to CLPA
-                        currentMemoryComp.EventLogMemories.Remove(memory);
-                        memory.layer = MemoryLayer.Archive;
-                        currentMemoryComp.ArchiveMemories.Insert(0, memory);
-                    }
+                    AggregateMemories(
+                        elsMemories,
+                        MemoryLayer.Archive,
+                        currentMemoryComp.EventLogMemories,
+                        currentMemoryComp.ArchiveMemories,
+                        "deep_archive"
+                    );
                     
                     selectedMemories.Clear();
                     Messages.Message("RimTalk_MindStream_ArchivedN".Translate(elsMemories.Count), MessageTypeDefOf.PositiveEvent, false);
@@ -824,18 +918,18 @@ namespace RimTalk.Memory.UI
             ));
         }
         
-        private void DeleteSelectedMemories()
+        private void DeleteMemories(List<MemoryEntry> targetMemories)
         {
-            if (currentMemoryComp == null || selectedMemories.Count == 0)
+            if (currentMemoryComp == null || targetMemories == null || targetMemories.Count == 0)
                 return;
             
-            int count = selectedMemories.Count;
+            int count = targetMemories.Count;
             
             Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
                 "RimTalk_MindStream_DeleteConfirm".Translate(count),
                 delegate
                 {
-                    foreach (var memory in selectedMemories.ToList())
+                    foreach (var memory in targetMemories.ToList())
                     {
                         currentMemoryComp.DeleteMemory(memory.id);
                     }
@@ -1027,6 +1121,260 @@ namespace RimTalk.Memory.UI
             }
             
             Find.WindowStack.Add(new Dialog_CommonKnowledge(memoryManager.CommonKnowledge));
+        }
+        
+        private void ShowOperationGuide()
+        {
+            string guide = "=== Mind Stream 操作指南 ===\n\n" +
+                "【选择记忆】\n" +
+                "• 单击：选中单条记忆\n" +
+                "• Ctrl+单击：多选/取消选择\n" +
+                "• Shift+单击：范围选择\n" +
+                "• 拖拽框选：批量选择\n\n" +
+                "【批量操作】\n" +
+                "• 总结：将SCM记忆总结到ELS\n" +
+                "• 归档：将ELS记忆归档到CLPA\n" +
+                "• 删除：删除选中的记忆\n\n" +
+                "【右键功能】\n" +
+                "• ELS/CLPA复选框上右键可新建记忆\n\n" +
+                "【层级说明】\n" +
+                "• ABM (蓝色): 超短期记忆\n" +
+                "• SCM (绿色): 短期记忆\n" +
+                "• ELS (黄色): 事件日志\n" +
+                "• CLPA (紫色): 长期档案";
+            
+            Find.WindowStack.Add(new Dialog_MessageBox(guide, "关闭", null, "操作指南"));
+        }
+        
+        private void ShowCreateMemoryMenu(MemoryLayer layer)
+        {
+            if (selectedPawn == null || currentMemoryComp == null)
+            {
+                Messages.Message("请先选择一个殖民者", MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+
+            List<FloatMenuOption> options = new List<FloatMenuOption>();
+            
+            string layerName = GetLayerLabel(layer);
+            
+            options.Add(new FloatMenuOption($"添加对话记忆到 {layerName}", delegate
+            {
+                Find.WindowStack.Add(new Dialog_CreateMemory(selectedPawn, currentMemoryComp, layer, MemoryType.Conversation));
+            }));
+            
+            options.Add(new FloatMenuOption($"添加行动记忆到 {layerName}", delegate
+            {
+                Find.WindowStack.Add(new Dialog_CreateMemory(selectedPawn, currentMemoryComp, layer, MemoryType.Action));
+            }));
+            
+            Find.WindowStack.Add(new FloatMenu(options));
+        }
+        
+        // ==================== Import/Export ====================
+        
+        /// <summary>
+        /// 导出记忆到XML文件
+        /// </summary>
+        private void ExportMemories()
+        {
+            if (selectedPawn == null || currentMemoryComp == null)
+            {
+                Messages.Message("RimTalk_Memory_ExportNoPawn".Translate(), MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+            
+            try
+            {
+                string fileName = $"{selectedPawn.Name.ToStringShort}_Memories_{Find.TickManager.TicksGame}.xml";
+                string savePath = System.IO.Path.Combine(GenFilePaths.SaveDataFolderPath, "MemoryExports");
+                
+                if (!System.IO.Directory.Exists(savePath))
+                {
+                    System.IO.Directory.CreateDirectory(savePath);
+                }
+                
+                string fullPath = System.IO.Path.Combine(savePath, fileName);
+                
+                // 收集所有记忆
+                var allMemories = new List<MemoryEntry>();
+                allMemories.AddRange(currentMemoryComp.ActiveMemories);
+                allMemories.AddRange(currentMemoryComp.SituationalMemories);
+                allMemories.AddRange(currentMemoryComp.EventLogMemories);
+                allMemories.AddRange(currentMemoryComp.ArchiveMemories);
+                
+                // ⭐ 修复：使用临时变量存储属性值
+                string pawnId = selectedPawn.ThingID;
+                string pawnName = selectedPawn.Name.ToStringShort;
+                
+                // 使用Verse的XML序列化
+                Scribe.saver.InitSaving(fullPath, "MemoryExport");
+                Scribe_Values.Look(ref pawnId, "pawnId");
+                Scribe_Values.Look(ref pawnName, "pawnName");
+                Scribe_Collections.Look(ref allMemories, "memories", LookMode.Deep);
+                Scribe.saver.FinalizeSaving();
+                
+                Messages.Message("RimTalk_Memory_ExportSuccess".Translate(allMemories.Count, fileName), 
+                    MessageTypeDefOf.PositiveEvent, false);
+                
+                Log.Message($"[RimTalk] Exported {allMemories.Count} memories to: {fullPath}");
+                
+                // ⭐ 导出成功后询问是否打开文件夹
+                Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
+                    "RimTalk_Memory_OpenExportFolder".Translate(),
+                    delegate
+                    {
+                        System.Diagnostics.Process.Start(savePath);
+                    },
+                    true,
+                    "RimTalk_Memory_ExportSuccessTitle".Translate()
+                ));
+            }
+            catch (System.Exception ex)
+            {
+                Messages.Message("RimTalk_Memory_ExportFailed".Translate(ex.Message), 
+                    MessageTypeDefOf.RejectInput, false);
+                Log.Error($"[RimTalk] Memory export failed: {ex}");
+            }
+        }
+        
+        /// <summary>
+        /// 从XML文件导入记忆
+        /// </summary>
+        private void ImportMemories()
+        {
+            if (selectedPawn == null || currentMemoryComp == null)
+            {
+                Messages.Message("RimTalk_Memory_ImportNoPawn".Translate(), MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+            
+            string savePath = System.IO.Path.Combine(GenFilePaths.SaveDataFolderPath, "MemoryExports");
+            
+            if (!System.IO.Directory.Exists(savePath))
+            {
+                Messages.Message("RimTalk_Memory_ImportNoFolder".Translate(), MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+            
+            var files = System.IO.Directory.GetFiles(savePath, "*.xml");
+            
+            if (files.Length == 0)
+            {
+                Messages.Message("RimTalk_Memory_ImportNoFiles".Translate(), MessageTypeDefOf.RejectInput, false);
+                return;
+            }
+            
+            // 创建文件选择菜单
+            List<FloatMenuOption> options = new List<FloatMenuOption>();
+            
+            // ⭐ 添加"打开文件夹"选项
+            options.Add(new FloatMenuOption("RimTalk_Memory_OpenFolder".Translate(), delegate
+            {
+                System.Diagnostics.Process.Start(savePath);
+            }));
+            
+            // 分隔线（用空选项实现）
+            options.Add(new FloatMenuOption("─────────────────────", null));
+            
+            foreach (var file in files.OrderByDescending(f => System.IO.File.GetLastWriteTime(f)))
+            {
+                string fileName = System.IO.Path.GetFileName(file);
+                var fileInfo = new System.IO.FileInfo(file);
+                string label = $"{fileName} ({fileInfo.Length / 1024}KB - {fileInfo.LastWriteTime:yyyy-MM-dd HH:mm})";
+                
+                options.Add(new FloatMenuOption(label, delegate
+                {
+                    ImportFromFile(file);
+                }));
+            }
+            
+            Find.WindowStack.Add(new FloatMenu(options));
+        }
+        
+        /// <summary>
+        /// 从指定文件导入记忆
+        /// </summary>
+        private void ImportFromFile(string filePath)
+        {
+            try
+            {
+                List<MemoryEntry> importedMemories = new List<MemoryEntry>();
+                string pawnId = "";
+                string pawnName = "";
+                
+                Scribe.loader.InitLoading(filePath);
+                Scribe_Values.Look(ref pawnId, "pawnId");
+                Scribe_Values.Look(ref pawnName, "pawnName");
+                Scribe_Collections.Look(ref importedMemories, "memories", LookMode.Deep);
+                Scribe.loader.FinalizeLoading();
+                
+                if (importedMemories == null || importedMemories.Count == 0)
+                {
+                    Messages.Message("RimTalk_Memory_ImportEmpty".Translate(), 
+                        MessageTypeDefOf.RejectInput, false);
+                    return;
+                }
+                
+                // 确认导入
+                Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
+                    "RimTalk_Memory_ImportConfirm".Translate(pawnName, importedMemories.Count, selectedPawn.Name.ToStringShort),
+                    delegate
+                    {
+                        int imported = 0;
+                        
+                        foreach (var memory in importedMemories)
+                        {
+                            // 根据层级添加到对应列表
+                            switch (memory.layer)
+                            {
+                                case MemoryLayer.Active:
+                                    if (currentMemoryComp.ActiveMemories.Count < RimTalkMemoryPatchMod.Settings.maxActiveMemories)
+                                    {
+                                        currentMemoryComp.ActiveMemories.Add(memory);
+                                        imported++;
+                                    }
+                                    break;
+                                    
+                                case MemoryLayer.Situational:
+                                    if (currentMemoryComp.SituationalMemories.Count < RimTalkMemoryPatchMod.Settings.maxSituationalMemories)
+                                    {
+                                        currentMemoryComp.SituationalMemories.Add(memory);
+                                        imported++;
+                                    }
+                                    break;
+                                    
+                                case MemoryLayer.EventLog:
+                                    if (currentMemoryComp.EventLogMemories.Count < RimTalkMemoryPatchMod.Settings.maxEventLogMemories)
+                                    {
+                                        currentMemoryComp.EventLogMemories.Add(memory);
+                                        imported++;
+                                    }
+                                    break;
+                                    
+                                case MemoryLayer.Archive:
+                                    if (currentMemoryComp.ArchiveMemories.Count < RimTalkMemoryPatchMod.Settings.maxArchiveMemories)
+                                    {
+                                        currentMemoryComp.ArchiveMemories.Add(memory);
+                                        imported++;
+                                    }
+                                    break;
+                            }
+                        }
+                        
+                        Messages.Message("RimTalk_Memory_ImportSuccess".Translate(imported, importedMemories.Count), 
+                            MessageTypeDefOf.PositiveEvent, false);
+                        
+                        Log.Message($"[RimTalk] Imported {imported}/{importedMemories.Count} memories from: {filePath}");
+                    }
+                ));
+            }
+            catch (System.Exception ex)
+            {
+                Messages.Message("RimTalk_Memory_ImportFailed".Translate(ex.Message), 
+                    MessageTypeDefOf.RejectInput, false);
+                Log.Error($"[RimTalk] Memory import failed: {ex}");
+            }
         }
     }
 }

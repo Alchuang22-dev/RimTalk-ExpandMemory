@@ -1,12 +1,10 @@
-using System;
-using RimTalk.Memory;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Verse;
 using RimWorld;
 using RimTalk.MemoryPatch;
-using RimTalk.Memory.Patches;
 
 namespace RimTalk.Memory.Debug
 {
@@ -22,12 +20,8 @@ namespace RimTalk.Memory.Debug
         private int cachedMemoryCount = 0;
         private int cachedKnowledgeCount = 0;
         private string contextInput = "";  // ⭐ 新增：上下文输入
-        
-        // ⭐ 新增：注入预览增强
-        private bool showRejectedKnowledge = false; // 是否显示未注入的常识
-        private List<KnowledgeScoreDetail> cachedAllKnowledgeScores = null; // 缓存所有评分
 
-        public override Vector2 InitialSize => new Vector2(1100f, 800f);
+        public override Vector2 InitialSize => new Vector2(1000f, 750f);
 
         public Dialog_InjectionPreview()
         {
@@ -50,7 +44,7 @@ namespace RimTalk.Memory.Debug
             // 标题
             Text.Font = GameFont.Medium;
             GUI.color = new Color(1f, 0.9f, 0.7f);
-            Widgets.Label(new Rect(0f, yPos, 500f, 35f), "调试预览器 - RimTalk JSON 模拟");
+            Widgets.Label(new Rect(0f, yPos, 500f, 35f), "🔍 调试预览器 - RimTalk JSON 模拟");
             GUI.color = Color.white;
             Text.Font = GameFont.Small;
             yPos += 40f;
@@ -78,15 +72,7 @@ namespace RimTalk.Memory.Debug
             DrawStats(new Rect(0f, yPos, inRect.width, 80f));
             yPos += 85f;
 
-            // 两个按钮：显示/隐藏未注入 + 刷新预览
-            Rect toggleButtonRect = new Rect(inRect.width - 230f, yPos, 110f, 35f);
-            string toggleLabel = showRejectedKnowledge ? "隐藏未注入" : "显示未注入";
-            if (Widgets.ButtonText(toggleButtonRect, toggleLabel))
-            {
-                showRejectedKnowledge = !showRejectedKnowledge;
-                RefreshPreview(); // 刷新显示
-            }
-            
+            // 刷新按钮
             Rect refreshButtonRect = new Rect(inRect.width - 110f, yPos, 100f, 35f);
             if (Widgets.ButtonText(refreshButtonRect, "刷新预览"))
             {
@@ -98,7 +84,7 @@ namespace RimTalk.Memory.Debug
             Rect previewRect = new Rect(0f, yPos, inRect.width, inRect.height - yPos - 50f);
             DrawPreview(previewRect);
         }
-        
+
         private void DrawPawnSelectors(Rect rect)
         {
             // 第一行：当前角色选择器
@@ -421,7 +407,6 @@ namespace RimTalk.Memory.Debug
 
                 var library = MemoryManager.GetCommonKnowledge();
                 KeywordExtractionInfo keywordInfo;
-                List<KnowledgeScoreDetail> allKnowledgeScores;
                 
                 // ⭐ 使用实际上下文（如果为空，则使用角色名作为种子）
                 string testContext = string.IsNullOrEmpty(contextInput) ? "" : contextInput;
@@ -434,19 +419,18 @@ namespace RimTalk.Memory.Debug
                     }
                 }
                 
-                // ⭐ 传递targetPawn参数,并获取所有评分详情
+                // 传递targetPawn参数
                 knowledgeInjection = library.InjectKnowledgeWithDetails(
                     testContext,  // ⬅️ 使用实际上下文
                     settings.maxInjectedKnowledge,
                     out knowledgeScores,
-                    out allKnowledgeScores,  // ⭐ 获取所有评分
                     out keywordInfo,
                     selectedPawn,
                     targetPawn
                 );
-                
-                // ⭐ 缓存所有评分详情
-                cachedAllKnowledgeScores = allKnowledgeScores;
+
+                // 注意：向量匹配结果不再在此处模拟，而是通过"测试向量匹配"按钮手动触发
+                // 实际游戏中由 Patch_GenerateAndProcessTalkAsync 在后台异步处理
 
                 cachedMemoryCount = memoryScores?.Count ?? 0;
                 cachedKnowledgeCount = knowledgeScores?.Count ?? 0;
@@ -561,104 +545,6 @@ namespace RimTalk.Memory.Debug
                 preview.AppendLine("🎓 【ExpandMemory - 常识库注入详细分析】");
                 preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
                 preview.AppendLine();
-
-                // ⭐ 显示常识注入统计和详细信息
-                if (cachedAllKnowledgeScores != null && cachedAllKnowledgeScores.Count > 0)
-                {
-                    var selectedKnowledge = cachedAllKnowledgeScores.Where(s => s.FailReason == "Selected").ToList();
-                    var rejectedKnowledge = cachedAllKnowledgeScores.Where(s => s.FailReason != "Selected").ToList();
-                    
-                    preview.AppendLine($"🎯 已注入: {selectedKnowledge.Count} 条");
-                    preview.AppendLine($"❌ 未注入: {rejectedKnowledge.Count} 条");
-                    preview.AppendLine($"📊 评分阈值: {settings.knowledgeScoreThreshold:F2}");
-                    preview.AppendLine();
-                    
-                    // 显示已注入的常识
-                    preview.AppendLine("【✅ 已注入的常识】");
-                    preview.AppendLine();
-                    
-                    foreach (var detail in selectedKnowledge.OrderByDescending(d => d.TotalScore))
-                    {
-                        string matchIcon = detail.MatchType == KnowledgeMatchType.Keyword ? "🔑" : "🧠";
-                        string matchLabel = detail.MatchType == KnowledgeMatchType.Keyword ? "关键词" : "向量";
-                        
-                        preview.AppendLine($"{matchIcon} [{matchLabel}] 总分: {detail.TotalScore:F3}");
-                        preview.AppendLine($"    标签: [{detail.Entry.tag}]");
-                        preview.AppendLine($"    ├─ 基础重要性: {detail.BaseScore:F2}");
-                        preview.AppendLine($"    └─ 匹配得分: {detail.MatchTypeScore:F2}");
-                        preview.AppendLine($"    内容: \"{detail.Entry.content}\"");
-                        preview.AppendLine();
-                    }
-                    
-                    // 显示未注入的常识（可选）
-                    if (showRejectedKnowledge && rejectedKnowledge.Count > 0)
-                    {
-                        preview.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══");
-                        preview.AppendLine("【❌ 未注入的常识】");
-                        preview.AppendLine();
-                        
-                        foreach (var detail in rejectedKnowledge.OrderByDescending(d => d.TotalScore).Take(10))
-                        {
-                            string matchIcon = detail.MatchType == KnowledgeMatchType.Keyword ? "🔑" : "🧠";
-                            string matchLabel = detail.MatchType == KnowledgeMatchType.Keyword ? "关键词" : "向量";
-                            string reasonLabel = GetFailReasonLabel(detail.FailReason);
-                            
-                            preview.AppendLine($"{matchIcon} [{matchLabel}] 总分: {detail.TotalScore:F3} | 原因: {reasonLabel}");
-                            preview.AppendLine($"    标签: [{detail.Entry.tag}]");
-                            preview.AppendLine($"    内容: \"{detail.Entry.content.Substring(0, Math.Min(60, detail.Entry.content.Length))}...\"");
-                            preview.AppendLine();
-                        }
-                        
-                        if (rejectedKnowledge.Count > 10)
-                        {
-                            preview.AppendLine($"    ... 还有 {rejectedKnowledge.Count - 10} 条未显示");
-                        }
-                        preview.AppendLine();
-                    }
-                }
-                else if (knowledgeInjection != null && knowledgeScores != null)
-                {
-                    // 兼容旧版显示（如果没有 cachedAllKnowledgeScores）
-                    preview.AppendLine($"🎯 动态评分选择了 {knowledgeScores.Count} 条常识");
-                    preview.AppendLine($"📊 评分阈值: {settings.knowledgeScoreThreshold:F2} (低于此分数不注入)");
-                    
-                    // ⭐ 显示关键词数量
-                    if (keywordInfo != null)
-                    {
-                        preview.AppendLine($"🔑 提取关键词: {keywordInfo.TotalKeywords} 个 (上下文 {keywordInfo.ContextKeywords.Count} + 角色 {keywordInfo.PawnKeywordsCount})");
-                    }
-                    preview.AppendLine();
-
-                    for (int i = 0; i < knowledgeScores.Count; i++)
-                    {
-                        var score = knowledgeScores[i];
-                        preview.AppendLine($"[{i + 1}] 📘 评分: {score.Score:F3}");
-                        preview.AppendLine($"    标签: [{score.Entry.tag}]");
-                        preview.AppendLine($"    重要性: {score.Entry.importance:F2}");
-                        preview.AppendLine($"    内容: \"{score.Entry.content}\"");
-                        preview.AppendLine();
-                    }
-                }
-                else
-                {
-                    preview.AppendLine("⚠️ 没有常识达到阈值，返回 null (不注入常识)");
-                    preview.AppendLine($"📊 当前阈值: {settings.knowledgeScoreThreshold:F2}");
-                    
-                    // ⭐ 显示关键词信息以帮助调试
-                    if (keywordInfo != null)
-                    {
-                        preview.AppendLine($"🔑 已提取关键词: {keywordInfo.TotalKeywords} 个");
-                        if (keywordInfo.ContextKeywords.Count > 0)
-                        {
-                            preview.AppendLine($"    前10个: {string.Join(", ", keywordInfo.ContextKeywords.Take(10))}");
-                        }
-                        else
-                        {
-                            preview.AppendLine("    ⚠️ 上下文关键词为空！请输入有效的上下文");
-                        }
-                    }
-                    preview.AppendLine();
-                }
                 
                 // ⭐ 新增：场景分析显示（使用实际上下文）
                 if (!string.IsNullOrEmpty(contextInput))
@@ -709,6 +595,48 @@ namespace RimTalk.Memory.Debug
                     preview.AppendLine();
                 }
 
+                if (knowledgeInjection != null && knowledgeScores != null)
+                {
+                    preview.AppendLine($"🎯 动态评分选择了 {knowledgeScores.Count} 条常识");
+                    preview.AppendLine($"📊 评分阈值: {settings.knowledgeScoreThreshold:F2} (低于此分数不注入)");
+                    
+                    // ⭐ 显示关键词数量
+                    if (keywordInfo != null)
+                    {
+                        preview.AppendLine($"🔑 提取关键词: {keywordInfo.TotalKeywords} 个 (上下文 {keywordInfo.ContextKeywords.Count} + 角色 {keywordInfo.PawnKeywordsCount})");
+                    }
+                    preview.AppendLine();
+
+                    for (int i = 0; i < knowledgeScores.Count; i++)
+                    {
+                        var score = knowledgeScores[i];
+                        preview.AppendLine($"[{i + 1}] 📘 评分: {score.Score:F3}");
+                        preview.AppendLine($"    标签: [{score.Entry.tag}]");
+                        preview.AppendLine($"    重要性: {score.Entry.importance:F2}");
+                        preview.AppendLine($"    内容: \"{score.Entry.content}\"");
+                        preview.AppendLine();
+                    }
+                }
+                else
+                {
+                    preview.AppendLine("⚠️ 没有常识达到阈值，返回 null (不注入常识)");
+                    preview.AppendLine($"📊 当前阈值: {settings.knowledgeScoreThreshold:F2}");
+                    
+                    // ⭐ 显示关键词信息以帮助调试
+                    if (keywordInfo != null)
+                    {
+                        preview.AppendLine($"🔑 已提取关键词: {keywordInfo.TotalKeywords} 个");
+                        if (keywordInfo.ContextKeywords.Count > 0)
+                        {
+                            preview.AppendLine($"    前10个: {string.Join(", ", keywordInfo.ContextKeywords.Take(10))}");
+                        }
+                        else
+                        {
+                            preview.AppendLine("    ⚠️ 上下文关键词为空！请输入有效的上下文");
+                        }
+                    }
+                    preview.AppendLine();
+                }
 
                 // ===== 关键词提取详情 =====
                 if (keywordInfo != null)
@@ -944,7 +872,7 @@ namespace RimTalk.Memory.Debug
                 GUI.color = Color.white;
             }
         }
-        
+
         /// <summary>
         /// ⭐ 新增：测试向量匹配功能
         /// </summary>
@@ -962,52 +890,64 @@ namespace RimTalk.Memory.Debug
                 Messages.Message("向量增强功能未启用，请在设置中开启", MessageTypeDefOf.RejectInput, false);
                 return;
             }
+                try
+                {
+                    string cleanedContext = ContextCleaner.CleanForVectorMatching(contextInput);
+                    var vectorResults = VectorDB.VectorService.Instance.FindBestLoreIdsAsync(
+                        cleanedContext, 
+                        settings.maxVectorResults * 2,
+                        settings.vectorSimilarityThreshold
+                    ).Result;
+                    
+                    // 在主线程显示结果
+                    LongEventHandler.ExecuteWhenFinished(() => {
+                        if (vectorResults == null || vectorResults.Count == 0)
+                        {
+                            Messages.Message($"未找到相似度 >= {settings.vectorSimilarityThreshold:F2} 的常识", 
+                                MessageTypeDefOf.NeutralEvent, false);
+                        }
+                        else
+                        {
+                            Messages.Message($"找到 {vectorResults.Count} 条匹配的常识，刷新预览查看详情", 
+                                MessageTypeDefOf.PositiveEvent, false);
+                            
+                            // 这里我们只是为了演示，实际上预览器目前只显示标签匹配结果
+                            // 如果要显示向量结果，需要修改 RefreshPreview 逻辑来包含这些结果
+                            // 但根据用户要求，预览器不需要实时匹配，所以这里只是提示
+                            // 或者我们可以临时将结果注入到 cachedPreview 中？
+                            // 既然用户说"预览器千万不能实时匹配"，那么点击按钮后显示结果是合理的。
+                            // 我们可以弹出一个对话框显示结果，或者追加到预览文本中。
+                            
+                            ShowVectorResults(vectorResults);
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    LongEventHandler.ExecuteWhenFinished(() => {
+                        Messages.Message($"向量匹配失败: {ex.Message}", MessageTypeDefOf.RejectInput, false);
+                    });
+                }
+        }
+
+        private void ShowVectorResults(List<(string id, float similarity)> results)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("【向量匹配测试结果】");
+            sb.AppendLine($"找到 {results.Count} 条匹配项：");
+            sb.AppendLine();
             
-            try
+            var library = MemoryManager.GetCommonKnowledge();
+            foreach (var (id, similarity) in results)
             {
-                // 调用向量服务进行匹配
-                var vectorResults = VectorDB.VectorService.Instance.FindBestLoreIds(
-                    contextInput, 
-                    settings.maxVectorResults * 2,  // 多获取一些结果
-                    settings.vectorSimilarityThreshold
-                );
-                
-                if (vectorResults == null || vectorResults.Count == 0)
+                var entry = library.Entries.FirstOrDefault(e => e.id == id);
+                if (entry != null)
                 {
-                    Messages.Message($"未找到相似度 >= {settings.vectorSimilarityThreshold:F2} 的常识", MessageTypeDefOf.NeutralEvent, false);
-                    return;
+                    sb.AppendLine($"[{similarity:F2}] [{entry.tag}] {entry.content}");
                 }
-                
-                // 显示结果统计
-                Messages.Message($"找到 {vectorResults.Count} 条匹配的常识，刷新预览查看详情", MessageTypeDefOf.PositiveEvent, false);
-                
-                // 刷新预览以显示结果
-                RefreshPreview();
-                
-                // 输出详细日志
-                Log.Message($"[RimTalk-ExpandMemory] ========== 向量匹配测试 ==========");
-                Log.Message($"[RimTalk-ExpandMemory] 上下文: {contextInput.Substring(0, Math.Min(100, contextInput.Length))}");
-                Log.Message($"[RimTalk-ExpandMemory] 阈值: {settings.vectorSimilarityThreshold:F2}");
-                Log.Message($"[RimTalk-ExpandMemory] 结果数: {vectorResults.Count}");
-                
-                foreach (var (id, similarity) in vectorResults.Take(10))
-                {
-                    var library = MemoryManager.GetCommonKnowledge();
-                    var entry = library.Entries.FirstOrDefault(e => e.id == id);
-                    if (entry != null)
-                    {
-                        string preview = entry.content.Length > 50 ? entry.content.Substring(0, 50) + "..." : entry.content;
-                        Log.Message($"[RimTalk-ExpandMemory]   [{entry.tag}] 相似度: {similarity:F4} - {preview}");
-                    }
-                }
-                
-                Log.Message($"[RimTalk-ExpandMemory] ========================================");
             }
-            catch (Exception ex)
-            {
-                Messages.Message($"向量匹配失败: {ex.Message}", MessageTypeDefOf.RejectInput, false);
-                Log.Error($"[RimTalk-ExpandMemory] Vector matching test failed: {ex}");
-            }
+            
+            Find.WindowStack.Add(new Dialog_MessageBox(sb.ToString()));
         }
 
         /// <summary>
@@ -1018,7 +958,7 @@ namespace RimTalk.Memory.Debug
             try
             {
                 // 尝试通过API获取最后一次请求
-                string lastContext = RimTalkMemoryAPI.GetLastRimTalkContext(
+                string lastContext = RimTalk.Memory.Patches.RimTalkMemoryAPI.GetLastRimTalkContext(
                     out Pawn lastPawn, 
                     out int lastTick
                 );
@@ -1133,30 +1073,6 @@ namespace RimTalk.Memory.Debug
                            "  • 均衡权重（所有0.3）\n" +
                            "  • 通用场景\n" +
                            "  • 时间窗口：10天";
-            }
-        }
-        
-        /// <summary>
-        /// ⭐ 新增：获取失败原因标签
-        /// </summary>
-        private string GetFailReasonLabel(string failReason)
-        {
-            switch (failReason)
-            {
-                case "Selected":
-                    return "✅ 已选中";
-                case "LowScore":
-                    return "📉 分数过低";
-                case "ConfidenceMargin":
-                    return "🎯 领跑分过滤";
-                case "ExceedMaxEntries":
-                    return "📊 超出数量限制";
-                case "Excluded":
-                    return "🚫 被排除词过滤";
-                case "Pending":
-                    return "⏳ 待处理";
-                default:
-                    return "❓ 未知";
             }
         }
         

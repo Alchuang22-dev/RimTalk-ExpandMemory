@@ -7,115 +7,75 @@ using Verse;
 namespace RimTalk.Memory
 {
     /// <summary>
-    /// 提示词规范化引擎
-    /// 负责安全、快速地执行用户自定义的文本替换规则
-    /// ? v3.3.2.37: 新增功能
+    /// ��ʾ�ʹ淶���� - �ڷ��͸�AIǰ�Զ��滻/�淶����ʾ��
+    /// ? v3.3.2.37: ֧���������ʽ�滻����
     /// </summary>
     public static class PromptNormalizer
     {
-        // 预编译的正则表达式缓存
-        private static List<(Regex regex, string replacement)> compiledRules = new List<(Regex, string)>();
-        
-        // 超时保护（20ms）
-        private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(20);
+        private static List<RimTalk.MemoryPatch.RimTalkMemoryPatchSettings.ReplacementRule> activeRules = new List<RimTalk.MemoryPatch.RimTalkMemoryPatchSettings.ReplacementRule>();
+        private static Dictionary<string, Regex> compiledRegexCache = new Dictionary<string, Regex>();
         
         /// <summary>
-        /// 更新规则（从设置中加载并预编译）
+        /// �����滻�����б�
         /// </summary>
-        public static void UpdateRules(List<MemoryPatch.RimTalkMemoryPatchSettings.ReplacementRule> rules)
+        public static void UpdateRules(List<RimTalk.MemoryPatch.RimTalkMemoryPatchSettings.ReplacementRule> rules)
         {
             if (rules == null)
             {
-                compiledRules.Clear();
+                activeRules.Clear();
+                compiledRegexCache.Clear();
                 return;
             }
             
-            var newCompiledRules = new List<(Regex, string)>();
-            int successCount = 0;
-            int errorCount = 0;
+            activeRules = rules.Where(r => r != null && r.isEnabled).ToList();
             
-            foreach (var rule in rules)
+            // Ԥ�����������ʽ����������
+            compiledRegexCache.Clear();
+            foreach (var rule in activeRules)
             {
-                // 跳过禁用的规则
-                if (!rule.isEnabled)
-                    continue;
-                
-                // 跳过空规则
                 if (string.IsNullOrEmpty(rule.pattern))
                     continue;
                 
                 try
                 {
-                    // 预编译正则表达式（启用编译优化 + 忽略大小写 + 超时保护）
-                    var regex = new Regex(
-                        rule.pattern,
-                        RegexOptions.Compiled | RegexOptions.IgnoreCase,
-                        RegexTimeout
-                    );
-                    
-                    newCompiledRules.Add((regex, rule.replacement ?? ""));
-                    successCount++;
-                }
-                catch (ArgumentException ex)
-                {
-                    // 捕获无效的正则表达式
-                    Log.Warning($"[PromptNormalizer] Invalid regex pattern '{rule.pattern}': {ex.Message}");
-                    errorCount++;
+                    var regex = new Regex(rule.pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                    compiledRegexCache[rule.pattern] = regex;
                 }
                 catch (Exception ex)
                 {
-                    // 捕获其他异常
-                    Log.Error($"[PromptNormalizer] Failed to compile regex '{rule.pattern}': {ex.Message}");
-                    errorCount++;
+                    Log.Warning($"[PromptNormalizer] Invalid regex pattern '{rule.pattern}': {ex.Message}");
                 }
-            }
-            
-            // 更新缓存
-            compiledRules = newCompiledRules;
-            
-            // 日志输出（仅开发模式）
-            if (Prefs.DevMode)
-            {
-                Log.Message($"[PromptNormalizer] Updated rules: {successCount} compiled, {errorCount} errors");
             }
         }
         
         /// <summary>
-        /// 规范化输入文本（应用所有规则）
+        /// �淶����ʾ���ı�
         /// </summary>
-        public static string Normalize(string input)
+        public static string Normalize(string text)
         {
-            // 空值检查
-            if (string.IsNullOrEmpty(input))
-                return input;
+            if (string.IsNullOrEmpty(text))
+                return text;
             
-            // 如果没有规则，直接返回
-            if (compiledRules.Count == 0)
-                return input;
+            if (activeRules.Count == 0)
+                return text;
             
-            string result = input;
+            string result = text;
             
-            // 依次应用所有规则
-            foreach (var (regex, replacement) in compiledRules)
+            foreach (var rule in activeRules)
             {
+                if (string.IsNullOrEmpty(rule.pattern) || rule.replacement == null)
+                    continue;
+                
                 try
                 {
-                    result = regex.Replace(result, replacement);
-                }
-                catch (RegexMatchTimeoutException)
-                {
-                    // 超时保护：跳过当前规则，继续处理
-                    if (Prefs.DevMode)
+                    if (compiledRegexCache.TryGetValue(rule.pattern, out var regex))
                     {
-                        Log.Warning($"[PromptNormalizer] Regex timeout for pattern '{regex}', skipping...");
+                        result = regex.Replace(result, rule.replacement);
                     }
-                    continue;
                 }
                 catch (Exception ex)
                 {
-                    // 其他异常：跳过当前规则
-                    Log.Warning($"[PromptNormalizer] Regex replace failed: {ex.Message}");
-                    continue;
+                    Log.Warning($"[PromptNormalizer] Error applying rule '{rule.pattern}': {ex.Message}");
                 }
             }
             
@@ -123,11 +83,11 @@ namespace RimTalk.Memory
         }
         
         /// <summary>
-        /// 获取当前激活的规则数量
+        /// ��ȡ��ǰ����Ĺ�������
         /// </summary>
         public static int GetActiveRuleCount()
         {
-            return compiledRules.Count;
+            return activeRules.Count;
         }
     }
 }

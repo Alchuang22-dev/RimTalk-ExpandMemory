@@ -10,7 +10,7 @@ namespace RimTalk.MemoryPatch
 {
     public class RimTalkMemoryPatchSettings : ModSettings
     {
-        // ? 新增：提示词规范化规则
+        // ⭐ 提示词规范化规则
         /// <summary>
         /// 替换规则定义
         /// </summary>
@@ -37,12 +37,8 @@ namespace RimTalk.MemoryPatch
             }
         }
         
-        // ? 提示词规范化规则列表
-        public List<ReplacementRule> normalizationRules = new List<ReplacementRule>
-        {
-            new ReplacementRule(@"\(Player\)", "Master", true),
-            new ReplacementRule(@"\(玩家\)", "主人", true)
-        };
+        // ⭐ 提示词规范化规则列表（功能保留，默认为空）
+        public List<ReplacementRule> normalizationRules = new List<ReplacementRule>();
         
         // 四层记忆容量配置
         public int maxActiveMemories = 6;
@@ -118,51 +114,19 @@ namespace RimTalk.MemoryPatch
         public bool enableProactiveRecall = false;
         public float recallTriggerChance = 0.15f;
         
-        // 常识库权重配置
-        public float knowledgeBaseScore = 0.05f;
-        public float knowledgeJaccardWeight = 0.7f;
-        public float knowledgeTagWeight = 0.3f;
-        public float knowledgeMatchBonus = 0.08f;
-
         // Vector Enhancement Settings
         public bool enableVectorEnhancement = false;
         public float vectorSimilarityThreshold = 0.75f;
         public int maxVectorResults = 5;
-
+        
+        // Cloud Embedding Settings
+        public string embeddingApiKey = "";
+        public string embeddingApiUrl = "https://api.openai.com/v1/embeddings";
+        public string embeddingModel = "text-embedding-3-small";
+        
         // Knowledge Matching Settings
-        public bool enableKnowledgeChaining = true;
+        public bool enableKnowledgeChaining = false; // ⭐ 默认改为false
         public int maxChainingRounds = 2;
-        
-        // ⭐ v3.3.20: 新增高级匹配设置
-        public float confidenceMargin = 0.05f; // 防误触领跑分 (0.0 - 0.2)
-        public float hybridWeightBalance = 0.5f; // 混合检索权重 (0.0 - 1.0, 0=Keywords, 1=Vector)
-        public string globalExcludeKeywords = ""; // 全局排除词 (逗号分隔)
-        
-        private string[] cachedGlobalExcludeKeywords; // 缓存的全局排除词数组
-
-        public string[] GetGlobalExcludeKeywords()
-        {
-            if (cachedGlobalExcludeKeywords == null)
-            {
-                if (string.IsNullOrEmpty(globalExcludeKeywords))
-                {
-                    cachedGlobalExcludeKeywords = new string[0];
-                }
-                else
-                {
-                    cachedGlobalExcludeKeywords = globalExcludeKeywords.Split(new[] { ',', '，', '、', ';', '；' }, System.StringSplitOptions.RemoveEmptyEntries)
-                        .Select(k => k.Trim())
-                        .Where(k => !string.IsNullOrEmpty(k))
-                        .ToArray();
-                }
-            }
-            return cachedGlobalExcludeKeywords;
-        }
-        
-        public void ClearGlobalExcludeCache()
-        {
-            cachedGlobalExcludeKeywords = null;
-        }
 
         // UI折叠状态
         private static bool expandDynamicInjection = true;
@@ -171,8 +135,8 @@ namespace RimTalk.MemoryPatch
         private static bool expandSummarization = false;
         private static bool expandAIConfig = true;
         private static bool expandMemoryTypes = false;
+        private static bool expandVectorEnhancement = true; // ⭐ 恢复向量增强折叠状态
         private static bool expandExperimentalFeatures = true;
-        private static bool expandVectorEnhancement = true;
         
         private static Vector2 scrollPosition = Vector2.zero;
 
@@ -180,17 +144,13 @@ namespace RimTalk.MemoryPatch
         {
             base.ExposeData();
             
-            // ? 序列化提示词规范化规则
+            // ⭐ 序列化提示词规范化规则
             Scribe_Collections.Look(ref normalizationRules, "normalizationRules", LookMode.Deep);
             
-            // ? 兼容性：如果加载后为 null，初始化默认规则
+            // ⭐ 兼容性：如果加载后为 null，初始化为空列表
             if (Scribe.mode == LoadSaveMode.PostLoadInit && normalizationRules == null)
             {
-                normalizationRules = new List<ReplacementRule>
-                {
-                    new ReplacementRule(@"\(Player\)", "Master", true),
-                    new ReplacementRule(@"\(玩家\)", "主人", true)
-                };
+                normalizationRules = new List<ReplacementRule>();
             }
             
             Scribe_Values.Look(ref maxActiveMemories, "fourLayer_maxActiveMemories", 6);
@@ -244,112 +204,128 @@ namespace RimTalk.MemoryPatch
             Scribe_Values.Look(ref enableProactiveRecall, "recall_enableProactiveRecall", false);
             Scribe_Values.Look(ref recallTriggerChance, "recall_triggerChance", 0.15f);
 
-            Scribe_Values.Look(ref knowledgeBaseScore, "knowledge_baseScore", 0.05f);
-            Scribe_Values.Look(ref knowledgeJaccardWeight, "knowledge_jaccardWeight", 0.7f);
-            Scribe_Values.Look(ref knowledgeTagWeight, "knowledge_tagWeight", 0.3f);
-            Scribe_Values.Look(ref knowledgeMatchBonus, "knowledge_matchBonus", 0.08f);
-
             // Vector Enhancement
             Scribe_Values.Look(ref enableVectorEnhancement, "vector_enableVectorEnhancement", false);
             Scribe_Values.Look(ref vectorSimilarityThreshold, "vector_vectorSimilarityThreshold", 0.75f);
             Scribe_Values.Look(ref maxVectorResults, "vector_maxVectorResults", 5);
+            
+            Scribe_Values.Look(ref embeddingApiKey, "vector_embeddingApiKey", "");
+            Scribe_Values.Look(ref embeddingApiUrl, "vector_embeddingApiUrl", "https://api.openai.com/v1/embeddings");
+            Scribe_Values.Look(ref embeddingModel, "vector_embeddingModel", "text-embedding-3-small");
 
             // Knowledge Matching
-            Scribe_Values.Look(ref enableKnowledgeChaining, "knowledge_enableKnowledgeChaining", true);
+            Scribe_Values.Look(ref enableKnowledgeChaining, "knowledge_enableKnowledgeChaining", false); // ⭐ 默认改为false
             Scribe_Values.Look(ref maxChainingRounds, "knowledge_maxChainingRounds", 2);
-            
-            // ⭐ v3.3.20: 序列化高级匹配设置
-            Scribe_Values.Look(ref confidenceMargin, "knowledge_confidenceMargin", 0.05f);
-            Scribe_Values.Look(ref hybridWeightBalance, "knowledge_hybridWeightBalance", 0.5f);
-            Scribe_Values.Look(ref globalExcludeKeywords, "knowledge_globalExcludeKeywords", "");
-            
-            if (Scribe.mode == LoadSaveMode.PostLoadInit)
-            {
-                ClearGlobalExcludeCache();
-            }
         }
 
         public void DoSettingsWindowContents(Rect inRect)
         {
             Listing_Standard listingStandard = new Listing_Standard();
-            
-            Rect viewRect = new Rect(0f, 0f, inRect.width - 20f, 2400f); // ? 增加高度以容纳新内容
+            Rect viewRect = new Rect(0f, 0f, inRect.width - 20f, 1400f);
             Widgets.BeginScrollView(inRect, ref scrollPosition, viewRect);
             listingStandard.Begin(viewRect);
 
-            // ? 新增：提示词规范化设置
-            Text.Font = GameFont.Medium;
-            listingStandard.Label("提示词规范化");
-            Text.Font = GameFont.Small;
-            
-            GUI.color = Color.gray;
-            listingStandard.Label("自定义替换规则，在发送给 AI 前自动处理提示词");
-            GUI.color = Color.white;
-            
-            listingStandard.Gap(6f);
-            
-            DrawPromptNormalizationSettings(listingStandard);
-            
+            DrawPresetConfiguration(listingStandard);
             listingStandard.Gap();
+            DrawQuickActionButtons(listingStandard);
             listingStandard.GapLine();
 
-            // 常识库管理
             Text.Font = GameFont.Medium;
-            listingStandard.Label("常识库管理");
+            listingStandard.Label("API 配置");
             Text.Font = GameFont.Small;
-            
-            GUI.color = Color.gray;
-            listingStandard.Label("管理全局常识库，为AI对话提供背景知识");
-            GUI.color = Color.white;
-            
-            listingStandard.Gap(6f);
-            
-            Rect knowledgeButtonRect = listingStandard.GetRect(35f);
-            if (Widgets.ButtonText(knowledgeButtonRect, "打开常识库"))
-            {
-                OpenCommonKnowledgeDialog();
-            }
-            
-            listingStandard.Gap();
+            DrawAIConfigSettings(listingStandard);
+
             listingStandard.GapLine();
-
-            // 动态注入设置
-            DrawCollapsibleSection(listingStandard, "动态注入设置", ref expandDynamicInjection, () => DrawDynamicInjectionSettings(listingStandard));
-            DrawCollapsibleSection(listingStandard, "?? 向量增强设置", ref expandVectorEnhancement, () => DrawVectorEnhancementSettings(listingStandard));
-            DrawCollapsibleSection(listingStandard, "记忆容量配置", ref expandMemoryCapacity, () => DrawMemoryCapacitySettings(listingStandard));
-            DrawCollapsibleSection(listingStandard, "记忆衰减配置", ref expandDecayRates, () => DrawDecaySettings(listingStandard));
-            DrawCollapsibleSection(listingStandard, "记忆总结设置", ref expandSummarization, () => DrawSummarizationSettings(listingStandard));
-
-            if (useAISummarization)
+            Rect advancedButtonRect = listingStandard.GetRect(40f);
+            if (Widgets.ButtonText(advancedButtonRect, "高级设置..."))
             {
-                DrawCollapsibleSection(listingStandard, "AI 配置", ref expandAIConfig, () => DrawAIConfigSettings(listingStandard));
+                Find.WindowStack.Add(new AdvancedSettingsWindow(this));
             }
-
-            DrawCollapsibleSection(listingStandard, "记忆类型开关", ref expandMemoryTypes, () => DrawMemoryTypesSettings(listingStandard));
-            DrawCollapsibleSection(listingStandard, "?? 实验性功能", ref expandExperimentalFeatures, () => DrawExperimentalFeaturesSettings(listingStandard));
-
-            // 调试工具
-            listingStandard.Gap();
-            Text.Font = GameFont.Small;
-            GUI.color = new Color(1f, 0.9f, 0.7f);
-            listingStandard.Label("调试工具");
-            GUI.color = Color.white;
-            
-            Rect previewButtonRect = listingStandard.GetRect(35f);
-            if (Widgets.ButtonText(previewButtonRect, "注入预览器"))
-            {
-                Find.WindowStack.Add(new Memory.Debug.Dialog_InjectionPreview());
-            }
-            
-            GUI.color = Color.gray;
-            listingStandard.Label("实时预览记忆/常识注入效果");
-            GUI.color = Color.white;
 
             listingStandard.End();
             Widgets.EndScrollView();
-            
-            // ? v3.3.2.37: 在设置窗口每帧更新时更新规则（用户修改后立即生效）
-            PromptNormalizer.UpdateRules(normalizationRules);
+        }
+
+        private void DrawPresetConfiguration(Listing_Standard listing)
+        {
+            Text.Font = GameFont.Medium;
+            listing.Label("预设配置");
+            Text.Font = GameFont.Small;
+            GUI.color = Color.gray;
+            listing.Label("从记忆/常识注入数量少到多快速切换，并预估 token 消耗");
+            GUI.color = Color.white;
+            listing.Gap(6f);
+
+            Rect rowRect = listing.GetRect(95f);
+            float spacing = 10f;
+            float cardWidth = (rowRect.width - spacing * 2f) / 3f;
+            float cardHeight = rowRect.height;
+
+            DrawPresetCard(new Rect(rowRect.x, rowRect.y, cardWidth, cardHeight), "轻量", 3, 2, 250);
+            DrawPresetCard(new Rect(rowRect.x + cardWidth + spacing, rowRect.y, cardWidth, cardHeight), "平衡", 6, 4, 520);
+            DrawPresetCard(new Rect(rowRect.x + 2f * (cardWidth + spacing), rowRect.y, cardWidth, cardHeight), "强化", 10, 6, 850);
+
+            listing.GapLine();
+        }
+
+        private void DrawPresetCard(Rect rect, string title, int memoryCount, int knowledgeCount, int tokenEstimate)
+        {
+            Widgets.DrawBoxSolid(rect, new Color(0.18f, 0.18f, 0.18f, 0.6f));
+            Widgets.DrawHighlightIfMouseover(rect);
+
+            Text.Anchor = TextAnchor.MiddleCenter;
+            GUI.color = new Color(0.8f, 0.9f, 1f);
+            Widgets.Label(rect, $"{title}\n记忆 {memoryCount} | 常识 {knowledgeCount}\n~{tokenEstimate} tokens");
+            GUI.color = Color.white;
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            TooltipHandler.TipRegion(rect, $"记忆 {memoryCount} 条 + 常识 {knowledgeCount} 条\n预计消耗 ~{tokenEstimate} tokens");
+
+            if (Widgets.ButtonInvisible(rect))
+            {
+                useDynamicInjection = true;
+                maxInjectedMemories = memoryCount;
+                maxInjectedKnowledge = knowledgeCount;
+                Messages.Message($"已应用预设: {title} (记忆 {memoryCount}, 常识 {knowledgeCount})", MessageTypeDefOf.PositiveEvent);
+            }
+        }
+
+        private void DrawQuickActionButtons(Listing_Standard listing)
+        {
+            Text.Font = GameFont.Medium;
+            listing.Label("功能入口");
+            Text.Font = GameFont.Small;
+            listing.Gap(4f);
+
+            Rect rowRect = listing.GetRect(60f);
+            float spacing = 10f;
+            float buttonWidth = (rowRect.width - spacing * 2f) / 3f; // ⭐ 改回3个按钮
+            float buttonHeight = rowRect.height;
+
+            DrawActionButton(new Rect(rowRect.x, rowRect.y, buttonWidth, buttonHeight), "常识库", "打开并管理全局常识库", delegate
+            {
+                OpenCommonKnowledgeDialog();
+            });
+
+            // ⭐ 恢复"提示词替换"按钮
+            DrawActionButton(new Rect(rowRect.x + buttonWidth + spacing, rowRect.y, buttonWidth, buttonHeight), "提示词替换", "编辑提示词替换/规范化规则", delegate
+            {
+                Find.WindowStack.Add(new PromptNormalizationWindow(this));
+            });
+
+            DrawActionButton(new Rect(rowRect.x + 2f * (buttonWidth + spacing), rowRect.y, buttonWidth, buttonHeight), "注入预览器", "实时查看记忆/常识注入效果", delegate
+            {
+                Find.WindowStack.Add(new Memory.Debug.Dialog_InjectionPreview());
+            });
+        }
+
+        private void DrawActionButton(Rect rect, string label, string tip, System.Action onClick)
+        {
+            if (Widgets.ButtonText(rect, label))
+            {
+                onClick?.Invoke();
+            }
+            TooltipHandler.TipRegion(rect, tip);
         }
 
         private void DrawCollapsibleSection(Listing_Standard listing, string title, ref bool expanded, System.Action drawContent)
@@ -453,109 +429,8 @@ namespace RimTalk.MemoryPatch
             
             listing.Gap();
             
-            // ? v3.3.8: AI 提供商选择
-            listing.Label("AI 提供商:");
-            GUI.color = Color.gray;
-            listing.Label($"  当前: {independentProvider}");
-            GUI.color = Color.white;
-            
-            // 提供商选择按钮
-            Rect providerHeaderRect = listing.GetRect(25f);
-            Widgets.DrawBoxSolid(providerHeaderRect, new Color(0.15f, 0.15f, 0.15f, 0.5f));
-            Widgets.Label(providerHeaderRect.ContractedBy(5f), "选择提供商");
-            
-            Rect providerButtonRect1 = listing.GetRect(30f);
-            float buttonWidth = (providerButtonRect1.width - 20f) / 3f;
-            
-            // 第一行：OpenAI, DeepSeek, Player2
-            Rect openaiRect = new Rect(providerButtonRect1.x, providerButtonRect1.y, buttonWidth, 30f);
-            Rect deepseekRect = new Rect(providerButtonRect1.x + buttonWidth + 10f, providerButtonRect1.y, buttonWidth, 30f);
-            Rect player2Rect = new Rect(providerButtonRect1.x + 2 * (buttonWidth + 10f), providerButtonRect1.y, buttonWidth, 30f);
-            
-            bool isOpenAI = independentProvider == "OpenAI";
-            bool isDeepSeek = independentProvider == "DeepSeek";
-            bool isPlayer2 = independentProvider == "Player2";
-            
-            GUI.color = isOpenAI ? new Color(0.5f, 1f, 0.5f) : Color.white;
-            if (Widgets.ButtonText(openaiRect, "OpenAI"))
-            {
-                independentProvider = "OpenAI";
-                independentModel = "gpt-3.5-turbo";
-                independentApiUrl = "https://api.openai.com/v1/chat/completions";
-            }
-            
-            GUI.color = isDeepSeek ? new Color(0.5f, 0.7f, 1f) : Color.white;
-            if (Widgets.ButtonText(deepseekRect, "DeepSeek"))
-            {
-                independentProvider = "DeepSeek";
-                independentModel = "deepseek-chat";
-                independentApiUrl = "https://api.deepseek.com/v1/chat/completions";
-            }
-            
-            GUI.color = isPlayer2 ? new Color(1f, 0.8f, 0.5f) : Color.white;
-            if (Widgets.ButtonText(player2Rect, "Player2"))
-            {
-                independentProvider = "Player2";
-                independentModel = "gpt-4o";
-                independentApiUrl = "https://api.player2.game/v1/chat/completions";
-            }
-            GUI.color = Color.white;
-            
-            // 第二行：Google, Custom
-            Rect providerButtonRect2 = listing.GetRect(30f);
-            Rect googleRect = new Rect(providerButtonRect2.x, providerButtonRect2.y, buttonWidth, 30f);
-            Rect customRect = new Rect(providerButtonRect2.x + buttonWidth + 10f, providerButtonRect2.y, buttonWidth, 30f);
-            
-            bool isGoogle = independentProvider == "Google";
-            bool isCustom = independentProvider == "Custom";
-            
-            GUI.color = isGoogle ? new Color(1f, 0.5f, 0.5f) : Color.white;
-            if (Widgets.ButtonText(googleRect, "Google"))
-            {
-                independentProvider = "Google";
-                independentModel = "gemini-2.0-flash-exp";
-                independentApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
-            }
-            
-            GUI.color = isCustom ? new Color(0.7f, 0.7f, 0.7f) : Color.white;
-            if (Widgets.ButtonText(customRect, "Custom"))
-            {
-                independentProvider = "Custom";
-                independentModel = "custom-model";
-                independentApiUrl = "https://your-api-url.com/v1/chat/completions";
-            }
-            GUI.color = Color.white;
-            
-            listing.Gap();
-            
-            // 提供商说明
-            GUI.color = new Color(0.7f, 0.9f, 1f);
-            if (independentProvider == "OpenAI")
-            {
-                listing.Label("?? OpenAI GPT 系列模型，稳定可靠");
-                listing.Label("   推荐模型: gpt-3.5-turbo, gpt-4");
-            }
-            else if (independentProvider == "DeepSeek")
-            {
-                listing.Label("?? DeepSeek 中文优化模型，性价比高");
-                listing.Label("   推荐模型: deepseek-chat, deepseek-coder");
-            }
-            else if (independentProvider == "Player2")
-            {
-                listing.Label("?? Player2 游戏优化 AI，支持本地客户端");
-                listing.Label("   推荐模型: gpt-4o, gpt-4-turbo");
-            }
-            else if (independentProvider == "Google")
-            {
-                listing.Label("?? Google Gemini 系列，多模态能力强");
-                listing.Label("   推荐模型: gemini-2.0-flash-exp");
-            }
-            else if (independentProvider == "Custom")
-            {
-                listing.Label("?? 自定义 API 端点，支持第三方代理");
-                listing.Label("   请手动配置 API URL 和 Model");
-            }
-            GUI.color = Color.white;
+            // ⭐ v3.3.20: 使用辅助类绘制提供商选择
+            SettingsUIDrawers.DrawAIProviderSelection(listing, this);
             
             listing.Gap();
             
@@ -571,43 +446,66 @@ namespace RimTalk.MemoryPatch
             
             listing.Gap();
             
-            // Prompt Caching 选项
-            listing.CheckboxLabeled("启用 Prompt Caching", ref enablePromptCaching);
+            // ⭐ 修改：Prompt Caching 选项 - 仅DeepSeek和OpenAI可切换
+            bool canToggleCaching = (independentProvider == "OpenAI" || independentProvider == "DeepSeek");
             
-            if (enablePromptCaching)
+            if (canToggleCaching)
             {
-                GUI.color = new Color(0.8f, 1f, 0.8f);
+                listing.CheckboxLabeled("启用 Prompt Caching", ref enablePromptCaching);
+            }
+            else
+            {
+                // 其他提供商强制关闭缓存
+                enablePromptCaching = false;
+                GUI.color = Color.gray;
+                bool disabledCache = false;
+                listing.CheckboxLabeled("启用 Prompt Caching (不可用)", ref disabledCache);
+                GUI.color = Color.white;
+            }
+            
+            if (enablePromptCaching || !canToggleCaching)
+            {
                 if (independentProvider == "OpenAI")
                 {
-                    listing.Label("  ? OpenAI 支持 Prompt Caching (Beta)");
+                    GUI.color = new Color(0.8f, 1f, 0.8f);
+                    listing.Label("  ✓ OpenAI 支持 Prompt Caching (Beta)");
                     listing.Label("  适用模型: gpt-4o, gpt-4-turbo");
+                    GUI.color = Color.white;
                 }
                 else if (independentProvider == "DeepSeek")
                 {
-                    listing.Label("  ? DeepSeek 支持 Prompt Caching");
+                    GUI.color = new Color(0.8f, 1f, 0.8f);
+                    listing.Label("  ✓ DeepSeek 支持 Prompt Caching");
                     listing.Label("  可节省约 50% 费用");
+                    GUI.color = Color.white;
                 }
                 else if (independentProvider == "Player2")
                 {
-                    listing.Label("  ? Player2 支持 Prompt Caching");
-                    listing.Label("  本地客户端自动缓存");
+                    GUI.color = Color.gray;
+                    listing.Label("  ✗ Player2 不支持 Prompt Caching");
+                    listing.Label("  本地客户端无需缓存");
+                    GUI.color = Color.white;
                 }
                 else if (independentProvider == "Google")
                 {
-                    listing.Label("  ? Google Gemini 暂不支持 Prompt Caching");
+                    GUI.color = Color.gray;
+                    listing.Label("  ✗ Google Gemini 不支持 Prompt Caching");
+                    GUI.color = Color.white;
                 }
                 else if (independentProvider == "Custom")
                 {
-                    listing.Label("  ?? 取决于您的自定义 API 实现");
+                    GUI.color = Color.gray;
+                    listing.Label("  ✗ 自定义API 不支持 Prompt Caching");
+                    listing.Label("  取决于您的 API 实现");
+                    GUI.color = Color.white;
                 }
-                GUI.color = Color.white;
             }
             
             listing.Gap();
             
             // 配置验证按钮
             Rect validateButtonRect = listing.GetRect(35f);
-            if (Widgets.ButtonText(validateButtonRect, "?? 验证配置"))
+            if (Widgets.ButtonText(validateButtonRect, "✓ 验证配置"))
             {
                 ValidateAIConfig();
             }
@@ -697,78 +595,18 @@ namespace RimTalk.MemoryPatch
                 listing.Label($"触发概率: {recallTriggerChance:P0}");
                 recallTriggerChance = listing.Slider(recallTriggerChance, 0.05f, 0.60f);
             }
-        }
-
-        private void DrawVectorEnhancementSettings(Listing_Standard listing)
-        {
-            listing.CheckboxLabeled("启用向量增强 (需要重启)", ref enableVectorEnhancement);
-            if (enableVectorEnhancement)
-            {
-                GUI.color = new Color(0.8f, 1f, 0.8f);
-                listing.Label("  使用语义向量检索来增强常识匹配。");
-                GUI.color = Color.white;
-                listing.Gap();
-                
-                listing.Label($"相似度阈值: {vectorSimilarityThreshold:F2}");
-                vectorSimilarityThreshold = listing.Slider(vectorSimilarityThreshold, 0.5f, 1.0f);
-                
-                listing.Label($"最大补充结果: {maxVectorResults}");
-                maxVectorResults = (int)listing.Slider(maxVectorResults, 1, 15);
-            }
             
             listing.Gap();
             listing.GapLine();
             
-            // 常识匹配设置
-            Text.Font = GameFont.Small;
-            GUI.color = new Color(1f, 0.9f, 0.7f);
-            listing.Label("常识匹配设置");
-            GUI.color = Color.white;
-            listing.Gap();
-            
-            listing.CheckboxLabeled("启用常识链", ref enableKnowledgeChaining);
-            if (enableKnowledgeChaining)
-            {
-                GUI.color = new Color(0.8f, 1f, 0.8f);
-                listing.Label("  允许常识触发常识，进行多轮匹配");
-                GUI.color = Color.white;
-                listing.Gap();
-                
-                listing.Label($"最大轮数: {maxChainingRounds}");
-                maxChainingRounds = (int)listing.Slider(maxChainingRounds, 1, 5);
-            }
-            
-            listing.Gap();
-            
-            // ⭐ v3.3.20: 高级匹配设置 UI
-            listing.Label($"防误触领跑分 (Confidence Margin): {confidenceMargin:P0}");
-            confidenceMargin = listing.Slider(confidenceMargin, 0.0f, 0.2f);
-            GUI.color = Color.gray;
-            listing.Label("  如果第一名分数比第二名高出这么多，则自动丢弃后续条目");
-            GUI.color = Color.white;
-            
-            listing.Gap();
-            
-            listing.Label($"混合检索权重 (Hybrid Weight Balance): {hybridWeightBalance:P0}");
-            hybridWeightBalance = listing.Slider(hybridWeightBalance, 0.0f, 1.0f);
-            
-            Rect balanceLabelRect = listing.GetRect(20f);
-            Text.Font = GameFont.Tiny;
-            Widgets.Label(balanceLabelRect, "关键词优先 (Keywords) <--- 平衡 ---> 语义优先 (Vector)");
-            Text.Font = GameFont.Small;
-            
-            listing.Gap();
-            
-            listing.Label("全局排除词 (Global Exclude List):");
-            string newExclude = listing.TextEntry(globalExcludeKeywords);
-            if (newExclude != globalExcludeKeywords)
-            {
-                globalExcludeKeywords = newExclude;
-                ClearGlobalExcludeCache();
-            }
-            GUI.color = Color.gray;
-            listing.Label("  逗号分隔。如果出现这些词，绝对不要触发任何常识。");
-            GUI.color = Color.white;
+            // ⭐ 常识链设置
+            SettingsUIDrawers.DrawKnowledgeChainingSettings(listing, this);
+        }
+        
+        private void DrawVectorEnhancementSettings(Listing_Standard listing)
+        {
+            // ⭐ SiliconFlow向量服务设置
+            SettingsUIDrawers.DrawSiliconFlowSettings(listing, this);
         }
 
         private void OpenCommonKnowledgeDialog()
@@ -790,90 +628,105 @@ namespace RimTalk.MemoryPatch
         }
         
         /// <summary>
-        /// ? 绘制提示词规范化设置 UI
+        /// ✦ 绘制提示词规范化设置 UI
         /// </summary>
         private void DrawPromptNormalizationSettings(Listing_Standard listing)
         {
-            // 背景框
-            Rect sectionRect = listing.GetRect(300f); // 预估高度
-            Widgets.DrawBoxSolid(sectionRect, new Color(0.15f, 0.15f, 0.15f, 0.5f));
-            
-            Listing_Standard inner = new Listing_Standard();
-            inner.Begin(sectionRect.ContractedBy(10f));
-            
-            // 标题
-            Text.Font = GameFont.Small;
-            GUI.color = new Color(1f, 0.9f, 0.7f);
-            inner.Label("替换规则列表");
-            GUI.color = Color.white;
-            
-            inner.Gap(5f);
-            
-            // 规则列表（最多显示 10 条）
-            if (normalizationRules == null)
+            // ⭐ 使用辅助类绘制
+            SettingsUIDrawers.DrawPromptNormalizationSettings(listing, this);
+        }
+
+        private class AdvancedSettingsWindow : Window
+        {
+            private readonly RimTalkMemoryPatchSettings settings;
+            private Vector2 scrollPos;
+
+            public override Vector2 InitialSize => new Vector2(900f, 760f);
+
+            public AdvancedSettingsWindow(RimTalkMemoryPatchSettings settings)
             {
-                normalizationRules = new List<ReplacementRule>();
+                this.settings = settings;
+                doCloseX = true;
+                doCloseButton = true;
+                absorbInputAroundWindow = true;
+                closeOnClickedOutside = false;
             }
-            
-            // 绘制每条规则
-            for (int i = 0; i < normalizationRules.Count; i++)
+
+            public override void DoWindowContents(Rect inRect)
             {
-                var rule = normalizationRules[i];
-                
-                Rect ruleRect = inner.GetRect(30f);
-                
-                // 启用复选框
-                Rect checkboxRect = new Rect(ruleRect.x, ruleRect.y, 24f, 24f);
-                Widgets.Checkbox(checkboxRect.position, ref rule.isEnabled);
-                
-                // 模式输入框
-                Rect patternRect = new Rect(ruleRect.x + 30f, ruleRect.y, 200f, 25f);
-                rule.pattern = Widgets.TextField(patternRect, rule.pattern ?? "");
-                
-                // 箭头
-                Rect arrowRect = new Rect(ruleRect.x + 235f, ruleRect.y, 30f, 25f);
-                Widgets.Label(arrowRect, " → ");
-                
-                // 替换输入框
-                Rect replacementRect = new Rect(ruleRect.x + 270f, ruleRect.y, 150f, 25f);
-                rule.replacement = Widgets.TextField(replacementRect, rule.replacement ?? "");
-                
-                // 删除按钮
-                Rect deleteRect = new Rect(ruleRect.x + 430f, ruleRect.y, 30f, 25f);
-                GUI.color = new Color(1f, 0.3f, 0.3f);
-                if (Widgets.ButtonText(deleteRect, "?"))
-                {
-                    normalizationRules.RemoveAt(i);
-                    i--; // 调整索引
-                }
+                Listing_Standard listing = new Listing_Standard();
+                Rect viewRect = new Rect(0f, 0f, inRect.width - 20f, 2200f); // ⭐ 增加高度
+                Widgets.BeginScrollView(inRect, ref scrollPos, viewRect);
+                listing.Begin(viewRect);
+
+                Text.Font = GameFont.Medium;
+                listing.Label("高级设置");
+                Text.Font = GameFont.Small;
+                GUI.color = Color.gray;
+                listing.Label("包含注入、记忆容量、衰减等详细配置");
                 GUI.color = Color.white;
+                listing.GapLine();
+
+                settings.DrawCollapsibleSection(listing, "动态注入设置", ref expandDynamicInjection, delegate { settings.DrawDynamicInjectionSettings(listing); });
+                settings.DrawCollapsibleSection(listing, "记忆容量配置", ref expandMemoryCapacity, delegate { settings.DrawMemoryCapacitySettings(listing); });
+                settings.DrawCollapsibleSection(listing, "记忆衰减配置", ref expandDecayRates, delegate { settings.DrawDecaySettings(listing); });
+                settings.DrawCollapsibleSection(listing, "记忆总结设置", ref expandSummarization, delegate { settings.DrawSummarizationSettings(listing); });
+
+                if (settings.useAISummarization)
+                {
+                    settings.DrawCollapsibleSection(listing, "AI 配置", ref expandAIConfig, delegate { settings.DrawAIConfigSettings(listing); });
+                }
+
+                settings.DrawCollapsibleSection(listing, "记忆类型开关", ref expandMemoryTypes, delegate { settings.DrawMemoryTypesSettings(listing); });
                 
-                inner.Gap(3f);
+                // ⭐ 添加向量增强设置
+                settings.DrawCollapsibleSection(listing, "🔬 向量增强设置", ref expandVectorEnhancement, delegate { settings.DrawVectorEnhancementSettings(listing); });
+                
+                settings.DrawCollapsibleSection(listing, "🚀 实验性功能", ref expandExperimentalFeatures, delegate { settings.DrawExperimentalFeaturesSettings(listing); });
+
+                listing.End();
+                Widgets.EndScrollView();
             }
-            
-            // 添加新规则按钮
-            Rect addButtonRect = inner.GetRect(30f);
-            if (Widgets.ButtonText(addButtonRect, "+ 添加新规则"))
+        }
+
+        private class PromptNormalizationWindow : Window
+        {
+            private readonly RimTalkMemoryPatchSettings settings;
+            private Vector2 scrollPos;
+
+            public override Vector2 InitialSize => new Vector2(750f, 520f);
+
+            public PromptNormalizationWindow(RimTalkMemoryPatchSettings settings)
             {
-                normalizationRules.Add(new ReplacementRule("", "", true));
+                this.settings = settings;
+                doCloseX = true;
+                doCloseButton = true;
+                absorbInputAroundWindow = true;
+                closeOnClickedOutside = false;
             }
-            
-            inner.Gap(5f);
-            
-            // 统计信息
-            int enabledCount = normalizationRules.Count(r => r.isEnabled);
-            GUI.color = Color.gray;
-            inner.Label($"已启用: {enabledCount} / {normalizationRules.Count} 条规则");
-            GUI.color = Color.white;
-            
-            // 示例提示
-            inner.Gap(3f);
-            GUI.color = new Color(0.7f, 0.9f, 1f);
-            inner.Label("?? 示例：模式 \\(Player\\) → 替换 Master");
-            inner.Label("   支持正则表达式（忽略大小写）");
-            GUI.color = Color.white;
-            
-            inner.End();
+
+            public override void DoWindowContents(Rect inRect)
+            {
+                Listing_Standard listing = new Listing_Standard();
+                Rect viewRect = new Rect(0f, 0f, inRect.width - 20f, 420f);
+                Widgets.BeginScrollView(inRect, ref scrollPos, viewRect);
+                listing.Begin(viewRect);
+
+                Text.Font = GameFont.Medium;
+                listing.Label("提示词替换");
+                Text.Font = GameFont.Small;
+                GUI.color = Color.gray;
+                listing.Label("在发送给 AI 前自动规范化提示词");
+                GUI.color = Color.white;
+                listing.Gap(6f);
+
+                settings.DrawPromptNormalizationSettings(listing);
+
+                listing.End();
+                Widgets.EndScrollView();
+
+                PromptNormalizer.UpdateRules(settings.normalizationRules);
+            }
         }
     }
 }
